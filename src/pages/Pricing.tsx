@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { PRICING } from '../constants';
@@ -8,16 +7,16 @@ import { PageHeader } from '../components/PageHeader';
 
 export const Pricing = () => {
   return (
-    <div className="pt-12">
-      <PageHeader 
+    <div className="pt-16 md:pt-20">
+      <PageHeader
         title="Invest in Your Business Growth."
         subtitle="Pricing"
         description="Transparent, value-driven pricing for our consulting and design services. No hidden fees, just results."
       />
 
-      <section className="pb-24">
-        <div className="container-wide px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <section className="pt-10 md:pt-14 pb-24 md:pb-32">
+        <div className="container-wide px-6 md:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
             {PRICING.map((plan, index) => (
               <motion.div
                 key={index}
@@ -25,25 +24,30 @@ export const Pricing = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="p-12 rounded-[3rem] border border-apple-gray-100 bg-white hover:shadow-2xl transition-all duration-500 flex flex-col h-full"
+                className="p-10 md:p-12 rounded-[3rem] border border-apple-gray-100 bg-white hover:shadow-2xl transition-all duration-500 flex flex-col h-full"
               >
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                <div className="flex items-baseline gap-2 mb-8">
-                  <span className="text-5xl font-bold tracking-tight">{plan.price}</span>
-                  {plan.duration && <span className="text-apple-gray-300 font-medium">/ {plan.duration}</span>}
+                <h3 className="text-2xl font-bold mb-3 leading-tight">{plan.name}</h3>
+
+                <div className="flex items-baseline gap-2 mb-8 md:mb-10">
+                  <span className="text-4xl md:text-5xl font-bold tracking-tight">{plan.price}</span>
+                  {plan.duration && (
+                    <span className="text-apple-gray-300 font-medium">/ {plan.duration}</span>
+                  )}
                 </div>
-                <ul className="space-y-6 mb-12 flex-grow">
+
+                <ul className="space-y-5 md:space-y-6 mb-10 md:mb-12 flex-grow">
                   {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-center gap-4 text-apple-gray-400">
-                      <div className="w-6 h-6 rounded-full bg-apple-gray-50 flex items-center justify-center flex-shrink-0">
+                    <li key={i} className="flex items-start gap-4 text-apple-gray-400 leading-7">
+                      <div className="w-6 h-6 rounded-full bg-apple-gray-50 flex items-center justify-center flex-shrink-0 mt-1">
                         <Check size={14} className="text-apple-gray-500" />
                       </div>
-                      {feature}
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
+
                 <button className="apple-button apple-button-primary w-full">
-                  Book This Session
+                  Get A Quote
                 </button>
               </motion.div>
             ))}
@@ -54,13 +58,15 @@ export const Pricing = () => {
       {/* Custom Quote */}
       <section className="section-padding bg-apple-gray-50">
         <div className="container-wide">
-          <div className="max-w-4xl mx-auto bg-white p-12 md:p-24 rounded-[3rem] shadow-sm text-center">
-            <h2 className="heading-lg mb-8">Need a Custom Package?</h2>
-            <p className="text-xl text-apple-gray-300 mb-12">
+          <div className="max-w-4xl mx-auto bg-white px-8 py-12 md:px-12 md:py-20 lg:px-16 lg:py-24 rounded-[3rem] shadow-sm text-center">
+            <h2 className="heading-lg mb-8 md:mb-9">Need a Custom Package?</h2>
+
+            <p className="text-lg md:text-xl text-apple-gray-300 leading-8 max-w-3xl mx-auto mb-10 md:mb-12">
               For larger projects, ongoing retainers, or full-scale digital transformations, we provide custom quotes tailored to your specific needs.
             </p>
+
             <button className="apple-button apple-button-secondary">
-              Request Custom Quote
+              Get A Quote
             </button>
           </div>
         </div>
