@@ -1,0 +1,69 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", serif;
+  
+  --color-apple-gray-50: #f5f5f7;
+  --color-apple-gray-100: #e8e8ed;
+  --color-apple-gray-200: #d2d2d7;
+  --color-apple-gray-300: #86868b;
+  --color-apple-gray-400: #424245;
+  --color-apple-gray-500: #1d1d1f;
+  --color-apex-yellow: #FFD60A;
+  --color-apex-yellow-hover: #FFC107;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-apple-gray-500 antialiased selection:bg-apex-yellow selection:text-apple-gray-500;
+  }
+}
+
+@layer components {
+  .glass-nav {
+    @apply sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-apple-gray-100;
+  }
+  
+  .apple-button {
+    @apply px-6 py-3 rounded-full font-medium transition-all duration-300 active:scale-95;
+  }
+  
+  .apple-button-primary {
+    @apply bg-apex-yellow text-apple-gray-500 hover:bg-apex-yellow-hover shadow-lg shadow-apex-yellow/20 font-bold;
+  }
+  
+  .apple-button-secondary {
+    @apply bg-white text-apple-gray-500 border-2 border-apex-yellow hover:bg-apex-yellow/10 font-bold;
+  }
+
+  .accent-yellow {
+    @apply text-apex-yellow;
+  }
+
+  .bg-accent-yellow {
+    @apply bg-apex-yellow;
+  }
+  
+  .section-padding {
+    @apply py-24 px-6 md:px-12 lg:px-24;
+  }
+  
+  .container-wide {
+    @apply max-w-7xl mx-auto;
+  }
+  
+  .heading-xl {
+    @apply text-5xl md:text-7xl font-bold tracking-tight leading-[1.1];
+  }
+  
+  .heading-lg {
+    @apply text-4xl md:text-5xl font-bold tracking-tight leading-[1.2];
+  }
+  
+  .text-muted {
+    @apply text-apple-gray-300;
+  }
+}
