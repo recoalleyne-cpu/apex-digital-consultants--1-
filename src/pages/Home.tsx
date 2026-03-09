@@ -72,7 +72,7 @@ export const Home = () => {
             transition={{ delay: 0.1 }}
             className="heading-xl mb-8 text-white drop-shadow-xl"
           >
-            Apex Digital <br className="hidden md:block" /> Consultants
+            Apex Digital<br className="hidden md:block" />Consultants
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
