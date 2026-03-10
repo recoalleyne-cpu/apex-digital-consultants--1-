@@ -63,10 +63,10 @@ export const Contact = () => {
                     <h4 className="text-xl font-bold mb-2">Call Us</h4>
                     <p className="text-apple-gray-300 mb-2">Mon-Fri from 9am to 5pm.</p>
                     <a
-                      href="tel:9015932119"
+                      href="tel:2468416543"
                       className="text-lg font-semibold hover:text-apex-yellow transition-colors"
                     >
-                      901-593-2119
+                      246-841-6543
                     </a>
                   </div>
                 </div>
@@ -77,12 +77,10 @@ export const Contact = () => {
                   </div>
 
                   <div>
-                    <h4 className="text-xl font-bold mb-2">Visit Us</h4>
-                    <p className="text-apple-gray-300 mb-2">Come say hello at our office.</p>
+                    <h4 className="text-xl font-bold mb-2">Location</h4>
+                    <p className="text-apple-gray-300 mb-2">Serving clients across Barbados and the wider Caribbean region.</p>
                     <p className="text-lg font-semibold leading-relaxed">
-                      1000 S. Cooper
-                      <br />
-                      Memphis, TN 38104
+                      Bridgetown, Barbados
                     </p>
                   </div>
                 </div>
