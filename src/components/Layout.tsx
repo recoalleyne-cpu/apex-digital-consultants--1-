@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -36,10 +35,12 @@ export const Header = () => {
   }, [location]);
 
   return (
-    <header className={cn(
-      'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-      scrolled ? 'bg-white/80 backdrop-blur-md border-b border-apple-gray-100 py-3' : 'bg-transparent py-6'
-    )}>
+    <header
+      className={cn(
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        scrolled ? 'bg-white/80 backdrop-blur-md border-b border-apple-gray-100 py-3' : 'bg-transparent py-6'
+      )}
+    >
       <nav className="container-wide px-6 flex items-center justify-between">
         <Link to="/" className="text-xl font-bold tracking-tight">
           APEX<span className="text-apple-gray-300 font-light">CONSULTANTS</span>
@@ -59,16 +60,13 @@ export const Header = () => {
               {link.name}
             </Link>
           ))}
-          <Link to="/contact" className="apple-button apple-button-primary text-sm py-2 px-5">
-            Get Started
+          <Link to="/contact#quote" className="apple-button apple-button-primary text-sm py-2 px-5">
+            Get A Quote
           </Link>
         </div>
 
         {/* Mobile Menu Toggle */}
-        <button 
-          className="md:hidden p-2 text-apple-gray-500"
-          onClick={() => setIsOpen(!isOpen)}
-        >
+        <button className="md:hidden p-2 text-apple-gray-500" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </nav>
@@ -96,8 +94,8 @@ export const Header = () => {
                   <ChevronRight size={18} className="text-apple-gray-100" />
                 </Link>
               ))}
-              <Link to="/contact" className="apple-button apple-button-primary text-center mt-4">
-                Get Started
+              <Link to="/contact#quote" className="apple-button apple-button-primary text-center mt-4">
+                Get A Quote
               </Link>
             </div>
           </motion.div>

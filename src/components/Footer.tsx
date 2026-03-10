@@ -21,11 +21,11 @@ export default function Footer() {
     <footer className="bg-apple-gray-50 pt-24 border-t border-apple-gray-100">
       <div className="max-w-7xl mx-auto px-6 md:px-12 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 lg:gap-8">
-          
           {/* Brand Column */}
           <div className="lg:col-span-1">
-            <Link to="/" className="text-2xl font-bold tracking-tight mb-6 block">
-              APEX<span className="text-apple-gray-300 font-light">CONSULTANTS</span>
+            <Link to="/" className="text-xl sm:text-2xl font-bold tracking-tight mb-6 block leading-tight">
+              <span className="block sm:inline">Apex Digital</span>{' '}
+              <span className="block sm:inline text-apple-gray-300 font-light">Consultants</span>
             </Link>
 
             <p className="text-apple-gray-300 text-sm leading-relaxed mb-8">
@@ -58,30 +58,57 @@ export default function Footer() {
             <div>
               <h4 className="font-bold text-sm uppercase tracking-widest mb-6">Company</h4>
               <ul className="space-y-4 text-sm">
-                <li><Link to="/about" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">About Us</Link></li>
-                <li><Link to="/services" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">Services</Link></li>
-                <li><Link to="/portfolio" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">Portfolio</Link></li>
-                <li><Link to="/pricing" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">Pricing</Link></li>
+                <li>
+                  <Link to="/about" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/services" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">
+                    Services
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/portfolio" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">
+                    Portfolio
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/pricing" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">
+                    Pricing
+                  </Link>
+                </li>
               </ul>
             </div>
 
             <div>
               <h4 className="font-bold text-sm uppercase tracking-widest mb-6">Legal</h4>
               <ul className="space-y-4 text-sm">
-                <li><Link to="/terms" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">Terms</Link></li>
-                <li><Link to="/privacy" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">Privacy</Link></li>
-                <li><Link to="/faqs" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">FAQs</Link></li>
+                <li>
+                  <Link to="/terms" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">
+                    Terms
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/privacy" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">
+                    Privacy
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/faqs" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">
+                    FAQs
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
 
-          {/* Form Column */}
+          {/* Simpler Footer Form */}
           <div className="lg:col-span-2">
             <h4 className="font-bold text-sm uppercase tracking-widest mb-6">Get in Touch</h4>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                 <input
                   type="text"
                   placeholder="Name"
@@ -99,7 +126,6 @@ export default function Footer() {
                   className="w-full px-4 py-3 bg-white border border-apple-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-apex-yellow/50 transition-all"
                   required
                 />
-
               </div>
 
               <div className="relative">
@@ -109,12 +135,16 @@ export default function Footer() {
                   className="w-full px-4 py-3 bg-white border border-apple-gray-100 rounded-xl text-sm font-medium appearance-none focus:outline-none focus:ring-2 focus:ring-apex-yellow/50 transition-all cursor-pointer"
                   required
                 >
-                  <option value="" disabled>Select Service</option>
-                  <option value="strategic-marketing">Strategic Marketing</option>
-                  <option value="modern-design">Modern Design</option>
+                  <option value="" disabled>
+                    Select Service
+                  </option>
+                  <option value="website-design">Website Design</option>
+                  <option value="digital-strategy">Digital Strategy</option>
+                  <option value="logo-design">Logo Design</option>
+                  <option value="business-consulting">Business Consulting</option>
                   <option value="digital-solutions">Digital Solutions</option>
-                  <option value="academy">Apex Training Academy</option>
-                  <option value="consulting">Business Consulting</option>
+                  <option value="social-media-management">Social Media Management</option>
+                  <option value="digital-campaign-management">Digital Campaign Management</option>
                 </select>
 
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-apple-gray-200">
@@ -137,7 +167,6 @@ export default function Footer() {
               >
                 Send Message
               </button>
-
             </form>
           </div>
         </div>
@@ -146,19 +175,21 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="bg-black py-4 px-6 md:px-12">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-
           <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 text-[11px] font-bold text-white uppercase tracking-wider">
             <span>© {new Date().getFullYear()} Apex Digital Consultants</span>
             <span className="hidden md:inline opacity-30 mx-2">|</span>
-            <Link to="/terms" className="hover:underline">Terms & Conditions</Link>
+            <Link to="/terms" className="hover:underline">
+              Terms & Conditions
+            </Link>
             <span className="hidden md:inline opacity-30 mx-2">|</span>
-            <Link to="/privacy" className="hover:underline">Privacy Policy</Link>
+            <Link to="/privacy" className="hover:underline">
+              Privacy Policy
+            </Link>
           </div>
 
           <div className="text-[11px] font-bold text-white uppercase tracking-wider">
             info@apexdigitalconsultants.com
           </div>
-
         </div>
       </div>
     </footer>
