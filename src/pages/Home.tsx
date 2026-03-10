@@ -162,11 +162,8 @@ export const Home = () => {
         <div className="container-wide mb-8">
           <div className="text-center">
             <p className="text-sm font-semibold tracking-widest text-apex-yellow uppercase mb-3">
-              Certifications & Trusted Platforms
+              Certificatied &amp; Trusted Provider
             </p>
-            <h2 className="text-2xl md:text-3xl font-bold text-apple-gray-500">
-              Recognized Tools. Proven Standards.
-            </h2>
           </div>
         </div>
 
