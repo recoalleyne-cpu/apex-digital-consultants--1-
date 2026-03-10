@@ -14,14 +14,18 @@ const containerVariants = {
   }
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
-};
-
 const IconMap: Record<string, any> = {
   Target, Layout, PenTool, Megaphone, Zap, Briefcase, Cpu, BarChart
 };
+
+const CERTIFICATION_LOGOS = [
+  { name: 'Google Ads', src: '/certifications/google-ads.png' },
+  { name: 'Google Analytics', src: '/certifications/google-analytics.png' },
+  { name: 'Meta Certified', src: '/certifications/meta-certified.png' },
+  { name: 'Shopify Partner', src: '/certifications/shopify-partner.png' },
+  { name: 'WordPress Expert', src: '/certifications/wordpress-expert.png' },
+  { name: 'HubSpot Certified', src: '/certifications/hubspot-certified.png' }
+];
 
 export const Home = () => {
   const mouseX = useMotionValue(0);
@@ -74,6 +78,7 @@ export const Home = () => {
           >
             Apex Digital<br className="hidden md:block" />Consultants
           </motion.h1>
+
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -84,6 +89,7 @@ export const Home = () => {
             <br /><br />
             Proven Results, let us take your brand to the next level!
           </motion.p>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -99,7 +105,7 @@ export const Home = () => {
           </motion.div>
         </div>
 
-        {/* Abstract Background Elements (Subtle) */}
+        {/* Abstract Background Elements */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-full h-full pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-apex-yellow/20 rounded-full blur-3xl opacity-30" />
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl opacity-20" />
@@ -133,6 +139,7 @@ export const Home = () => {
                 </div>
               </div>
             </motion.div>
+
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -147,6 +154,48 @@ export const Home = () => {
               />
             </motion.div>
           </div>
+        </div>
+      </section>
+
+      {/* Certification Ticker */}
+      <section className="py-10 md:py-12 border-y border-apple-gray-100 bg-white overflow-hidden">
+        <div className="container-wide mb-8">
+          <div className="text-center">
+            <p className="text-sm font-semibold tracking-widest text-apex-yellow uppercase mb-3">
+              Certifications & Trusted Platforms
+            </p>
+            <h2 className="text-2xl md:text-3xl font-bold text-apple-gray-500">
+              Recognized Tools. Proven Standards.
+            </h2>
+          </div>
+        </div>
+
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 w-20 md:w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-20 md:w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+
+          <motion.div
+            className="flex w-max gap-5 md:gap-6"
+            animate={{ x: ['0%', '-50%'] }}
+            transition={{
+              duration: 28,
+              ease: 'linear',
+              repeat: Infinity
+            }}
+          >
+            {[...CERTIFICATION_LOGOS, ...CERTIFICATION_LOGOS].map((logo, index) => (
+              <div
+                key={`${logo.name}-${index}`}
+                className="flex items-center justify-center min-w-[180px] md:min-w-[220px] h-[88px] md:h-[100px] px-6 md:px-8 rounded-[1.75rem] border border-apple-gray-100 bg-apple-gray-50 shadow-sm"
+              >
+                <img
+                  src={logo.src}
+                  alt={logo.name}
+                  className="max-h-10 md:max-h-12 max-w-full object-contain opacity-90"
+                />
+              </div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
@@ -339,7 +388,7 @@ export const Home = () => {
                   ))}
                 </ul>
                 <Link to="/contact" className="apple-button apple-button-secondary text-center">
-                  Get a Quote
+                  Get A Quote
                 </Link>
               </div>
             ))}
@@ -361,7 +410,6 @@ export const Home = () => {
               </Link>
             </div>
 
-            {/* Background Decoration */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-apex-yellow/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-apex-yellow/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl" />
           </div>
