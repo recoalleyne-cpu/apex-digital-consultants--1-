@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Facebook, Rss, ChevronDown } from 'lucide-react';
+import { Instagram, Facebook, ChevronDown } from 'lucide-react';
 
 export default function Footer() {
   const [formData, setFormData] = useState({
@@ -21,23 +21,34 @@ export default function Footer() {
     <footer className="bg-apple-gray-50 pt-24 border-t border-apple-gray-100">
       <div className="max-w-7xl mx-auto px-6 md:px-12 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 lg:gap-8">
+          
           {/* Brand Column */}
           <div className="lg:col-span-1">
             <Link to="/" className="text-2xl font-bold tracking-tight mb-6 block">
               APEX<span className="text-apple-gray-300 font-light">CONSULTANTS</span>
             </Link>
+
             <p className="text-apple-gray-300 text-sm leading-relaxed mb-8">
               Empowering businesses with dynamic marketing solutions that drive growth and engagement. Your vision is our mission.
             </p>
+
             <div className="flex items-center gap-4">
-              <a href="#" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">
+              <a
+                href="https://www.facebook.com/ApexDigitalConsultants"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors"
+              >
                 <Facebook size={18} />
               </a>
-              <a href="#" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">
+
+              <a
+                href="https://www.instagram.com/apexdigitalconsultants/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors"
+              >
                 <Instagram size={18} />
-              </a>
-              <a href="#" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">
-                <Rss size={18} />
               </a>
             </div>
           </div>
@@ -53,6 +64,7 @@ export default function Footer() {
                 <li><Link to="/pricing" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">Pricing</Link></li>
               </ul>
             </div>
+
             <div>
               <h4 className="font-bold text-sm uppercase tracking-widest mb-6">Legal</h4>
               <ul className="space-y-4 text-sm">
@@ -66,8 +78,10 @@ export default function Footer() {
           {/* Form Column */}
           <div className="lg:col-span-2">
             <h4 className="font-bold text-sm uppercase tracking-widest mb-6">Get in Touch</h4>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
                 <input
                   type="text"
                   placeholder="Name"
@@ -76,6 +90,7 @@ export default function Footer() {
                   className="w-full px-4 py-3 bg-white border border-apple-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-apex-yellow/50 transition-all"
                   required
                 />
+
                 <input
                   type="email"
                   placeholder="Email"
@@ -84,8 +99,9 @@ export default function Footer() {
                   className="w-full px-4 py-3 bg-white border border-apple-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-apex-yellow/50 transition-all"
                   required
                 />
+
               </div>
-              
+
               <div className="relative">
                 <select
                   value={formData.service}
@@ -100,6 +116,7 @@ export default function Footer() {
                   <option value="academy">Apex Training Academy</option>
                   <option value="consulting">Business Consulting</option>
                 </select>
+
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-apple-gray-200">
                   <ChevronDown size={16} />
                 </div>
@@ -120,6 +137,7 @@ export default function Footer() {
               >
                 Send Message
               </button>
+
             </form>
           </div>
         </div>
@@ -128,6 +146,7 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="bg-black py-4 px-6 md:px-12">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+
           <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 text-[11px] font-bold text-white uppercase tracking-wider">
             <span>© {new Date().getFullYear()} Apex Digital Consultants</span>
             <span className="hidden md:inline opacity-30 mx-2">|</span>
@@ -135,9 +154,11 @@ export default function Footer() {
             <span className="hidden md:inline opacity-30 mx-2">|</span>
             <Link to="/privacy" className="hover:underline">Privacy Policy</Link>
           </div>
+
           <div className="text-[11px] font-bold text-white uppercase tracking-wider">
             info@apexdigitalconsultants.com
           </div>
+
         </div>
       </div>
     </footer>
