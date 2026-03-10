@@ -12,21 +12,19 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, descrip
   return (
     <section className="section-padding relative overflow-hidden bg-white pt-32 pb-20 md:pt-40 md:pb-32">
       {/* Network background */}
-      <div className="absolute inset-0 opacity-90">
+      <div className="absolute inset-0 z-0">
         <NetworkBackground />
       </div>
 
-      {/* Soft white blend overlay */}
-      <div className="absolute inset-0 bg-white/55" />
-
-      {/* Subtle gradient depth */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/35 via-white/20 to-white/45" />
+      {/* Softer blend overlays */}
+      <div className="absolute inset-0 z-[1] bg-white/32" />
+      <div className="absolute inset-0 z-[2] bg-gradient-to-b from-white/20 via-white/8 to-white/28" />
 
       <div className="container-wide relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl bg-white/78 backdrop-blur-md p-8 md:p-12 rounded-[3rem] border border-black/8 shadow-[0_10px_40px_rgba(0,0,0,0.06)]"
+          className="max-w-4xl bg-white/58 backdrop-blur-md p-8 md:p-12 rounded-[3rem] border border-black/6 shadow-[0_12px_40px_rgba(0,0,0,0.05)]"
         >
           {subtitle && (
             <span className="text-sm font-semibold tracking-widest text-apex-yellow uppercase mb-6 block">

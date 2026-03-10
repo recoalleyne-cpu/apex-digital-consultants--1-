@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 
 interface Particle {
@@ -20,90 +19,77 @@ export const NetworkBackground: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let animationFrameId: number;
+    let animationFrameId = 0;
     let particles: Particle[] = [];
-    const particleCount = 80;
-    const connectionDistance = 180;
-    const mouseRadius = 200;
 
-    const resize = () => {
-      const parent = canvas.parentElement;
-      if (parent) {
-        const dpr = window.devicePixelRatio || 1;
-        const width = parent.offsetWidth;
-        const height = parent.offsetHeight;
-        canvas.width = width * dpr;
-        canvas.height = height * dpr;
-        ctx.scale(dpr, dpr);
-        canvas.style.width = `${width}px`;
-        canvas.style.height = `${height}px`;
-        createParticles(); // Re-create particles on resize to fill new area
-      }
-    };
-
-    const resizeObserver = new ResizeObserver(() => {
-      resize();
-    });
-
-    if (canvas.parentElement) {
-      resizeObserver.observe(canvas.parentElement);
-    }
+    const particleCount = 90;
+    const connectionDistance = 190;
+    const mouseRadius = 220;
 
     const createParticles = () => {
       const parent = canvas.parentElement;
       if (!parent) return;
+
       const width = parent.offsetWidth;
       const height = parent.offsetHeight;
+
       particles = [];
       for (let i = 0; i < particleCount; i++) {
         particles.push({
           x: Math.random() * width,
           y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5,
-          size: Math.random() * 3 + 2,
+          vx: (Math.random() - 0.5) * 0.45,
+          vy: (Math.random() - 0.5) * 0.45,
+          size: Math.random() * 2.2 + 1.8,
         });
       }
+    };
+
+    const resize = () => {
+      const parent = canvas.parentElement;
+      if (!parent) return;
+
+      const dpr = window.devicePixelRatio || 1;
+      const width = parent.offsetWidth;
+      const height = parent.offsetHeight;
+
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+
+      createParticles();
     };
 
     const draw = () => {
       const parent = canvas.parentElement;
       if (!parent) return;
+
       const width = parent.offsetWidth;
       const height = parent.offsetHeight;
 
       ctx.clearRect(0, 0, width, height);
-      
+
       particles.forEach((p, i) => {
-        // Update position
         p.x += p.vx;
         p.y += p.vy;
 
-        // Bounce off edges
-        if (p.x < 0 || p.x > width) p.vx *= -1;
-        if (p.y < 0 || p.y > height) p.vy *= -1;
+        if (p.x <= 0 || p.x >= width) p.vx *= -1;
+        if (p.y <= 0 || p.y >= height) p.vy *= -1;
 
-        // Mouse interaction
-        const dx = mouseRef.current.x - p.x;
-        const dy = mouseRef.current.y - p.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const mouseDx = mouseRef.current.x - p.x;
+        const mouseDy = mouseRef.current.y - p.y;
+        const mouseDistance = Math.sqrt(mouseDx * mouseDx + mouseDy * mouseDy);
 
-        if (distance < mouseRadius) {
-          const force = (mouseRadius - distance) / mouseRadius;
-          p.x -= dx * force * 0.02;
-          p.y -= dy * force * 0.02;
+        if (mouseDistance < mouseRadius) {
+          const force = (mouseRadius - mouseDistance) / mouseRadius;
+          p.x -= mouseDx * force * 0.018;
+          p.y -= mouseDy * force * 0.018;
         }
 
-        // Draw particle
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(242, 169, 59, 1)'; // apex-yellow full opacity
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = 'rgba(242, 169, 59, 0.8)';
-        ctx.fill();
-        ctx.shadowBlur = 0; // Reset for lines
-
-        // Draw connections
         for (let j = i + 1; j < particles.length; j++) {
           const p2 = particles[j];
           const dx = p.x - p2.x;
@@ -111,14 +97,24 @@ export const NetworkBackground: React.FC = () => {
           const dist = Math.sqrt(dx * dx + dy * dy);
 
           if (dist < connectionDistance) {
+            const opacity = 0.2 + 0.45 * (1 - dist / connectionDistance);
+
             ctx.beginPath();
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = `rgba(242, 169, 59, ${0.6 * (1 - dist / connectionDistance)})`;
-            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = `rgba(242, 169, 59, ${opacity})`;
+            ctx.lineWidth = 1.4;
             ctx.stroke();
           }
         }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(242, 169, 59, 0.95)';
+        ctx.shadowBlur = 16;
+        ctx.shadowColor = 'rgba(242, 169, 59, 0.5)';
+        ctx.fill();
+        ctx.shadowBlur = 0;
       });
 
       animationFrameId = requestAnimationFrame(draw);
@@ -132,24 +128,36 @@ export const NetworkBackground: React.FC = () => {
       };
     };
 
+    const handleMouseLeave = () => {
+      mouseRef.current = { x: -9999, y: -9999 };
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+      resize();
+    });
+
     resize();
-    createParticles();
     draw();
 
-    canvas.parentElement?.addEventListener('mousemove', handleMouseMove);
+    if (canvas.parentElement) {
+      resizeObserver.observe(canvas.parentElement);
+      canvas.parentElement.addEventListener('mousemove', handleMouseMove);
+      canvas.parentElement.addEventListener('mouseleave', handleMouseLeave);
+    }
 
     return () => {
       cancelAnimationFrame(animationFrameId);
       resizeObserver.disconnect();
       canvas.parentElement?.removeEventListener('mousemove', handleMouseMove);
+      canvas.parentElement?.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full pointer-events-none opacity-80"
-      style={{ filter: 'blur(1px)' }}
+      className="absolute inset-0 w-full h-full pointer-events-none opacity-100"
+      style={{ filter: 'blur(0.4px)' }}
     />
   );
 };
