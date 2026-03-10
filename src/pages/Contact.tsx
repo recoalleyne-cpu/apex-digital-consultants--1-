@@ -31,7 +31,7 @@ export const Contact = () => {
         description="Have a question or ready to start your project? We're here to assist you in any way we can."
       />
 
-      <section className="pt-10 md:pt-14 pb-24 md:pb-32">
+      <section id="quote" className="pt-10 md:pt-14 pb-24 md:pb-32 scroll-mt-32">
         <div className="container-wide px-6 md:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
             {/* Contact Info */}
@@ -185,7 +185,7 @@ export const Contact = () => {
                     What sort of creative work you need help with?
                   </h4>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  <div className="flex flex-wrap gap-3">
                     {creativeOptions.map((option) => {
                       const isSelected = formData.service === option;
                       return (
@@ -193,24 +193,24 @@ export const Contact = () => {
                           key={option}
                           type="button"
                           onClick={() => setFormData({ ...formData, service: option })}
-                          className={`flex items-center gap-3 rounded-2xl px-5 py-4 text-left transition-all border ${
+                          className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm md:text-[15px] font-medium transition-all border ${
                             isSelected
-                              ? 'border-apex-yellow bg-apex-yellow/10 text-apple-gray-500'
-                              : 'border-apple-gray-100 bg-apple-gray-50 text-apple-gray-300 hover:border-apex-yellow/50'
+                              ? 'border-apex-yellow bg-apex-yellow/10 text-apple-gray-500 shadow-sm'
+                              : 'border-apple-gray-100 bg-white text-apple-gray-300 hover:border-apex-yellow/50 hover:bg-apple-gray-50'
                           }`}
                         >
                           <span
-                            className={`w-6 h-6 rounded-full border flex items-center justify-center ${
+                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                               isSelected ? 'border-apex-yellow' : 'border-apple-gray-200'
                             }`}
                           >
                             <span
-                              className={`w-3 h-3 rounded-full ${
+                              className={`w-2 h-2 rounded-full ${
                                 isSelected ? 'bg-apex-yellow' : 'bg-transparent'
                               }`}
                             />
                           </span>
-                          <span className="text-base md:text-lg">{option}</span>
+                          <span>{option}</span>
                         </button>
                       );
                     })}
