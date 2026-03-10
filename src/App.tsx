@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Header } from './components/Layout';
@@ -18,12 +17,15 @@ import { Privacy } from './pages/Privacy';
 import { WebDesign } from './pages/WebDesign';
 import { Logos } from './pages/Logos';
 import { Websites } from './pages/Websites';
+import { AdminMedia } from './pages/AdminMedia';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
+
   return null;
 };
 
@@ -49,6 +51,7 @@ function App() {
             <Route path="/services/web-design" element={<WebDesign />} />
             <Route path="/services/logos" element={<Logos />} />
             <Route path="/services/websites" element={<Websites />} />
+            <Route path="/admin/media" element={<AdminMedia />} />
           </Routes>
         </main>
         <Footer />
