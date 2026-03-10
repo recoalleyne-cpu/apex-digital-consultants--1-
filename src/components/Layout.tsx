@@ -41,9 +41,10 @@ export const Header = () => {
         scrolled ? 'bg-white/80 backdrop-blur-md border-b border-apple-gray-100 py-3' : 'bg-transparent py-6'
       )}
     >
-      <nav className="container-wide px-6 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold tracking-tight">
-          APEX<span className="text-apple-gray-300 font-light">CONSULTANTS</span>
+      <nav className="container-wide px-6 flex items-center justify-between gap-4">
+        <Link to="/" className="text-base sm:text-lg md:text-xl font-bold tracking-tight leading-tight">
+          <span className="block sm:inline">Apex Digital</span>{' '}
+          <span className="block sm:inline text-apple-gray-300 font-light">Consultants</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -60,13 +61,16 @@ export const Header = () => {
               {link.name}
             </Link>
           ))}
-          <Link to="/contact#quote" className="apple-button apple-button-primary text-sm py-2 px-5">
+          <Link to="/contact" className="apple-button apple-button-primary text-sm py-2 px-5">
             Get A Quote
           </Link>
         </div>
 
         {/* Mobile Menu Toggle */}
-        <button className="md:hidden p-2 text-apple-gray-500" onClick={() => setIsOpen(!isOpen)}>
+        <button
+          className="md:hidden p-2 text-apple-gray-500"
+          onClick={() => setIsOpen(!isOpen)}
+        >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </nav>
@@ -94,7 +98,7 @@ export const Header = () => {
                   <ChevronRight size={18} className="text-apple-gray-100" />
                 </Link>
               ))}
-              <Link to="/contact#quote" className="apple-button apple-button-primary text-center mt-4">
+              <Link to="/contact" className="apple-button apple-button-primary text-center mt-4">
                 Get A Quote
               </Link>
             </div>
@@ -110,8 +114,9 @@ export const Footer = () => {
     <footer className="bg-apple-gray-50 pt-24 pb-12 px-6">
       <div className="container-wide grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
         <div className="col-span-1 md:col-span-2">
-          <Link to="/" className="text-2xl font-bold tracking-tight mb-6 block">
-            APEX<span className="text-apple-gray-300 font-light">CONSULTANTS</span>
+          <Link to="/" className="text-xl sm:text-2xl font-bold tracking-tight mb-6 block leading-tight">
+            <span className="block sm:inline">Apex Digital</span>{' '}
+            <span className="block sm:inline text-apple-gray-300 font-light">Consultants</span>
           </Link>
           <p className="text-apple-gray-300 max-w-md leading-relaxed">
             Empowering businesses with dynamic marketing solutions that drive growth and engagement. Your vision is our mission.
@@ -136,7 +141,7 @@ export const Footer = () => {
         </div>
       </div>
       <div className="container-wide border-t border-apple-gray-100 pt-8 flex flex-col md:row items-center justify-between gap-4 text-sm text-apple-gray-300">
-        <p>© {new Date().getFullYear()} Apex Digital Marketing & Consulting. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Apex Digital Consultants. All rights reserved.</p>
         <div className="flex gap-8">
           <a href="mailto:info@apexdigitalconsultants.com" className="hover:text-apple-gray-500 transition-colors">info@apexdigitalconsultants.com</a>
           <span>Memphis, TN</span>
