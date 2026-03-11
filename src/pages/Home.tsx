@@ -157,7 +157,6 @@ export const Home = () => {
         </div>
       </section>
 
-      {/* Certification Ticker */}
       <section className="py-10 md:py-12 border-y border-apple-gray-100 bg-white overflow-hidden">
         <div className="container-wide mb-8">
           <div className="text-center">
