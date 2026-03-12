@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
-import { X, ZoomIn } from 'lucide-react';
+import { X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 type MediaItem = {
   id: number;
@@ -18,6 +18,13 @@ export const Portfolio = () => {
   const [projects, setProjects] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeProject, setActiveProject] = useState<MediaItem | null>(null);
+
+  const [zoom, setZoom] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const offsetStartRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const loadProjects = async () => {
@@ -41,6 +48,14 @@ export const Portfolio = () => {
     loadProjects();
   }, []);
 
+  useEffect(() => {
+    if (!activeProject) {
+      setZoom(1);
+      setOffset({ x: 0, y: 0 });
+      setIsDragging(false);
+    }
+  }, [activeProject]);
+
   const parsedFeatures = useMemo(() => {
     if (!activeProject?.features) return [];
     return activeProject.features
@@ -48,6 +63,75 @@ export const Portfolio = () => {
       .map((item) => item.trim())
       .filter(Boolean);
   }, [activeProject]);
+
+  const clamp = (value: number, min: number, max: number) =>
+    Math.min(Math.max(value, min), max);
+
+  const handleZoomIn = () => {
+    setZoom((prev) => clamp(Number((prev + 0.25).toFixed(2)), 1, 4));
+  };
+
+  const handleZoomOut = () => {
+    setZoom((prev) => {
+      const next = clamp(Number((prev - 0.25).toFixed(2)), 1, 4);
+      if (next === 1) {
+        setOffset({ x: 0, y: 0 });
+      }
+      return next;
+    });
+  };
+
+  const handleResetView = () => {
+    setZoom(1);
+    setOffset({ x: 0, y: 0 });
+    setIsDragging(false);
+  };
+
+  const handleImageClick = () => {
+    if (zoom === 1) {
+      setZoom(2);
+    } else {
+      handleResetView();
+    }
+  };
+
+  const handleWheelZoom = (e: React.WheelEvent<HTMLDivElement>) => {
+    e.preventDefault();
+
+    const delta = e.deltaY > 0 ? -0.2 : 0.2;
+
+    setZoom((prev) => {
+      const next = clamp(Number((prev + delta).toFixed(2)), 1, 4);
+      if (next === 1) {
+        setOffset({ x: 0, y: 0 });
+      }
+      return next;
+    });
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (zoom <= 1) return;
+
+    setIsDragging(true);
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
+    offsetStartRef.current = { ...offset };
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging || zoom <= 1) return;
+
+    const dx = e.clientX - dragStartRef.current.x;
+    const dy = e.clientY - dragStartRef.current.y;
+
+    setOffset({
+      x: offsetStartRef.current.x + dx,
+      y: offsetStartRef.current.y + dy
+    });
+  };
+
+  const handlePointerUp = () => {
+    setIsDragging(false);
+  };
 
   return (
     <div className="pt-16 md:pt-20">
@@ -142,18 +226,70 @@ export const Portfolio = () => {
             <button
               type="button"
               onClick={() => setActiveProject(null)}
-              className="absolute top-4 right-4 z-10 rounded-full bg-white/90 p-2 text-apple-gray-500 shadow-md hover:bg-white transition"
+              className="absolute top-4 right-4 z-20 rounded-full bg-white/90 p-2 text-apple-gray-500 shadow-md hover:bg-white transition"
             >
               <X size={20} />
             </button>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_0.9fr]">
-              <div className="bg-apple-gray-50">
-                <img
-                  src={activeProject.file_url}
-                  alt={activeProject.alt_text || activeProject.title}
-                  className="w-full h-full object-contain max-h-[75vh]"
-                />
+              <div className="bg-apple-gray-50 relative">
+                <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleZoomOut}
+                    className="rounded-full bg-white/95 p-2 text-apple-gray-500 shadow-md hover:bg-white transition"
+                    aria-label="Zoom out"
+                  >
+                    <ZoomOut size={18} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleZoomIn}
+                    className="rounded-full bg-white/95 p-2 text-apple-gray-500 shadow-md hover:bg-white transition"
+                    aria-label="Zoom in"
+                  >
+                    <ZoomIn size={18} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleResetView}
+                    className="rounded-full bg-white/95 p-2 text-apple-gray-500 shadow-md hover:bg-white transition"
+                    aria-label="Reset zoom"
+                  >
+                    <RotateCcw size={18} />
+                  </button>
+                </div>
+
+                <div
+                  className={`w-full max-h-[75vh] min-h-[420px] overflow-hidden flex items-center justify-center ${
+                    zoom > 1 ? 'cursor-grab' : 'cursor-zoom-in'
+                  } ${isDragging ? '!cursor-grabbing' : ''}`}
+                  onWheel={handleWheelZoom}
+                  onPointerDown={handlePointerDown}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
+                  onPointerLeave={handlePointerUp}
+                >
+                  <img
+                    src={activeProject.file_url}
+                    alt={activeProject.alt_text || activeProject.title}
+                    onClick={handleImageClick}
+                    draggable={false}
+                    className="max-w-full max-h-[75vh] object-contain select-none transition-transform duration-200"
+                    style={{
+                      transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+                      transformOrigin: 'center center'
+                    }}
+                  />
+                </div>
+
+                <div className="px-6 pb-5 pt-2 text-center">
+                  <p className="text-sm text-apple-gray-300">
+                    Click image to zoom, use mouse wheel to zoom further, and drag to pan.
+                  </p>
+                </div>
               </div>
 
               <div className="p-8 md:p-10 space-y-6">
