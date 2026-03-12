@@ -27,6 +27,11 @@ export default async function handler(req: Request) {
     const file = formData.get('file') as File | null;
     const title = (formData.get('title') as string | null)?.trim() || 'Untitled';
     const category = (formData.get('category') as string | null)?.trim() || 'uncategorized';
+    const placementRaw = formData.get('placement');
+    const placement =
+      typeof placementRaw === 'string' && placementRaw.trim() !== ''
+        ? placementRaw.trim()
+        : null;
 
     if (!file) {
       return new Response('No file uploaded', { status: 400 });
@@ -41,13 +46,16 @@ export default async function handler(req: Request) {
     const sql = neon(postgresUrl);
 
     await sql`
-      INSERT INTO media (title, file_url, category)
-      VALUES (${title}, ${blob.url}, ${category})
+      INSERT INTO media (title, file_url, alt_text, category, placement)
+      VALUES (${title}, ${blob.url}, ${title}, ${category}, ${placement})
     `;
 
     return Response.json({
       success: true,
-      url: blob.url
+      url: blob.url,
+      title,
+      category,
+      placement
     });
   } catch (error) {
     const message =

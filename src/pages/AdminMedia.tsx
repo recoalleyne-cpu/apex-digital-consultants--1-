@@ -9,7 +9,10 @@ export const AdminMedia = () => {
   const [uploadedUrl, setUploadedUrl] = useState("");
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (!file) {
+      alert("Please choose a file first.");
+      return;
+    }
 
     setUploading(true);
 
@@ -32,7 +35,11 @@ export const AdminMedia = () => {
       }
 
       const data = JSON.parse(text);
-      setUploadedUrl(data.url);
+
+      setUploadedUrl(data.url || "");
+      alert(
+        `Upload successful\n\nTitle: ${data.title}\nCategory: ${data.category}\nPlacement: ${data.placement || "NONE"}`
+      );
     } catch (error) {
       console.error(error);
       alert(error instanceof Error ? error.message : "Upload failed");
@@ -60,7 +67,7 @@ export const AdminMedia = () => {
 
           <input
             type="text"
-            placeholder="Category (example: certifications, portfolio, logos)"
+            placeholder="Category (example: branding, portfolio, certifications)"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className="w-full border border-apple-gray-100 p-4 rounded-xl"
@@ -68,7 +75,7 @@ export const AdminMedia = () => {
 
           <input
             type="text"
-            placeholder="Placement (example: home-certification-ticker)"
+            placeholder="Placement (example: about-founder-image)"
             value={placement}
             onChange={(e) => setPlacement(e.target.value)}
             className="w-full border border-apple-gray-100 p-4 rounded-xl"
@@ -92,7 +99,11 @@ export const AdminMedia = () => {
             <div className="mt-8 p-6 rounded-2xl border border-apple-gray-100 bg-apple-gray-50">
               <p className="mb-4 font-medium text-apple-gray-500">Upload successful:</p>
               <p className="text-sm text-apple-gray-300 break-all mb-4">{uploadedUrl}</p>
-              <img src={uploadedUrl} alt={title || "Uploaded media"} className="rounded-xl max-h-64" />
+              <img
+                src={uploadedUrl}
+                alt={title || "Uploaded media"}
+                className="rounded-xl max-h-64"
+              />
             </div>
           )}
         </div>
