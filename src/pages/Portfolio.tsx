@@ -17,6 +17,7 @@ type MediaItem = {
 export const Portfolio = () => {
   const [projects, setProjects] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statusMessage, setStatusMessage] = useState('Loading portfolio...');
   const [activeProject, setActiveProject] = useState<MediaItem | null>(null);
 
   const [zoom, setZoom] = useState(1);
@@ -26,26 +27,62 @@ export const Portfolio = () => {
   const dragStartRef = useRef({ x: 0, y: 0 });
   const offsetStartRef = useRef({ x: 0, y: 0 });
 
+  const isExcludedBrandProject = (item: MediaItem) => {
+    const searchable = [item.title, item.alt_text, item.description, item.placement]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    return searchable.includes('bitz') || searchable.includes('bobz');
+  };
+
   useEffect(() => {
+    const controller = new AbortController();
+
     const loadProjects = async () => {
       try {
-        const res = await fetch('/api/media?category=portfolio');
+        setLoading(true);
+        setStatusMessage('Loading portfolio...');
+
+        const timeout = setTimeout(() => controller.abort(), 10000);
+
+        const res = await fetch('/api/media?category=portfolio', {
+          signal: controller.signal
+        });
+
+        clearTimeout(timeout);
+
+        if (!res.ok) {
+          const text = await res.text();
+          console.error('Portfolio API error:', text);
+          setProjects([]);
+          setStatusMessage(`Portfolio failed to load (${res.status}).`);
+          return;
+        }
+
         const data = await res.json();
 
         if (data?.items && Array.isArray(data.items)) {
-          setProjects(data.items);
+          const filtered = data.items.filter((item: MediaItem) => !isExcludedBrandProject(item));
+
+          setProjects(filtered);
+          setStatusMessage(filtered.length ? '' : 'No Apex portfolio projects uploaded yet.');
         } else {
           setProjects([]);
+          setStatusMessage('No Apex portfolio projects uploaded yet.');
         }
       } catch (err) {
-        console.warn('Failed to load portfolio projects', err);
+        console.error('Failed to load portfolio projects', err);
         setProjects([]);
+        setStatusMessage('Portfolio request failed or timed out.');
       } finally {
         setLoading(false);
       }
     };
 
     loadProjects();
+
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
@@ -145,11 +182,11 @@ export const Portfolio = () => {
         <div className="container-wide">
           {loading ? (
             <div className="text-center py-20">
-              <p className="text-apple-gray-300">Loading portfolio...</p>
+              <p className="text-apple-gray-300">{statusMessage}</p>
             </div>
           ) : projects.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-apple-gray-300">No portfolio projects uploaded yet.</p>
+              <p className="text-apple-gray-300">{statusMessage || 'No Apex portfolio projects uploaded yet.'}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12">
