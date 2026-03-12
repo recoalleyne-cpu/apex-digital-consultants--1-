@@ -5,6 +5,9 @@ export const AdminMedia = () => {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [placement, setPlacement] = useState("");
+  const [description, setDescription] = useState("");
+  const [techStack, setTechStack] = useState("");
+  const [features, setFeatures] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadedUrl, setUploadedUrl] = useState("");
 
@@ -21,6 +24,9 @@ export const AdminMedia = () => {
     formData.append("title", title);
     formData.append("category", category);
     formData.append("placement", placement);
+    formData.append("description", description);
+    formData.append("tech_stack", techStack);
+    formData.append("features", features);
 
     try {
       const res = await fetch("/api/upload", {
@@ -50,10 +56,10 @@ export const AdminMedia = () => {
 
   return (
     <div className="container-wide py-32">
-      <div className="max-w-2xl">
+      <div className="max-w-3xl">
         <h1 className="heading-lg mb-4">Media Upload</h1>
         <p className="text-apple-gray-300 leading-8 mb-10">
-          Upload media to Blob and assign it to a category and a specific website placement.
+          Upload media and assign editable project details for specific website sections.
         </p>
 
         <div className="space-y-6">
@@ -67,7 +73,7 @@ export const AdminMedia = () => {
 
           <input
             type="text"
-            placeholder="Category (example: branding, portfolio, certifications)"
+            placeholder="Category (example: portfolio, branding, certifications)"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className="w-full border border-apple-gray-100 p-4 rounded-xl"
@@ -75,10 +81,32 @@ export const AdminMedia = () => {
 
           <input
             type="text"
-            placeholder="Placement (example: about-founder-image)"
+            placeholder="Placement (example: portfolio-grid)"
             value={placement}
             onChange={(e) => setPlacement(e.target.value)}
             className="w-full border border-apple-gray-100 p-4 rounded-xl"
+          />
+
+          <textarea
+            placeholder="Project Description / Supporting Information"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full border border-apple-gray-100 p-4 rounded-xl min-h-[120px]"
+          />
+
+          <input
+            type="text"
+            placeholder="Technology Used (example: React, Vite, Tailwind CSS)"
+            value={techStack}
+            onChange={(e) => setTechStack(e.target.value)}
+            className="w-full border border-apple-gray-100 p-4 rounded-xl"
+          />
+
+          <textarea
+            placeholder="Site Features (separate each feature with a comma)"
+            value={features}
+            onChange={(e) => setFeatures(e.target.value)}
+            className="w-full border border-apple-gray-100 p-4 rounded-xl min-h-[120px]"
           />
 
           <input

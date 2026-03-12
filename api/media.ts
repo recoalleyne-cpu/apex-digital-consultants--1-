@@ -22,21 +22,21 @@ export default async function handler(req: Request) {
 
     if (placement) {
       rows = await sql`
-        SELECT id, title, file_url, alt_text, category, placement, created_at
+        SELECT id, title, file_url, alt_text, category, placement, description, tech_stack, features, created_at
         FROM media
         WHERE placement = ${placement}
         ORDER BY created_at DESC
       `;
     } else if (category) {
       rows = await sql`
-        SELECT id, title, file_url, alt_text, category, placement, created_at
+        SELECT id, title, file_url, alt_text, category, placement, description, tech_stack, features, created_at
         FROM media
         WHERE category = ${category}
         ORDER BY created_at DESC
       `;
     } else {
       rows = await sql`
-        SELECT id, title, file_url, alt_text, category, placement, created_at
+        SELECT id, title, file_url, alt_text, category, placement, description, tech_stack, features, created_at
         FROM media
         ORDER BY created_at DESC
       `;

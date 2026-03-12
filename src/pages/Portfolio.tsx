@@ -1,141 +1,213 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Globe, Cpu, Building2, CheckCircle2 } from 'lucide-react';
-import { PORTFOLIO, TESTIMONIALS } from '../constants';
+import React, { useEffect, useMemo, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
+import { X, ZoomIn } from 'lucide-react';
+
+type MediaItem = {
+  id: number;
+  title: string;
+  file_url: string;
+  alt_text?: string | null;
+  category?: string | null;
+  placement?: string | null;
+  description?: string | null;
+  tech_stack?: string | null;
+  features?: string | null;
+};
 
 export const Portfolio = () => {
+  const [projects, setProjects] = useState<MediaItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeProject, setActiveProject] = useState<MediaItem | null>(null);
+
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const res = await fetch('/api/media?category=portfolio');
+        const data = await res.json();
+
+        if (data?.items && Array.isArray(data.items)) {
+          setProjects(data.items);
+        } else {
+          setProjects([]);
+        }
+      } catch (err) {
+        console.warn('Failed to load portfolio projects', err);
+        setProjects([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProjects();
+  }, []);
+
+  const parsedFeatures = useMemo(() => {
+    if (!activeProject?.features) return [];
+    return activeProject.features
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }, [activeProject]);
+
   return (
     <div className="pt-16 md:pt-20">
       <PageHeader
-        title="Showcasing Digital Excellence."
-        subtitle="Our Portfolio"
-        description="A curated selection of our most impactful work, from brand transformations to custom digital solutions."
+        title="Our Work"
+        subtitle="Portfolio"
+        description="A growing collection of digital projects, client builds, and creative solutions delivered through Apex Digital Consultants."
       />
 
-      <section className="pt-10 md:pt-14 pb-24 md:pb-32">
-        <div className="container-wide px-6 md:px-8">
-          <div className="grid grid-cols-1 gap-20 md:gap-24 lg:gap-28">
-            {PORTFOLIO.map((project, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-                className={`flex flex-col ${
-                  index % 2 === 1 ? 'lg:flex-row-reverse' : 'lg:flex-row'
-                } gap-12 md:gap-14 lg:gap-20 items-center`}
-              >
-                {/* Image Container */}
-                <div className="w-full lg:w-3/5">
-                  <div className="aspect-[16/10] rounded-[3rem] overflow-hidden bg-apple-gray-50 shadow-2xl group border border-apple-gray-100 hover:border-apex-yellow transition-colors duration-500">
+      <section className="section-padding">
+        <div className="container-wide">
+          {loading ? (
+            <div className="text-center py-20">
+              <p className="text-apple-gray-300">Loading portfolio...</p>
+            </div>
+          ) : projects.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-apple-gray-300">No portfolio projects uploaded yet.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12">
+              {projects.map((project) => (
+                <div
+                  key={project.id}
+                  className="group bg-white rounded-[2rem] overflow-hidden border border-apple-gray-100 shadow-sm hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden bg-apple-gray-50">
                     <img
-                      src={project.image}
-                      alt={project.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-in-out"
-                      referrerPolicy="no-referrer"
+                      src={project.file_url}
+                      alt={project.alt_text || project.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
-                  </div>
-                </div>
 
-                {/* Content Container */}
-                <div className="w-full lg:w-2/5">
-                  <div className="space-y-8 md:space-y-10">
+                    <button
+                      type="button"
+                      onClick={() => setActiveProject(project)}
+                      className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-medium text-apple-gray-500 shadow-md hover:bg-white transition"
+                    >
+                      <ZoomIn size={16} />
+                      View Larger
+                    </button>
+                  </div>
+
+                  <div className="p-6 md:p-8 space-y-5">
                     <div>
-                      <span className="text-xs font-bold text-apex-yellow uppercase tracking-widest mb-4 block">
-                        {project.category}
-                      </span>
-                      <h3 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
+                      <h3 className="text-2xl font-bold text-apple-gray-500 leading-tight">
                         {project.title}
                       </h3>
-                      <p className="text-lg md:text-xl text-apple-gray-300 leading-8">
-                        {project.description}
+                      <p className="text-sm uppercase tracking-widest text-apex-yellow mt-3">
+                        Portfolio Project
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-10 py-8 md:py-10 border-y border-apple-gray-100">
-                      <div className="space-y-3 md:space-y-4">
-                        <div className="flex items-center gap-2 text-apex-yellow">
-                          <Building2 size={18} />
-                          <span className="text-xs font-bold uppercase tracking-wider text-apple-gray-500">
-                            Industry
-                          </span>
-                        </div>
-                        <p className="font-medium leading-7">{(project as any).industry}</p>
-                      </div>
+                    {project.description && (
+                      <p className="text-apple-gray-300 leading-8">
+                        {project.description}
+                      </p>
+                    )}
 
-                      <div className="space-y-3 md:space-y-4">
-                        <div className="flex items-center gap-2 text-apex-yellow">
-                          <Cpu size={18} />
-                          <span className="text-xs font-bold uppercase tracking-wider text-apple-gray-500">
-                            Technology
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {(project as any).technologies?.map((tech: string, i: number) => (
-                            <span
-                              key={i}
-                              className="text-xs px-3 py-1 bg-apple-gray-50 rounded-full text-apple-gray-300 font-medium hover:bg-apex-yellow hover:text-apple-gray-500 transition-colors cursor-default"
-                            >
-                              {tech}
-                            </span>
-                          ))}
-                        </div>
+                    {project.tech_stack && (
+                      <div>
+                        <h4 className="text-sm font-semibold uppercase tracking-widest text-apple-gray-500 mb-3">
+                          Technology Used
+                        </h4>
+                        <p className="text-apple-gray-300 leading-7">
+                          {project.tech_stack}
+                        </p>
                       </div>
-                    </div>
+                    )}
 
-                    <div className="flex flex-wrap gap-5 md:gap-6 items-center pt-1">
-                      {project.link && (
-                        <a
-                          href={project.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="apple-button apple-button-primary flex items-center gap-2"
-                        >
-                          <Globe size={18} /> Visit Live Site
-                        </a>
-                      )}
-                      <div className="flex items-center gap-2 text-apple-gray-300 text-sm font-medium">
-                        <CheckCircle2 size={18} className="text-apex-yellow" />
-                        Project Completed
+                    {project.features && (
+                      <div>
+                        <h4 className="text-sm font-semibold uppercase tracking-widest text-apple-gray-500 mb-3">
+                          Site Features
+                        </h4>
+                        <p className="text-apple-gray-300 leading-7">
+                          {project.features}
+                        </p>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Testimonials integrated */}
-      <section className="section-padding bg-apple-gray-50">
-        <div className="container-wide">
-          <div className="text-center mb-14 md:mb-16">
-            <h2 className="heading-lg mb-6">Client Success Stories</h2>
-          </div>
+      {activeProject && (
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center px-4 py-8">
+          <div className="relative w-full max-w-6xl max-h-[90vh] overflow-auto rounded-[2rem] bg-white shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setActiveProject(null)}
+              className="absolute top-4 right-4 z-10 rounded-full bg-white/90 p-2 text-apple-gray-500 shadow-md hover:bg-white transition"
+            >
+              <X size={20} />
+            </button>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12">
-            {TESTIMONIALS.slice(0, 2).map((t, i) => (
-              <div
-                key={i}
-                className="p-10 md:p-12 rounded-[3rem] bg-white border border-apple-gray-100 shadow-sm"
-              >
-                <p className="text-lg md:text-xl italic font-serif mb-8 leading-8 text-apple-gray-300">
-                  "{t.content}"
-                </p>
-                <div className="space-y-1">
-                  <p className="font-bold text-lg">{t.name}</p>
-                  <p className="text-sm text-apple-gray-300">
-                    {t.role}, {t.company}
-                  </p>
-                </div>
+            <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_0.9fr]">
+              <div className="bg-apple-gray-50">
+                <img
+                  src={activeProject.file_url}
+                  alt={activeProject.alt_text || activeProject.title}
+                  className="w-full h-full object-contain max-h-[75vh]"
+                />
               </div>
-            ))}
+
+              <div className="p-8 md:p-10 space-y-6">
+                <div>
+                  <p className="text-sm uppercase tracking-widest text-apex-yellow mb-3">
+                    Portfolio Project
+                  </p>
+                  <h3 className="text-3xl font-bold text-apple-gray-500 leading-tight">
+                    {activeProject.title}
+                  </h3>
+                </div>
+
+                {activeProject.description && (
+                  <div>
+                    <h4 className="text-sm font-semibold uppercase tracking-widest text-apple-gray-500 mb-3">
+                      Overview
+                    </h4>
+                    <p className="text-apple-gray-300 leading-8">
+                      {activeProject.description}
+                    </p>
+                  </div>
+                )}
+
+                {activeProject.tech_stack && (
+                  <div>
+                    <h4 className="text-sm font-semibold uppercase tracking-widest text-apple-gray-500 mb-3">
+                      Technology Used
+                    </h4>
+                    <p className="text-apple-gray-300 leading-8">
+                      {activeProject.tech_stack}
+                    </p>
+                  </div>
+                )}
+
+                {parsedFeatures.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold uppercase tracking-widest text-apple-gray-500 mb-3">
+                      Site Features
+                    </h4>
+                    <ul className="space-y-3 text-apple-gray-300">
+                      {parsedFeatures.map((feature, index) => (
+                        <li key={index} className="flex gap-3 leading-7">
+                          <span className="mt-[10px] h-1.5 w-1.5 rounded-full bg-apex-yellow shrink-0" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      )}
     </div>
   );
 };
