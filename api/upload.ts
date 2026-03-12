@@ -1,3 +1,4 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { put } from '@vercel/blob';
 import { neon } from '@neondatabase/serverless';
 
@@ -5,24 +6,28 @@ export const config = {
   runtime: 'nodejs'
 };
 
-export default async function handler(req: Request) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (req.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 });
+      return res.status(405).send('Method not allowed');
     }
 
     const postgresUrl = process.env.POSTGRES_URL;
     const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
 
     if (!postgresUrl) {
-      return new Response('Missing POSTGRES_URL environment variable', { status: 500 });
+      return res.status(500).send('Missing POSTGRES_URL environment variable');
     }
 
     if (!blobToken) {
-      return new Response('Missing BLOB_READ_WRITE_TOKEN environment variable', { status: 500 });
+      return res.status(500).send('Missing BLOB_READ_WRITE_TOKEN environment variable');
     }
 
-    const formData = await req.formData();
+    const formData = await (req as any).formData?.();
+
+    if (!formData) {
+      return res.status(500).send('Multipart form parsing is not available in this runtime');
+    }
 
     const file = formData.get('file') as File | null;
     const title = (formData.get('title') as string | null)?.trim() || 'Untitled';
@@ -37,7 +42,7 @@ export default async function handler(req: Request) {
         : null;
 
     if (!file) {
-      return new Response('No file uploaded', { status: 400 });
+      return res.status(400).send('No file uploaded');
     }
 
     const blob = await put(file.name, file, {
@@ -53,7 +58,7 @@ export default async function handler(req: Request) {
       VALUES (${title}, ${blob.url}, ${title}, ${category}, ${placement}, ${description}, ${techStack}, ${features})
     `;
 
-    return Response.json({
+    return res.status(200).json({
       success: true,
       url: blob.url,
       title,
@@ -67,6 +72,6 @@ export default async function handler(req: Request) {
     const message =
       error instanceof Error ? error.message : 'Unknown upload error';
 
-    return new Response(`Upload failed: ${message}`, { status: 500 });
+    return res.status(500).send(`Upload failed: ${message}`);
   }
 }
