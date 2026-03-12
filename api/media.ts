@@ -1,20 +1,30 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
 
 export const config = {
   runtime: 'nodejs'
 };
 
-export default async function handler(req: Request) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
+    if (req.method !== 'GET') {
+      return res.status(405).send('Method not allowed');
+    }
+
     const postgresUrl = process.env.POSTGRES_URL;
 
     if (!postgresUrl) {
-      return new Response('Missing POSTGRES_URL environment variable', { status: 500 });
+      return res.status(500).send('Missing POSTGRES_URL environment variable');
     }
 
-    const url = new URL(req.url);
-    const placement = url.searchParams.get('placement')?.trim() || null;
-    const category = url.searchParams.get('category')?.trim() || null;
+    const placement =
+      typeof req.query.placement === 'string' && req.query.placement.trim() !== ''
+        ? req.query.placement.trim()
+        : null;
+    const category =
+      typeof req.query.category === 'string' && req.query.category.trim() !== ''
+        ? req.query.category.trim()
+        : null;
 
     const sql = neon(postgresUrl);
 
@@ -42,7 +52,7 @@ export default async function handler(req: Request) {
       `;
     }
 
-    return Response.json({
+    return res.status(200).json({
       success: true,
       items: rows
     });
@@ -50,6 +60,6 @@ export default async function handler(req: Request) {
     const message =
       error instanceof Error ? error.message : 'Unknown fetch error';
 
-    return new Response(`Media fetch failed: ${message}`, { status: 500 });
+    return res.status(500).send(`Media fetch failed: ${message}`);
   }
 }
