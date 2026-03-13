@@ -19,7 +19,7 @@ export const Privacy = () => {
             <section className="space-y-4">
               <h2 className="text-2xl font-bold text-apple-gray-500">Applicability of this Privacy Policy</h2>
               <p className="text-lg leading-8">
-                This Privacy Policy reflects the information that is collected and shared via apexdigitalconsultants.com. For other distribution channels (email, social media, etc.) different rules may apply.
+                This Privacy Policy reflects the information that is collected and shared via apexdigitalconsultants.com. For other distribution channels (email, digital marketing channels, etc.) different rules may apply.
               </p>
             </section>
 

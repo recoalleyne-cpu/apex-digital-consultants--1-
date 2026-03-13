@@ -41,7 +41,7 @@ export const Home = () => {
             className="text-xl text-white max-w-3xl mx-auto mb-10"
           >
             We offer a wide selection of digital services ranging from Website Development
-            & Design, Logo Creation, to Social Media Management and Digital Campaigns.
+            & Design, Logo Creation, to Google Advertising and Digital Campaigns.
           </motion.p>
 
           <Link to="/contact" className="apple-button apple-button-primary">

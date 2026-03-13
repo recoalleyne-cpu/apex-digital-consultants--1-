@@ -143,7 +143,7 @@ export default function Footer() {
                   <option value="logo-design">Logo Design</option>
                   <option value="business-consulting">Business Consulting</option>
                   <option value="digital-solutions">Digital Solutions</option>
-                  <option value="social-media-management">Social Media Management</option>
+                  <option value="google-advertising">Google Advertising</option>
                   <option value="digital-campaign-management">Digital Campaign Management</option>
                 </select>
 

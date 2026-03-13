@@ -84,7 +84,7 @@ export const PRICING: PricingPlan[] = [
     name: 'Standard Website',
     price: 'Custom',
     duration: 'Up to 5 Pages',
-    features: ['Responsive Design', 'Social Media Integration', '5 Stock Images', 'SEO Optimization', 'Google Listing', 'Google Map Embedding']
+    features: ['Responsive Design', 'Google Business & Marketing Integration', '5 Stock Images', 'SEO Optimization', 'Google Listing', 'Google Map Embedding']
   },
   {
     name: 'Professional Website',
@@ -106,7 +106,7 @@ export const PORTFOLIO = [
     category: 'Web Development',
     industry: 'Education',
     technologies: ['WordPress', 'WooCommerce', 'Custom PHP', 'JavaScript'],
-    description: 'Features booking capabilities for tutorial sessions, social media integration, and online chat.',
+    description: 'Features booking capabilities for tutorial sessions, digital marketing integration, and online chat.',
     link: 'https://thescienceplug.com',
     image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=800'
   },
@@ -115,7 +115,7 @@ export const PORTFOLIO = [
     category: 'Brand Identity',
     industry: 'Fashion & Retail',
     technologies: ['Shopify', 'Liquid', 'CSS3', 'Instagram API'],
-    description: 'Reflective of the brand’s vibrant personality. Includes social media integration and online chat.',
+    description: 'Reflective of the brand’s vibrant personality. Includes digital marketing integration and online chat.',
     link: 'https://okoyebykim.com/',
     image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800'
   },
