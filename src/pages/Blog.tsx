@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Calendar, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 import { PageHeader } from '../components/PageHeader';
 
@@ -119,39 +120,41 @@ export const Blog = () => {
                   transition={{ delay: index * 0.1 }}
                   className="group"
                 >
-                  <div className="aspect-[16/10] rounded-[2.5rem] overflow-hidden mb-8 bg-apple-gray-50">
-                    <img
-                      src={post.featured_image_url || FALLBACK_IMAGE}
-                      alt={post.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
-                  <div className="px-4">
-                    <div className="flex items-center gap-4 text-xs font-bold text-apple-gray-300 uppercase tracking-widest mb-4">
-                      <span>{post.category || 'Insights'}</span>
-                      <span className="w-1 h-1 rounded-full bg-apple-gray-200" />
-                      <span className="flex items-center gap-1">
-                        <Calendar size={12} />
-                        {formatDate(post.publish_date || post.created_at)}
-                      </span>
+                  <Link to={`/blog/${post.slug}`} className="block">
+                    <div className="aspect-[16/10] rounded-[2.5rem] overflow-hidden mb-8 bg-apple-gray-50">
+                      <img
+                        src={post.featured_image_url || FALLBACK_IMAGE}
+                        alt={post.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        referrerPolicy="no-referrer"
+                      />
                     </div>
-                    <h3 className="text-2xl font-bold mb-4 group-hover:text-apple-gray-300 transition-colors leading-tight">
-                      {post.title}
-                    </h3>
-                    <p className="text-apple-gray-300 leading-relaxed mb-6 line-clamp-2">
-                      {post.excerpt || 'Read the latest insight from Apex Digital Consultants.'}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm font-medium">
-                        <div className="w-6 h-6 rounded-full bg-apple-gray-100 flex items-center justify-center">
-                          <User size={12} />
-                        </div>
-                        {post.author_name || 'Apex Editorial Team'}
+                    <div className="px-4">
+                      <div className="flex items-center gap-4 text-xs font-bold text-apple-gray-300 uppercase tracking-widest mb-4">
+                        <span>{post.category || 'Insights'}</span>
+                        <span className="w-1 h-1 rounded-full bg-apple-gray-200" />
+                        <span className="flex items-center gap-1">
+                          <Calendar size={12} />
+                          {formatDate(post.publish_date || post.created_at)}
+                        </span>
                       </div>
-                      <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
+                      <h3 className="text-2xl font-bold mb-4 group-hover:text-apple-gray-300 transition-colors leading-tight">
+                        {post.title}
+                      </h3>
+                      <p className="text-apple-gray-300 leading-relaxed mb-6 line-clamp-2">
+                        {post.excerpt || 'Read the latest insight from Apex Digital Consultants.'}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm font-medium">
+                          <div className="w-6 h-6 rounded-full bg-apple-gray-100 flex items-center justify-center">
+                            <User size={12} />
+                          </div>
+                          {post.author_name || 'Apex Editorial Team'}
+                        </div>
+                        <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 </motion.article>
               ))}
             </div>

@@ -12,6 +12,7 @@ import { Pricing } from './pages/Pricing';
 import { Contact } from './pages/Contact';
 import { FAQs } from './pages/FAQs';
 import { Blog } from './pages/Blog';
+import { BlogPost } from './pages/BlogPost';
 import { Terms } from './pages/Terms';
 import { Privacy } from './pages/Privacy';
 import { WebDesign } from './pages/WebDesign';
@@ -49,6 +50,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/faqs" element={<FAQs />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/:slug" element={<LandingPage />} />
