@@ -56,7 +56,7 @@ export const Home = () => {
               animate={{ opacity: 1, y: 0 }}
               className="heading-xl mb-10 text-white"
             >
-              Apex Digital<br className="hidden md:block" />
+              Apex Digital{' '}<br className="hidden md:block" />
               Consultants
             </motion.h1>
 
