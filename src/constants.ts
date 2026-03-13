@@ -15,10 +15,10 @@ export const SERVICES: Service[] = [
     icon: 'Target'
   },
   {
-    id: 'social-media',
-    title: 'Social Media Management',
-    description: 'Creating quality content and managing your social presence with proven results for each of our clients.',
-    icon: 'Megaphone'
+    id: 'google-advertising',
+    title: 'Google Advertising',
+    description: 'Strategic Google Advertising campaigns designed to increase visibility, drive qualified traffic, and generate measurable business results through search, display, and performance-focused ad solutions.',
+    icon: 'BarChart'
   },
   {
     id: 'graphic-design',
