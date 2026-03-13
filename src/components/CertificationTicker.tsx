@@ -56,7 +56,7 @@ export const CertificationTicker = () => {
       <section className="py-12 md:py-14 bg-white border-y border-apple-gray-100">
         <div className="container-wide text-center">
           <p className="text-sm font-semibold tracking-[0.22em] text-apex-yellow uppercase">
-            Certificatied & Trusted Provider
+            Certified & Trusted Provider
           </p>
         </div>
       </section>
@@ -68,7 +68,7 @@ export const CertificationTicker = () => {
       <section className="py-12 md:py-14 bg-white border-y border-apple-gray-100">
         <div className="container-wide text-center">
           <p className="text-sm font-semibold tracking-[0.22em] text-apex-yellow uppercase">
-            Certificatied & Trusted Provider
+            Certified & Trusted Provider
           </p>
         </div>
       </section>
@@ -82,7 +82,7 @@ export const CertificationTicker = () => {
       <div className="container-wide mb-8">
         <div className="text-center">
           <p className="text-sm font-semibold tracking-[0.22em] text-apex-yellow uppercase">
-            Certificatied & Trusted Provider
+            Certified & Trusted Provider
           </p>
         </div>
       </div>
