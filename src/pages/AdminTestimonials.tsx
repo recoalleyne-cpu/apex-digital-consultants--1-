@@ -23,6 +23,10 @@ export const AdminTestimonials = () => {
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<TestimonialItem[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
+  const [googleImportJson, setGoogleImportJson] = useState('');
+  const [googleImportFeatured, setGoogleImportFeatured] = useState(true);
+  const [importing, setImporting] = useState(false);
+  const [importStatus, setImportStatus] = useState<string | null>(null);
 
   const loadTestimonials = async () => {
     try {
@@ -95,6 +99,79 @@ export const AdminTestimonials = () => {
       alert(error instanceof Error ? error.message : 'Failed to save testimonial');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleImport = async () => {
+    if (!googleImportJson.trim()) {
+      alert('Paste Google review JSON before importing.');
+      return;
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(googleImportJson);
+    } catch {
+      alert('Import JSON is not valid.');
+      return;
+    }
+
+    let importItems: unknown[] = [];
+    if (Array.isArray(parsed)) {
+      importItems = parsed;
+    } else if (parsed && typeof parsed === 'object') {
+      const payload = parsed as Record<string, unknown>;
+      if (Array.isArray(payload.items)) {
+        importItems = payload.items;
+      } else if (Array.isArray(payload.reviews)) {
+        importItems = payload.reviews;
+      }
+    }
+
+    if (!importItems.length) {
+      alert('No reviews found. Use an array or an object with an items/reviews array.');
+      return;
+    }
+
+    setImporting(true);
+    setImportStatus(null);
+
+    try {
+      const res = await fetch('/api/testimonials', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          import_mode: 'google',
+          featured: googleImportFeatured,
+          items: importItems
+        })
+      });
+
+      const text = await res.text();
+      let data: Record<string, unknown> = {};
+      try {
+        data = JSON.parse(text) as Record<string, unknown>;
+      } catch {
+        // Response can be plain text for errors.
+      }
+
+      if (!res.ok) {
+        throw new Error((typeof data.message === 'string' ? data.message : text) || 'Google import failed');
+      }
+
+      const synced = typeof data.synced === 'number' ? data.synced : 0;
+      const skipped = typeof data.skipped === 'number' ? data.skipped : 0;
+      const received = typeof data.received === 'number' ? data.received : importItems.length;
+
+      setImportStatus(`Import completed: ${synced} synced, ${skipped} skipped, ${received} received.`);
+      await loadTestimonials();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Google import failed';
+      setImportStatus(`Import failed: ${message}`);
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -187,6 +264,42 @@ export const AdminTestimonials = () => {
             >
               {loading ? 'Saving...' : 'Save Testimonial'}
             </button>
+
+            <div className="rounded-2xl border border-apple-gray-100 bg-apple-gray-50 p-6 space-y-4">
+              <h2 className="text-xl font-semibold">Google Reviews Import</h2>
+              <p className="text-sm text-apple-gray-300 leading-7">
+                Paste Google review JSON from a safe manual export or scheduled sync payload. Reviews are upserted by source + review ID, so repeat imports update existing entries instead of duplicating.
+              </p>
+
+              <textarea
+                placeholder='Paste JSON array or {"reviews":[...]}'
+                value={googleImportJson}
+                onChange={(e) => setGoogleImportJson(e.target.value)}
+                className="w-full border border-apple-gray-100 p-4 rounded-xl min-h-[180px] font-mono text-sm"
+              />
+
+              <label className="flex items-center gap-3 text-sm text-apple-gray-300">
+                <input
+                  type="checkbox"
+                  checked={googleImportFeatured}
+                  onChange={(e) => setGoogleImportFeatured(e.target.checked)}
+                  className="w-4 h-4"
+                />
+                Mark imported reviews as featured
+              </label>
+
+              <button
+                onClick={handleGoogleImport}
+                className="apple-button apple-button-primary"
+                disabled={importing}
+              >
+                {importing ? 'Importing...' : 'Import Google Reviews'}
+              </button>
+
+              {importStatus && (
+                <p className="text-sm text-apple-gray-300 leading-7">{importStatus}</p>
+              )}
+            </div>
           </div>
 
           <div className="rounded-2xl border border-apple-gray-100 p-6 bg-apple-gray-50">
@@ -217,4 +330,3 @@ export const AdminTestimonials = () => {
     </div>
   );
 };
-
