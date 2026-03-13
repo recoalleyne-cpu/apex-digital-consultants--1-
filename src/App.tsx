@@ -19,6 +19,7 @@ import { Logos } from './pages/Logos';
 import { Websites } from './pages/Websites';
 import { AdminMedia } from './pages/AdminMedia';
 import { AdminTestimonials } from './pages/AdminTestimonials';
+import { AdminBlog } from './pages/AdminBlog';
 import { LandingPage } from './pages/LandingPage';
 
 const ScrollToTop = () => {
@@ -56,6 +57,7 @@ function App() {
             <Route path="/services/websites" element={<Websites />} />
             <Route path="/admin/media" element={<AdminMedia />} />
             <Route path="/admin/testimonials" element={<AdminTestimonials />} />
+            <Route path="/admin/blog" element={<AdminBlog />} />
           </Routes>
         </main>
         <Footer />
