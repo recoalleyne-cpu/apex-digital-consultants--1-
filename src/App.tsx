@@ -19,6 +19,7 @@ import { Logos } from './pages/Logos';
 import { Websites } from './pages/Websites';
 import { AdminMedia } from './pages/AdminMedia';
 import { AdminTestimonials } from './pages/AdminTestimonials';
+import { LandingPage } from './pages/LandingPage';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -49,6 +50,7 @@ function App() {
             <Route path="/blog" element={<Blog />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/:slug" element={<LandingPage />} />
             <Route path="/services/web-design" element={<WebDesign />} />
             <Route path="/services/logos" element={<Logos />} />
             <Route path="/services/websites" element={<Websites />} />
