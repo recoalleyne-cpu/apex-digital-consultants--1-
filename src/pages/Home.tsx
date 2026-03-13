@@ -22,7 +22,7 @@ export const Home = () => {
 
       {/* Hero */}
       <section
-        className="relative min-h-[92vh] flex items-center justify-center text-center px-6 overflow-hidden"
+        className="relative min-h-[92vh] flex items-center justify-center text-center px-5 sm:px-6 overflow-hidden"
         onMouseMove={handleMouseMove}
       >
 
@@ -48,8 +48,8 @@ export const Home = () => {
           <div className="absolute bottom-1/4 right-1/4 z-20 w-72 h-72 rounded-full bg-apex-yellow/10 blur-3xl" />
         </div>
 
-        <div className="relative z-30 container-wide py-32">
-          <div className="mx-auto max-w-5xl rounded-[3rem] border border-white/20 bg-white/10 backdrop-blur-xl px-8 py-12 md:px-14 md:py-16 shadow-[0_20px_60px_rgba(0,0,0,0.22)]">
+        <div className="relative z-30 container-wide py-24 sm:py-28 md:py-32">
+          <div className="mx-auto max-w-5xl rounded-[2rem] sm:rounded-[3rem] border border-white/20 bg-white/10 backdrop-blur-xl px-6 py-10 sm:px-8 sm:py-12 md:px-14 md:py-16 shadow-[0_20px_60px_rgba(0,0,0,0.22)]">
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -64,7 +64,7 @@ export const Home = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-xl text-white max-w-3xl mx-auto mb-10"
+              className="text-base sm:text-lg md:text-xl text-white max-w-3xl mx-auto mb-8 sm:mb-10"
             >
               We offer a wide selection of digital services ranging from Website Development
               & Design, Logo Creation, to Google Advertising and Digital Campaigns.
@@ -100,14 +100,14 @@ export const Home = () => {
             {SERVICES.slice(0,6).map((service) => (
               <div
                 key={service.id}
-                className="p-10 rounded-[2rem] border border-apple-gray-100 bg-white hover:shadow-xl transition"
+                className="p-7 sm:p-8 md:p-10 rounded-[2rem] border border-apple-gray-100 bg-white hover:shadow-xl transition"
               >
 
-                <h3 className="text-2xl font-semibold mb-4">
+                <h3 className="text-xl sm:text-2xl font-semibold mb-4">
                   {service.title}
                 </h3>
 
-                <p className="text-apple-gray-300 leading-relaxed mb-6">
+                <p className="text-sm sm:text-base text-apple-gray-300 leading-relaxed mb-6">
                   {service.description}
                 </p>
 
@@ -136,7 +136,7 @@ export const Home = () => {
             Ready to Elevate Your Brand?
           </h2>
 
-          <p className="max-w-xl mx-auto mb-10 text-apple-gray-200">
+          <p className="max-w-xl mx-auto mb-8 sm:mb-10 text-apple-gray-200 text-sm sm:text-base">
             Let Apex Digital Consultants help you design, build, and scale your digital presence.
           </p>
 

@@ -31,17 +31,17 @@ export const Services = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: (index % 2) * 0.1 }}
-                  className="p-10 md:p-12 lg:p-14 rounded-[3rem] bg-apple-gray-50 border border-transparent hover:border-apex-yellow hover:bg-white transition-all duration-500 group"
+                  className="p-7 sm:p-8 md:p-12 lg:p-14 rounded-[2rem] sm:rounded-[3rem] bg-apple-gray-50 border border-transparent hover:border-apex-yellow hover:bg-white transition-all duration-500 group"
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-8 shadow-sm group-hover:bg-apex-yellow group-hover:text-apple-gray-500 transition-all">
-                    <Icon size={32} />
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white flex items-center justify-center mb-7 sm:mb-8 shadow-sm group-hover:bg-apex-yellow group-hover:text-apple-gray-500 transition-all">
+                    <Icon size={28} className="sm:w-8 sm:h-8" />
                   </div>
 
-                  <h3 className="text-2xl md:text-3xl font-bold mb-5 md:mb-6 leading-tight group-hover:text-apex-yellow transition-colors">
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-5 md:mb-6 leading-tight group-hover:text-apex-yellow transition-colors">
                     {service.title}
                   </h3>
 
-                  <p className="text-lg text-apple-gray-300 leading-8 mb-8 md:mb-10">
+                  <p className="text-base sm:text-lg text-apple-gray-300 leading-8 mb-7 sm:mb-8 md:mb-10">
                     {service.description}
                   </p>
 
@@ -94,7 +94,7 @@ export const Services = () => {
               { step: '04', title: 'Optimize', desc: 'We refine and scale for long-term success.' }
             ].map((p, i) => (
               <div key={i} className="relative space-y-4 md:space-y-5">
-                <span className="text-5xl font-bold text-apex-yellow opacity-40 block">
+                <span className="text-4xl sm:text-5xl font-bold text-apex-yellow opacity-40 block">
                   {p.step}
                 </span>
                 <h4 className="text-xl font-bold">{p.title}</h4>

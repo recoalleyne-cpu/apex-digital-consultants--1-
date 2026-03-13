@@ -18,14 +18,19 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-apple-gray-50 pt-24 border-t border-apple-gray-100">
-      <div className="max-w-7xl mx-auto px-6 md:px-12 pb-16">
+    <footer className="bg-apple-gray-50 pt-16 sm:pt-20 md:pt-24 border-t border-apple-gray-100">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-12 pb-14 sm:pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 lg:gap-8">
           {/* Brand Column */}
           <div className="lg:col-span-1">
-            <Link to="/" className="text-xl sm:text-2xl font-bold tracking-tight mb-6 block leading-tight">
-              <span className="block sm:inline">Apex Digital</span>{' '}
-              <span className="block sm:inline text-apple-gray-300 font-light">Consultants</span>
+            <Link
+              to="/"
+              className="inline-flex flex-wrap items-baseline gap-x-2 text-xl sm:text-2xl font-bold tracking-tight mb-6 leading-tight"
+              aria-label="Apex Digital Consultants"
+            >
+              <span className="whitespace-nowrap">Apex</span>
+              <span className="whitespace-nowrap">Digital</span>
+              <span className="whitespace-nowrap text-apple-gray-300 font-light">Consultants</span>
             </Link>
 
             <p className="text-apple-gray-300 text-sm leading-relaxed mb-8">
@@ -173,9 +178,9 @@ export default function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="bg-black py-4 px-6 md:px-12">
+      <div className="bg-black py-3 sm:py-4 px-4 sm:px-6 md:px-12">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 text-[11px] font-bold text-white uppercase tracking-wider">
+          <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 text-[11px] font-bold text-white uppercase tracking-[0.08em] sm:tracking-wider">
             <span>© {new Date().getFullYear()} Apex Digital Consultants</span>
             <span className="hidden md:inline opacity-30 mx-2">|</span>
             <Link to="/terms" className="hover:underline">
@@ -187,7 +192,7 @@ export default function Footer() {
             </Link>
           </div>
 
-          <div className="text-[11px] font-bold text-white uppercase tracking-wider">
+          <div className="text-[11px] font-bold text-white uppercase tracking-[0.08em] sm:tracking-wider text-center md:text-right break-all">
             info@apexdigitalconsultants.com
           </div>
         </div>

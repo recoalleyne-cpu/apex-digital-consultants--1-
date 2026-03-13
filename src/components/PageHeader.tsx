@@ -10,7 +10,7 @@ interface PageHeaderProps {
 
 export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, description }) => {
   return (
-    <section className="section-padding relative overflow-hidden bg-white pt-32 pb-20 md:pt-40 md:pb-32">
+    <section className="section-padding relative overflow-hidden bg-white pt-24 pb-14 sm:pt-28 sm:pb-16 md:pt-40 md:pb-32">
       {/* Network background */}
       <div className="absolute inset-0 z-0">
         <NetworkBackground />
@@ -24,10 +24,10 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, descrip
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl bg-white/58 backdrop-blur-md p-8 md:p-12 rounded-[3rem] border border-black/6 shadow-[0_12px_40px_rgba(0,0,0,0.05)]"
+          className="max-w-4xl bg-white/58 backdrop-blur-md p-6 sm:p-8 md:p-12 rounded-[2rem] sm:rounded-[3rem] border border-black/6 shadow-[0_12px_40px_rgba(0,0,0,0.05)]"
         >
           {subtitle && (
-            <span className="text-sm font-semibold tracking-widest text-apex-yellow uppercase mb-6 block">
+            <span className="text-xs sm:text-sm font-semibold tracking-widest text-apex-yellow uppercase mb-5 sm:mb-6 block">
               {subtitle}
             </span>
           )}
@@ -37,7 +37,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, descrip
           </h1>
 
           {description && (
-            <p className="text-xl md:text-2xl text-apple-gray-300 leading-relaxed max-w-3xl">
+            <p className="text-lg sm:text-xl md:text-2xl text-apple-gray-300 leading-relaxed max-w-3xl">
               {description}
             </p>
           )}

@@ -83,7 +83,7 @@ export default function ChatWidget() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-3">
+    <div className="fixed bottom-4 right-3 sm:bottom-6 sm:right-6 z-[100] flex flex-col items-end gap-3">
       {/* Side Tab (Visible when minimized) */}
       <AnimatePresence>
         {isMinimized && !isOpen && (
@@ -143,10 +143,10 @@ export default function ChatWidget() {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="w-[350px] h-[500px] bg-white rounded-3xl shadow-2xl border border-black/5 flex flex-col overflow-hidden"
+            className="w-[calc(100vw-1rem)] max-w-[350px] h-[min(500px,78vh)] sm:h-[500px] bg-white rounded-3xl shadow-2xl border border-black/5 flex flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="bg-apex-yellow p-6 flex items-center justify-between">
+            <div className="bg-apex-yellow p-4 sm:p-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-apex-yellow shadow-sm">
                   <Sparkles size={20} />
@@ -170,7 +170,7 @@ export default function ChatWidget() {
             {/* Messages */}
             <div 
               ref={scrollRef}
-              className="flex-1 overflow-y-auto p-6 space-y-4 bg-apple-gray-50/50"
+              className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-apple-gray-50/50"
             >
               {messages.map((msg, i) => (
                 <div 
@@ -196,7 +196,7 @@ export default function ChatWidget() {
             </div>
 
             {/* Input */}
-            <div className="p-4 bg-white border-t border-black/5">
+            <div className="p-3 sm:p-4 bg-white border-t border-black/5">
               <div className="relative">
                 <input
                   type="text"
@@ -238,7 +238,7 @@ export default function ChatWidget() {
             
             {/* Tooltip */}
             {!isOpen && (
-              <div className="absolute right-16 bg-white px-3 py-1.5 rounded-lg shadow-lg border border-black/5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <div className="hidden sm:block absolute right-16 bg-white px-3 py-1.5 rounded-lg shadow-lg border border-black/5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 <span className="text-xs font-bold text-apple-gray-500">Chat with Apex AI</span>
               </div>
             )}

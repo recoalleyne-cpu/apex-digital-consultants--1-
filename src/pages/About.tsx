@@ -39,7 +39,7 @@ export const About = () => {
       <section className="section-padding bg-apple-gray-50">
         <div className="container-wide">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-24 items-center">
-            <div className="aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white">
+            <div className="aspect-[4/5] rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-2xl border-4 sm:border-8 border-white">
               <img
                 src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=1200"
                 alt="Our Mission"
@@ -51,15 +51,15 @@ export const About = () => {
             <div className="space-y-8 md:space-y-10">
               <h2 className="heading-lg leading-tight">Our Approach</h2>
 
-              <p className="text-lg text-apple-gray-300 leading-8">
+              <p className="text-base md:text-lg text-apple-gray-300 leading-8">
                 The company specializes in delivering strategic digital services including website development, branding and logo design, digital marketing solutions, and custom digital tools that empower businesses to operate more efficiently in the modern digital landscape.
               </p>
 
-              <p className="text-lg text-apple-gray-300 leading-8">
+              <p className="text-base md:text-lg text-apple-gray-300 leading-8">
                 At Apex Digital Consultants, the focus is on combining creativity, technology, and practical business strategy to produce solutions that not only look exceptional but also deliver measurable results. From professional websites and brand identities to custom digital solutions and automation tools, the company works with businesses to build strong digital foundations that support long-term growth.
               </p>
 
-              <p className="text-lg text-apple-gray-300 leading-8">
+              <p className="text-base md:text-lg text-apple-gray-300 leading-8">
                 Apex Digital Consultants takes a client-focused approach to every project, ensuring that each solution is tailored to the unique goals and needs of the business it serves. By prioritizing quality, innovation, and reliability, the company aims to provide digital solutions that help organizations strengthen their brand, improve customer engagement, and unlock new opportunities online.
               </p>
             </div>
@@ -72,7 +72,7 @@ export const About = () => {
         <div className="container-wide">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
             <div className="order-2 lg:order-1 space-y-8 md:space-y-10">
-              <span className="text-sm font-semibold tracking-widest text-apex-yellow uppercase block">
+              <span className="text-xs sm:text-sm font-semibold tracking-widest text-apex-yellow uppercase block">
                 The Visionary
               </span>
 
@@ -80,21 +80,21 @@ export const About = () => {
                 Meet Our Founder
               </h2>
 
-              <p className="text-lg text-apple-gray-300 leading-8">
+              <p className="text-base md:text-lg text-apple-gray-300 leading-8">
                 Apex Digital Consultants was founded by Reco Alleyne, a digital strategist and technology professional with a passion for helping businesses leverage digital platforms to achieve meaningful growth.
               </p>
 
-              <p className="text-lg text-apple-gray-300 leading-8">
+              <p className="text-base md:text-lg text-apple-gray-300 leading-8">
                 Reco established Apex Digital Consultants with the vision of creating a company that bridges the gap between technology and business strategy. With experience managing digital projects, building online platforms, and implementing practical digital solutions, he recognized the growing need for businesses to have access to reliable expertise that could guide them through the evolving digital landscape.
               </p>
 
-              <p className="text-lg text-apple-gray-300 leading-8">
+              <p className="text-base md:text-lg text-apple-gray-300 leading-8">
                 Under Reco’s leadership, Apex Digital Consultants focuses on delivering high-quality digital services that combine thoughtful design, smart technology, and strategic insight. His commitment to innovation and continuous improvement drives the company’s mission to provide modern digital solutions that enable businesses to compete effectively in an increasingly digital world.
               </p>
             </div>
 
-            <div className="order-1 lg:order-2 relative">
-              <div className="aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl relative z-10 bg-apple-gray-50">
+            <div className="order-1 lg:order-2 relative overflow-hidden">
+              <div className="aspect-[4/5] rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-2xl relative z-10 bg-apple-gray-50">
                 {founderImage ? (
                   <img
                     src={founderImage}
@@ -108,8 +108,8 @@ export const About = () => {
                 )}
               </div>
 
-              <div className="absolute -bottom-8 -right-8 w-64 h-64 bg-apex-yellow/10 rounded-full blur-3xl -z-0" />
-              <div className="absolute top-12 -left-12 w-24 h-24 border-t-2 border-l-2 border-apex-yellow rounded-tl-3xl" />
+              <div className="absolute -bottom-8 -right-8 w-48 h-48 sm:w-64 sm:h-64 bg-apex-yellow/10 rounded-full blur-3xl -z-0 pointer-events-none" />
+              <div className="hidden sm:block absolute top-12 -left-12 w-24 h-24 border-t-2 border-l-2 border-apex-yellow rounded-tl-3xl" />
             </div>
           </div>
         </div>

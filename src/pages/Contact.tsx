@@ -47,7 +47,7 @@ export const Contact = () => {
                     <p className="text-apple-gray-300 mb-2">Our team is here to help.</p>
                     <a
                       href="mailto:info@apexdigitalconsultants.com"
-                      className="text-lg font-semibold hover:text-apex-yellow transition-colors"
+                      className="text-base sm:text-lg font-semibold hover:text-apex-yellow transition-colors break-all"
                     >
                       info@apexdigitalconsultants.com
                     </a>
@@ -86,7 +86,7 @@ export const Contact = () => {
                 </div>
               </div>
 
-              <div className="p-10 rounded-[2.5rem] bg-apple-gray-50 border border-apple-gray-100">
+              <div className="p-7 sm:p-8 md:p-10 rounded-[2rem] sm:rounded-[2.5rem] bg-apple-gray-50 border border-apple-gray-100">
                 <h4 className="font-bold mb-5">Follow Our Journey</h4>
 
                 <div className="flex flex-wrap gap-5">
@@ -104,13 +104,13 @@ export const Contact = () => {
             </div>
 
             {/* Main Contact Form */}
-            <div className="bg-white p-8 md:p-10 lg:p-12 rounded-[3rem] border border-apple-gray-100 shadow-sm">
+            <div className="bg-white p-6 sm:p-8 md:p-10 lg:p-12 rounded-[2rem] sm:rounded-[3rem] border border-apple-gray-100 shadow-sm">
               <form className="space-y-8 md:space-y-10">
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-10">
                   {/* Left Column */}
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-xl md:text-2xl font-medium text-apex-blue">
+                      <h3 className="text-lg sm:text-xl md:text-2xl font-medium text-apex-blue">
                         Helps us get in touch with you.
                       </h3>
                     </div>
@@ -163,7 +163,7 @@ export const Contact = () => {
                   {/* Right Column */}
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-xl md:text-2xl font-medium text-apex-blue">
+                      <h3 className="text-lg sm:text-xl md:text-2xl font-medium text-apex-blue">
                         What is the project all about?
                       </h3>
                     </div>
@@ -179,7 +179,7 @@ export const Contact = () => {
                 </div>
 
                 <div className="space-y-5">
-                  <h4 className="text-xl md:text-2xl font-medium text-apex-blue">
+                  <h4 className="text-lg sm:text-xl md:text-2xl font-medium text-apex-blue">
                     What sort of creative work you need help with?
                   </h4>
 

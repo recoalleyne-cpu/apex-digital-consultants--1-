@@ -263,8 +263,8 @@ export const Portfolio = () => {
       </section>
 
       {activeProject && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center px-4 py-8">
-          <div className="relative w-full max-w-6xl max-h-[90vh] overflow-auto rounded-[2rem] bg-white shadow-2xl">
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center px-3 sm:px-4 py-4 sm:py-8">
+          <div className="relative w-full max-w-6xl max-h-[92vh] overflow-auto rounded-[1.5rem] sm:rounded-[2rem] bg-white shadow-2xl">
             <button
               type="button"
               onClick={() => setActiveProject(null)}
@@ -305,7 +305,7 @@ export const Portfolio = () => {
                 </div>
 
                 <div
-                  className={`w-full max-h-[75vh] min-h-[420px] overflow-hidden flex items-center justify-center ${
+                  className={`w-full max-h-[65vh] sm:max-h-[75vh] min-h-[280px] sm:min-h-[420px] overflow-hidden flex items-center justify-center ${
                     zoom > 1 ? 'cursor-grab' : 'cursor-zoom-in'
                   } ${isDragging ? '!cursor-grabbing' : ''}`}
                   onWheel={handleWheelZoom}
@@ -319,7 +319,7 @@ export const Portfolio = () => {
                     alt={activeProject.alt_text || activeProject.title}
                     onClick={handleImageClick}
                     draggable={false}
-                    className="max-w-full max-h-[75vh] object-contain select-none transition-transform duration-200"
+                    className="max-w-full max-h-[65vh] sm:max-h-[75vh] object-contain select-none transition-transform duration-200"
                     style={{
                       transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
                       transformOrigin: 'center center'
@@ -327,19 +327,19 @@ export const Portfolio = () => {
                   />
                 </div>
 
-                <div className="px-6 pb-5 pt-2 text-center">
+                <div className="px-5 sm:px-6 pb-5 pt-2 text-center">
                   <p className="text-sm text-apple-gray-300">
                     Click image to zoom, use mouse wheel to zoom further, and drag to pan.
                   </p>
                 </div>
               </div>
 
-              <div className="p-8 md:p-10 space-y-6">
+              <div className="p-6 sm:p-8 md:p-10 space-y-6">
                 <div>
                   <p className="text-sm uppercase tracking-widest text-apex-yellow mb-3">
                     Portfolio Project
                   </p>
-                  <h3 className="text-3xl font-bold text-apple-gray-500 leading-tight">
+                  <h3 className="text-2xl md:text-3xl font-bold text-apple-gray-500 leading-tight">
                     {activeProject.title}
                   </h3>
                 </div>
