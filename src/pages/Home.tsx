@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SERVICES } from '../constants';
 import { CertificationTicker } from '../components/CertificationTicker';
+import { TestimonialsSection } from '../components/TestimonialsSection';
 
 export const Home = () => {
   const mouseX = useMotionValue(0);
@@ -124,6 +125,8 @@ export const Home = () => {
 
         </div>
       </section>
+
+      <TestimonialsSection />
 
       {/* CTA */}
       <section className="section-padding bg-apple-gray-500 text-white text-center">

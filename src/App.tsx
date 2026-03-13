@@ -18,6 +18,7 @@ import { WebDesign } from './pages/WebDesign';
 import { Logos } from './pages/Logos';
 import { Websites } from './pages/Websites';
 import { AdminMedia } from './pages/AdminMedia';
+import { AdminTestimonials } from './pages/AdminTestimonials';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -52,6 +53,7 @@ function App() {
             <Route path="/services/logos" element={<Logos />} />
             <Route path="/services/websites" element={<Websites />} />
             <Route path="/admin/media" element={<AdminMedia />} />
+            <Route path="/admin/testimonials" element={<AdminTestimonials />} />
           </Routes>
         </main>
         <Footer />
