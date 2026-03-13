@@ -14,9 +14,22 @@ export const CertificationTicker = () => {
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const loadMedia = async () => {
+      const timeout = setTimeout(() => controller.abort(), 10000);
+
       try {
-        const res = await fetch('/api/media?placement=home-certification-ticker');
+        const res = await fetch('/api/media?placement=home-certification-ticker', {
+          signal: controller.signal
+        });
+
+        clearTimeout(timeout);
+
+        if (!res.ok) {
+          throw new Error(`Ticker media request failed (${res.status})`);
+        }
+
         const data = await res.json();
 
         if (data?.items && Array.isArray(data.items)) {
@@ -28,15 +41,26 @@ export const CertificationTicker = () => {
         console.warn('Failed to load certification ticker media', err);
         setItems([]);
       } finally {
+        clearTimeout(timeout);
         setLoading(false);
       }
     };
 
     loadMedia();
+
+    return () => controller.abort();
   }, []);
 
   if (loading) {
-    return null;
+    return (
+      <section className="py-12 md:py-14 bg-white border-y border-apple-gray-100">
+        <div className="container-wide text-center">
+          <p className="text-sm font-semibold tracking-[0.22em] text-apex-yellow uppercase">
+            Certificatied & Trusted Provider
+          </p>
+        </div>
+      </section>
+    );
   }
 
   if (!items.length) {
