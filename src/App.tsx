@@ -21,6 +21,7 @@ import { Websites } from './pages/Websites';
 import { AdminMedia } from './pages/AdminMedia';
 import { AdminTestimonials } from './pages/AdminTestimonials';
 import { AdminBlog } from './pages/AdminBlog';
+import { AdminLandingPages } from './pages/AdminLandingPages';
 import { LandingPage } from './pages/LandingPage';
 
 const ScrollToTop = () => {
@@ -61,6 +62,7 @@ function App() {
             <Route path="/admin/media" element={<AdminMedia />} />
             <Route path="/admin/testimonials" element={<AdminTestimonials />} />
             <Route path="/admin/blog" element={<AdminBlog />} />
+            <Route path="/admin/landing-pages" element={<AdminLandingPages />} />
           </Routes>
         </main>
         <Footer />
