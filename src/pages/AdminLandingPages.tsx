@@ -24,6 +24,66 @@ type GeneratedLandingPageDraft = {
   service_category?: string;
 };
 
+type LandingPageCreatePayload = {
+  title: string;
+  slug: string;
+  hero_heading: string;
+  hero_subheading: string;
+  body_content: string;
+  featured_image_url: string;
+  cta_text: string;
+  cta_link: string;
+  seo_title: string;
+  seo_description: string;
+  region: string;
+  service_category: string;
+  is_published: boolean;
+};
+
+type BulkEntryInput = Record<string, unknown>;
+
+type BulkGenerationResult = {
+  index: number;
+  status: 'created' | 'failed';
+  title: string;
+  slug?: string;
+  source?: 'ai' | 'template';
+  message: string;
+};
+
+type ParsedBulkEntries = {
+  entries: BulkEntryInput[];
+  warnings: string[];
+  error: string | null;
+};
+
+const BULK_MAX_ENTRIES = 24;
+
+const BULK_SAMPLE_JSON = `[
+  {
+    "service": "Google Ads Management",
+    "location": "Barbados",
+    "target_keyword": "google ads barbados",
+    "target_audience": "small business owners",
+    "cta_text": "Book Your Strategy Call",
+    "cta_link": "/contact",
+    "region": "Barbados",
+    "service_category": "Google Ads",
+    "is_published": false
+  },
+  {
+    "service": "Web Design",
+    "location": "Caribbean",
+    "target_keyword": "web design caribbean",
+    "target_audience": "service businesses",
+    "cta_text": "Request A Quote",
+    "cta_link": "/contact",
+    "region": "Caribbean",
+    "service_category": "Web Design",
+    "is_published": false
+  }
+]`;
+
 const slugify = (value: string) =>
   value
     .toLowerCase()
@@ -43,6 +103,92 @@ const formatDate = (value?: string | null) => {
     day: 'numeric',
     year: 'numeric'
   }).format(date);
+};
+
+const readText = (value: unknown): string | null => {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : null;
+};
+
+const readBoolean = (value: unknown, fallback: boolean) => {
+  if (typeof value === 'boolean') return value;
+  if (typeof value !== 'string') return fallback;
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'true' || normalized === '1' || normalized === 'yes') return true;
+  if (normalized === 'false' || normalized === '0' || normalized === 'no') return false;
+  return fallback;
+};
+
+const toObject = (value: unknown): Record<string, unknown> | null => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+};
+
+const parseBulkEntries = (input: string): ParsedBulkEntries => {
+  if (!input.trim()) {
+    return {
+      entries: [],
+      warnings: [],
+      error: 'Paste a JSON array of bulk entries first.'
+    };
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(input);
+  } catch {
+    return {
+      entries: [],
+      warnings: [],
+      error: 'Invalid JSON. Paste a valid JSON array of entry objects.'
+    };
+  }
+
+  let rawEntries: unknown[] | null = null;
+
+  if (Array.isArray(parsed)) {
+    rawEntries = parsed;
+  } else {
+    const parsedObject = toObject(parsed);
+    if (parsedObject && Array.isArray(parsedObject.entries)) {
+      rawEntries = parsedObject.entries as unknown[];
+    }
+  }
+
+  if (!rawEntries) {
+    return {
+      entries: [],
+      warnings: [],
+      error: 'Expected a JSON array or an object with an "entries" array.'
+    };
+  }
+
+  const entries: BulkEntryInput[] = [];
+  let skipped = 0;
+
+  rawEntries.forEach((entry) => {
+    const normalized = toObject(entry);
+    if (!normalized) {
+      skipped += 1;
+      return;
+    }
+    entries.push(normalized);
+  });
+
+  if (!entries.length) {
+    return {
+      entries: [],
+      warnings: [],
+      error: 'No valid entry objects were found in the provided JSON.'
+    };
+  }
+
+  return {
+    entries,
+    warnings: skipped ? [`Skipped ${skipped} invalid non-object entries.`] : [],
+    error: null
+  };
 };
 
 export const AdminLandingPages = () => {
@@ -70,6 +216,12 @@ export const AdminLandingPages = () => {
   const [generatingAi, setGeneratingAi] = useState(false);
   const [generatorSource, setGeneratorSource] = useState<'ai' | 'template' | null>(null);
   const [generatorMessage, setGeneratorMessage] = useState<string | null>(null);
+  const [bulkInput, setBulkInput] = useState('');
+  const [bulkPublishImmediately, setBulkPublishImmediately] = useState(false);
+  const [bulkRunning, setBulkRunning] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<string | null>(null);
+  const [bulkSummary, setBulkSummary] = useState<string | null>(null);
+  const [bulkResults, setBulkResults] = useState<BulkGenerationResult[]>([]);
   const [items, setItems] = useState<LandingPageSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
 
@@ -134,6 +286,99 @@ export const AdminLandingPages = () => {
     if (draft.service_category?.trim()) setServiceCategory(draft.service_category.trim());
   };
 
+  const requestGeneratedDraft = async (params: {
+    service: string;
+    location: string;
+    target_keyword: string;
+    target_audience: string;
+    cta_text: string;
+    cta_link: string;
+  }) => {
+    const response = await fetch('/api/landing-pages-generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(params)
+    });
+
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(data?.message || `Landing page generation failed (${response.status})`);
+    }
+
+    return {
+      draft: (data?.item || {}) as GeneratedLandingPageDraft,
+      source: data?.source === 'ai' ? 'ai' : 'template',
+      message: readText(data?.message)
+    };
+  };
+
+  const postLandingPage = async (payload: LandingPageCreatePayload) => {
+    const response = await fetch('/api/landing-pages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const text = await response.text();
+    return {
+      ok: response.ok,
+      status: response.status,
+      message: text || `Landing page create failed (${response.status})`
+    };
+  };
+
+  const saveLandingPageWithSlugRetries = async (
+    payload: LandingPageCreatePayload,
+    usedSlugs: Set<string>
+  ) => {
+    const rootSlug = slugify(payload.slug || payload.title || 'landing-page');
+    if (!rootSlug) {
+      return {
+        success: false,
+        error: 'A valid slug could not be generated for this entry.'
+      };
+    }
+
+    for (let attempt = 0; attempt < 7; attempt += 1) {
+      const candidateSlug = attempt === 0 ? rootSlug : `${rootSlug}-${attempt + 1}`;
+      if (usedSlugs.has(candidateSlug)) {
+        continue;
+      }
+
+      const result = await postLandingPage({
+        ...payload,
+        slug: candidateSlug
+      });
+
+      if (result.ok) {
+        usedSlugs.add(candidateSlug);
+        return {
+          success: true,
+          slug: candidateSlug
+        };
+      }
+
+      if (result.status === 409) {
+        usedSlugs.add(candidateSlug);
+        continue;
+      }
+
+      return {
+        success: false,
+        error: result.message
+      };
+    }
+
+    return {
+      success: false,
+      error: `Could not find a unique slug after multiple attempts for "${payload.title}".`
+    };
+  };
+
   const handleGenerateTemplateDraft = () => {
     const service = serviceCategory.trim();
     const market = region.trim();
@@ -190,37 +435,22 @@ export const AdminLandingPages = () => {
     setGeneratorMessage(null);
 
     try {
-      const res = await fetch('/api/landing-pages-generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          service,
-          location: market,
-          target_keyword: keyword,
-          target_audience: targetAudience.trim(),
-          cta_text: ctaText.trim(),
-          cta_link: ctaLink.trim()
-        })
+      const generated = await requestGeneratedDraft({
+        service,
+        location: market,
+        target_keyword: keyword,
+        target_audience: targetAudience.trim(),
+        cta_text: ctaText.trim(),
+        cta_link: ctaLink.trim()
       });
 
-      const data = await res.json().catch(() => null);
-      if (!res.ok) {
-        throw new Error(data?.message || `AI generation failed (${res.status})`);
-      }
-
-      const draft = (data?.item || {}) as GeneratedLandingPageDraft;
-      applyGeneratedDraft(draft);
-
-      const source = data?.source === 'ai' ? 'ai' : 'template';
-      setGeneratorSource(source);
+      applyGeneratedDraft(generated.draft);
+      setGeneratorSource(generated.source);
       setGeneratorMessage(
-        typeof data?.message === 'string' && data.message.trim()
-          ? data.message
-          : source === 'ai'
+        generated.message ||
+          (generated.source === 'ai'
             ? 'AI draft generated. Review and edit before publishing.'
-            : 'Template draft generated. Review and edit before publishing.'
+            : 'Template draft generated. Review and edit before publishing.')
       );
     } catch (error) {
       console.error(error);
@@ -280,6 +510,157 @@ export const AdminLandingPages = () => {
       alert(error instanceof Error ? error.message : 'Failed to create landing page');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleRunBulkGeneration = async () => {
+    const parsed = parseBulkEntries(bulkInput);
+
+    if (parsed.error) {
+      alert(parsed.error);
+      return;
+    }
+
+    if (parsed.entries.length > BULK_MAX_ENTRIES) {
+      alert(`Please run up to ${BULK_MAX_ENTRIES} entries at a time for production-safe processing.`);
+      return;
+    }
+
+    setBulkRunning(true);
+    setBulkResults([]);
+    setBulkSummary(null);
+    setBulkProgress(`Preparing ${parsed.entries.length} entries...`);
+
+    const usedSlugs = new Set(items.map((entry) => entry.slug));
+    let createdCount = 0;
+    let failedCount = 0;
+
+    try {
+      for (let index = 0; index < parsed.entries.length; index += 1) {
+        const entry = parsed.entries[index];
+        const displayIndex = index + 1;
+        setBulkProgress(`Processing ${displayIndex} of ${parsed.entries.length}...`);
+
+        const service = readText(entry.service) || readText(entry.service_category) || '';
+        const location = readText(entry.location) || readText(entry.region) || '';
+        const keyword =
+          readText(entry.target_keyword) || readText(entry.targetKeyword) || '';
+        const audience =
+          readText(entry.target_audience) || readText(entry.targetAudience) || '';
+        const ctaTextValue = readText(entry.cta_text) || readText(entry.ctaText) || 'Get A Quote';
+        const ctaLinkValue = readText(entry.cta_link) || readText(entry.ctaLink) || '/contact';
+        const regionValue = readText(entry.region) || location;
+        const serviceCategoryValue = readText(entry.service_category) || service;
+        const featuredImageValue =
+          readText(entry.featured_image_url) || readText(entry.featuredImageUrl) || '';
+        const publishValue = readBoolean(entry.is_published, bulkPublishImmediately);
+
+        if (!service && !location && !keyword) {
+          failedCount += 1;
+          setBulkResults((prev) => [
+            ...prev,
+            {
+              index: displayIndex,
+              status: 'failed',
+              title: `Entry ${displayIndex}`,
+              message: 'Missing required generator context. Add service, location, or target keyword.'
+            }
+          ]);
+          continue;
+        }
+
+        try {
+          const generated = await requestGeneratedDraft({
+            service,
+            location,
+            target_keyword: keyword,
+            target_audience: audience,
+            cta_text: ctaTextValue,
+            cta_link: ctaLinkValue
+          });
+
+          const draft = generated.draft;
+          const resolvedTitle =
+            readText(entry.title) ||
+            readText(draft.title) ||
+            [service, location].filter(Boolean).join(' ') ||
+            keyword ||
+            `Landing Page ${displayIndex}`;
+          const resolvedBody = readText(draft.body_content) || readText(entry.body_content);
+
+          if (!resolvedBody) {
+            throw new Error('Generated draft did not include body content.');
+          }
+
+          const resolvedSlug = slugify(
+            readText(entry.slug) ||
+              readText(draft.slug) ||
+              keyword ||
+              resolvedTitle
+          );
+
+          const payload: LandingPageCreatePayload = {
+            title: resolvedTitle,
+            slug: resolvedSlug,
+            hero_heading: readText(draft.hero_heading) || readText(entry.hero_heading) || resolvedTitle,
+            hero_subheading:
+              readText(draft.hero_subheading) || readText(entry.hero_subheading) || '',
+            body_content: resolvedBody,
+            featured_image_url: featuredImageValue,
+            cta_text: ctaTextValue,
+            cta_link: ctaLinkValue,
+            seo_title:
+              readText(draft.seo_title) ||
+              readText(entry.seo_title) ||
+              `${resolvedTitle} | Apex Digital Consultants`,
+            seo_description:
+              readText(draft.seo_description) ||
+              readText(entry.seo_description) ||
+              '',
+            region: regionValue || '',
+            service_category: serviceCategoryValue || '',
+            is_published: publishValue
+          };
+
+          const saveResult = await saveLandingPageWithSlugRetries(payload, usedSlugs);
+          if (!saveResult.success) {
+            throw new Error(saveResult.error || 'Failed to save generated landing page.');
+          }
+
+          createdCount += 1;
+          setBulkResults((prev) => [
+            ...prev,
+            {
+              index: displayIndex,
+              status: 'created',
+              title: payload.title,
+              slug: saveResult.slug,
+              source: generated.source,
+              message: generated.source === 'ai' ? 'Generated with AI and saved.' : 'Template-generated and saved.'
+            }
+          ]);
+        } catch (error) {
+          failedCount += 1;
+          setBulkResults((prev) => [
+            ...prev,
+            {
+              index: displayIndex,
+              status: 'failed',
+              title: readText(entry.title) || [service, location].filter(Boolean).join(' ') || `Entry ${displayIndex}`,
+              message: error instanceof Error ? error.message : 'Unexpected bulk generation error'
+            }
+          ]);
+        }
+      }
+
+      const warningsText = parsed.warnings.length ? ` ${parsed.warnings.join(' ')}` : '';
+      setBulkSummary(
+        `${createdCount} landing page${createdCount === 1 ? '' : 's'} created, ${failedCount} failed.${warningsText}`
+      );
+      await loadLandingPages();
+    } finally {
+      setBulkRunning(false);
+      setBulkProgress(null);
     }
   };
 
@@ -462,42 +843,116 @@ export const AdminLandingPages = () => {
             </button>
           </div>
 
-          <div className="rounded-2xl border border-apple-gray-100 p-6 bg-apple-gray-50">
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <h2 className="text-xl font-semibold">Recent Landing Pages</h2>
-              <button onClick={loadLandingPages} className="apple-button apple-button-secondary text-sm">
-                Refresh
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-apple-gray-100 p-6 bg-apple-gray-50 space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-semibold">Bulk Generator (Staged)</h2>
+                  <p className="text-sm text-apple-gray-300 mt-1">
+                    Paste a structured JSON list, generate pages one-by-one through the existing AI endpoint, and save
+                    safely into `landing_pages`.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setBulkInput(BULK_SAMPLE_JSON)}
+                  className="apple-button apple-button-secondary text-sm whitespace-nowrap"
+                  disabled={bulkRunning}
+                >
+                  Load Sample
+                </button>
+              </div>
+
+              <textarea
+                value={bulkInput}
+                onChange={(e) => setBulkInput(e.target.value)}
+                placeholder='Paste JSON array of entries. Example: [{"service":"Google Ads","location":"Barbados","target_keyword":"google ads barbados"}]'
+                className="w-full border border-apple-gray-100 p-4 rounded-xl min-h-[220px] font-mono text-sm bg-white"
+              />
+
+              <p className="text-xs text-apple-gray-300 leading-6">
+                Accepted keys per entry: `service`, `location`, `target_keyword`, `target_audience`, `cta_text`,
+                `cta_link`, `region`, `service_category`, `featured_image_url`, `slug`, `is_published`.
+              </p>
+
+              <label className="flex items-center gap-3 text-sm text-apple-gray-300">
+                <input
+                  type="checkbox"
+                  checked={bulkPublishImmediately}
+                  onChange={(e) => setBulkPublishImmediately(e.target.checked)}
+                  className="w-4 h-4"
+                />
+                Publish generated pages immediately (otherwise saved as drafts)
+              </label>
+
+              <button
+                onClick={handleRunBulkGeneration}
+                className="apple-button apple-button-primary"
+                disabled={bulkRunning}
+              >
+                {bulkRunning ? 'Generating Bulk Pages...' : 'Run Bulk Generation'}
               </button>
+
+              {bulkProgress ? <p className="text-sm text-apple-gray-300">{bulkProgress}</p> : null}
+              {bulkSummary ? <p className="text-sm text-apple-gray-500 font-medium">{bulkSummary}</p> : null}
+
+              {bulkResults.length ? (
+                <div className="space-y-3 max-h-[340px] overflow-auto pr-1">
+                  {bulkResults.map((result) => (
+                    <div key={`${result.index}-${result.title}-${result.slug || 'none'}`} className="rounded-xl border border-apple-gray-100 bg-white p-4">
+                      <p className="font-semibold text-apple-gray-500">
+                        {result.index}. {result.title}
+                      </p>
+                      <p className="text-sm text-apple-gray-300 mt-1">
+                        {result.slug ? `/lp/${result.slug}` : 'No slug saved'}
+                      </p>
+                      <p className="text-sm mt-2 text-apple-gray-300">{result.message}</p>
+                      <p className="text-xs mt-2 uppercase tracking-wider font-semibold text-apex-yellow">
+                        {result.status}
+                        {result.source ? ` · ${result.source}` : ''}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </div>
 
-            {loadingItems ? (
-              <p className="text-apple-gray-300">Loading landing pages...</p>
-            ) : !items.length ? (
-              <p className="text-apple-gray-300">No landing pages found yet.</p>
-            ) : (
-              <div className="space-y-4 max-h-[760px] overflow-auto pr-2">
-                {items.map((item) => (
-                  <div key={item.id} className="rounded-xl border border-apple-gray-100 bg-white p-4">
-                    <p className="font-semibold text-apple-gray-500">{item.title}</p>
-                    <p className="text-sm text-apple-gray-300 mt-1 break-all">/lp/{item.slug}</p>
-                    <p className="text-sm text-apple-gray-300 mt-2">
-                      {[item.service_category, item.region].filter(Boolean).join(' · ') || 'General'}
-                    </p>
-                    <p className="text-xs text-apex-yellow mt-2 uppercase tracking-wider font-semibold">
-                      {item.is_published ? 'published' : 'draft'} · {formatDate(item.updated_at)}
-                    </p>
-                    <a
-                      href={`/lp/${item.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex mt-3 text-sm font-medium text-apple-gray-500 hover:text-apex-yellow transition-colors"
-                    >
-                      Open Live Preview
-                    </a>
-                  </div>
-                ))}
+            <div className="rounded-2xl border border-apple-gray-100 p-6 bg-apple-gray-50">
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <h2 className="text-xl font-semibold">Recent Landing Pages</h2>
+                <button onClick={loadLandingPages} className="apple-button apple-button-secondary text-sm">
+                  Refresh
+                </button>
               </div>
-            )}
+
+              {loadingItems ? (
+                <p className="text-apple-gray-300">Loading landing pages...</p>
+              ) : !items.length ? (
+                <p className="text-apple-gray-300">No landing pages found yet.</p>
+              ) : (
+                <div className="space-y-4 max-h-[760px] overflow-auto pr-2">
+                  {items.map((item) => (
+                    <div key={item.id} className="rounded-xl border border-apple-gray-100 bg-white p-4">
+                      <p className="font-semibold text-apple-gray-500">{item.title}</p>
+                      <p className="text-sm text-apple-gray-300 mt-1 break-all">/lp/{item.slug}</p>
+                      <p className="text-sm text-apple-gray-300 mt-2">
+                        {[item.service_category, item.region].filter(Boolean).join(' · ') || 'General'}
+                      </p>
+                      <p className="text-xs text-apex-yellow mt-2 uppercase tracking-wider font-semibold">
+                        {item.is_published ? 'published' : 'draft'} · {formatDate(item.updated_at)}
+                      </p>
+                      <a
+                        href={`/lp/${item.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex mt-3 text-sm font-medium text-apple-gray-500 hover:text-apex-yellow transition-colors"
+                      >
+                        Open Live Preview
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
