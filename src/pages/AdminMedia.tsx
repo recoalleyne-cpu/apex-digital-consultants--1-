@@ -1,7 +1,17 @@
 import React, { useState } from "react";
 
+type UploadResult = {
+  fileName: string;
+  status: "success" | "failed";
+  message: string;
+  url?: string;
+};
+
+const getFileBaseName = (fileName: string) =>
+  fileName.replace(/\.[^/.]+$/, "").replace(/[-_]+/g, " ").trim();
+
 export const AdminMedia = () => {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [placement, setPlacement] = useState("");
@@ -9,47 +19,99 @@ export const AdminMedia = () => {
   const [techStack, setTechStack] = useState("");
   const [features, setFeatures] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState("");
+  const [uploadSummary, setUploadSummary] = useState("");
+  const [uploadResults, setUploadResults] = useState<UploadResult[]>([]);
   const [uploadedUrl, setUploadedUrl] = useState("");
 
+  const resolveTitleForFile = (file: File) => {
+    const manualTitle = title.trim();
+    if (!manualTitle) {
+      return getFileBaseName(file.name) || "Untitled";
+    }
+
+    if (files.length <= 1) {
+      return manualTitle;
+    }
+
+    return `${manualTitle} - ${getFileBaseName(file.name) || file.name}`;
+  };
+
   const handleUpload = async () => {
-    if (!file) {
-      alert("Please choose a file first.");
+    if (!files.length) {
+      alert("Please choose at least one file first.");
       return;
     }
 
     setUploading(true);
+    setUploadProgress(`Preparing ${files.length} upload${files.length === 1 ? "" : "s"}...`);
+    setUploadSummary("");
+    setUploadResults([]);
+    setUploadedUrl("");
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("title", title);
-    formData.append("category", category);
-    formData.append("placement", placement);
-    formData.append("description", description);
-    formData.append("tech_stack", techStack);
-    formData.append("features", features);
+    let successCount = 0;
+    let failureCount = 0;
+    let firstUploadedUrl = "";
+    const nextResults: UploadResult[] = [];
 
     try {
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData
-      });
+      for (let index = 0; index < files.length; index += 1) {
+        const file = files[index];
+        setUploadProgress(`Uploading ${index + 1} of ${files.length}: ${file.name}`);
 
-      const text = await res.text();
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("title", resolveTitleForFile(file));
+        formData.append("category", category);
+        formData.append("placement", placement);
+        formData.append("description", description);
+        formData.append("tech_stack", techStack);
+        formData.append("features", features);
 
-      if (!res.ok) {
-        throw new Error(text || "Upload failed");
+        try {
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            body: formData
+          });
+
+          const text = await res.text();
+          if (!res.ok) {
+            throw new Error(text || "Upload failed");
+          }
+
+          const data = JSON.parse(text);
+          const uploadedItemUrl = typeof data?.url === "string" ? data.url : "";
+          if (uploadedItemUrl && !firstUploadedUrl) {
+            firstUploadedUrl = uploadedItemUrl;
+          }
+
+          successCount += 1;
+          nextResults.push({
+            fileName: file.name,
+            status: "success",
+            message: "Uploaded successfully",
+            url: uploadedItemUrl || undefined
+          });
+        } catch (error) {
+          failureCount += 1;
+          nextResults.push({
+            fileName: file.name,
+            status: "failed",
+            message: error instanceof Error ? error.message : "Upload failed"
+          });
+        }
+
+        setUploadResults([...nextResults]);
       }
-
-      const data = JSON.parse(text);
-
-      setUploadedUrl(data.url || "");
-      alert(
-        `Upload successful\n\nTitle: ${data.title}\nCategory: ${data.category}\nPlacement: ${data.placement || "NONE"}`
-      );
     } catch (error) {
       console.error(error);
       alert(error instanceof Error ? error.message : "Upload failed");
     } finally {
+      setUploadProgress("");
+      setUploadSummary(
+        `Upload complete: ${successCount} succeeded, ${failureCount} failed.`
+      );
+      setUploadedUrl(firstUploadedUrl);
       setUploading(false);
     }
   };
@@ -111,17 +173,57 @@ export const AdminMedia = () => {
 
           <input
             type="file"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            multiple
+            accept="image/*"
+            onChange={(e) => setFiles(Array.from(e.target.files || []))}
             className="w-full"
           />
+
+          {files.length > 0 && (
+            <p className="text-sm text-apple-gray-300">
+              Selected {files.length} file{files.length === 1 ? "" : "s"}.
+            </p>
+          )}
 
           <button
             onClick={handleUpload}
             className="apple-button apple-button-primary"
             disabled={uploading}
           >
-            {uploading ? "Uploading..." : "Upload Media"}
+            {uploading
+              ? `Uploading ${files.length} file${files.length === 1 ? "" : "s"}...`
+              : "Upload Media"}
           </button>
+
+          {uploadProgress && (
+            <p className="text-sm text-apple-gray-300">{uploadProgress}</p>
+          )}
+
+          {uploadSummary && (
+            <div className="p-4 rounded-xl border border-apple-gray-100 bg-apple-gray-50">
+              <p className="text-sm text-apple-gray-500 font-medium">{uploadSummary}</p>
+            </div>
+          )}
+
+          {uploadResults.length > 0 && (
+            <div className="p-6 rounded-2xl border border-apple-gray-100 bg-white">
+              <p className="mb-4 font-medium text-apple-gray-500">Upload Results</p>
+              <div className="space-y-3 max-h-64 overflow-auto pr-2">
+                {uploadResults.map((result, index) => (
+                  <div key={`${result.fileName}-${index}`} className="rounded-xl border border-apple-gray-100 p-3">
+                    <p className="text-sm font-medium text-apple-gray-500 break-all">{result.fileName}</p>
+                    <p className="text-xs mt-1 uppercase tracking-wider text-apex-yellow font-semibold">
+                      {result.status}
+                    </p>
+                    <p className="text-sm mt-2 text-apple-gray-300 break-all">{result.message}</p>
+                    {result.url && (
+                      <p className="text-xs mt-2 text-apple-gray-300 break-all">{result.url}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {uploadedUrl && (
             <div className="mt-8 p-6 rounded-2xl border border-apple-gray-100 bg-apple-gray-50">
