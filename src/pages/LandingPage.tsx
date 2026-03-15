@@ -21,6 +21,7 @@ type LandingPageItem = {
 
 const FALLBACK_IMAGE =
   'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&q=80&w=1600';
+const DEFAULT_DESCRIPTION = 'Custom digital solutions tailored to your business goals.';
 
 export const LandingPage = () => {
   const { slug } = useParams();
@@ -88,16 +89,44 @@ export const LandingPage = () => {
   }, [slug]);
 
   const pageTitle = item?.hero_heading || item?.title || 'Apex Digital Consultants';
-  const pageDescription =
-    item?.hero_subheading || item?.seo_description || 'Custom digital solutions tailored to your business goals.';
+  const pageDescription = item?.hero_subheading || item?.seo_description || DEFAULT_DESCRIPTION;
   const subtitleBits = [item?.service_category, item?.region].filter(Boolean) as string[];
 
   useEffect(() => {
     if (!item) return;
+
     const previousTitle = document.title;
-    document.title = item.seo_title || item.title;
+    const previousMeta = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+    const previousDescription = previousMeta?.getAttribute('content') ?? null;
+
+    document.title = item.seo_title?.trim() || item.title;
+
+    const description =
+      item.seo_description?.trim() || item.hero_subheading?.trim() || DEFAULT_DESCRIPTION;
+
+    const descriptionMeta =
+      previousMeta ??
+      (() => {
+        const createdMeta = document.createElement('meta');
+        createdMeta.setAttribute('name', 'description');
+        document.head.appendChild(createdMeta);
+        return createdMeta;
+      })();
+
+    descriptionMeta.setAttribute('content', description);
+
     return () => {
       document.title = previousTitle;
+
+      if (previousMeta) {
+        if (previousDescription !== null) {
+          previousMeta.setAttribute('content', previousDescription);
+        } else {
+          previousMeta.removeAttribute('content');
+        }
+      } else {
+        descriptionMeta.remove();
+      }
     };
   }, [item]);
 
