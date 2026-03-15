@@ -75,6 +75,11 @@ export const AdminMedia = () => {
           });
 
           const text = await res.text();
+          if (res.status === 404) {
+            throw new Error(
+              "Upload API route not found locally. Run the app with `npm run dev` (Vercel dev mode) so /api routes are served."
+            );
+          }
           if (!res.ok) {
             throw new Error(text || "Upload failed");
           }
