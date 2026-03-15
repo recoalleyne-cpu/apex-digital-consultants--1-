@@ -10,6 +10,20 @@ type LandingPageSummary = {
   updated_at?: string | null;
 };
 
+type GeneratedLandingPageDraft = {
+  title?: string;
+  slug?: string;
+  hero_heading?: string;
+  hero_subheading?: string;
+  body_content?: string;
+  seo_title?: string;
+  seo_description?: string;
+  cta_text?: string;
+  cta_link?: string;
+  region?: string;
+  service_category?: string;
+};
+
 const slugify = (value: string) =>
   value
     .toLowerCase()
@@ -49,9 +63,13 @@ export const AdminLandingPages = () => {
   const [region, setRegion] = useState('');
   const [serviceCategory, setServiceCategory] = useState('');
   const [targetKeyword, setTargetKeyword] = useState('');
+  const [targetAudience, setTargetAudience] = useState('');
   const [isPublished, setIsPublished] = useState(true);
 
   const [saving, setSaving] = useState(false);
+  const [generatingAi, setGeneratingAi] = useState(false);
+  const [generatorSource, setGeneratorSource] = useState<'ai' | 'template' | null>(null);
+  const [generatorMessage, setGeneratorMessage] = useState<string | null>(null);
   const [items, setItems] = useState<LandingPageSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
 
@@ -93,13 +111,34 @@ export const AdminLandingPages = () => {
     setRegion('');
     setServiceCategory('');
     setTargetKeyword('');
+    setTargetAudience('');
     setIsPublished(true);
+    setGeneratorSource(null);
+    setGeneratorMessage(null);
   };
 
-  const handleGenerateDraft = () => {
+  const applyGeneratedDraft = (draft: GeneratedLandingPageDraft) => {
+    if (draft.title?.trim()) setTitle(draft.title.trim());
+    if (draft.slug?.trim()) {
+      setSlug(slugify(draft.slug));
+      setSlugEdited(true);
+    }
+    if (draft.hero_heading?.trim()) setHeroHeading(draft.hero_heading.trim());
+    if (draft.hero_subheading?.trim()) setHeroSubheading(draft.hero_subheading.trim());
+    if (draft.body_content?.trim()) setBodyContent(draft.body_content.trim());
+    if (draft.seo_title?.trim()) setSeoTitle(draft.seo_title.trim());
+    if (draft.seo_description?.trim()) setSeoDescription(draft.seo_description.trim());
+    if (draft.cta_text?.trim()) setCtaText(draft.cta_text.trim());
+    if (draft.cta_link?.trim()) setCtaLink(draft.cta_link.trim());
+    if (draft.region?.trim()) setRegion(draft.region.trim());
+    if (draft.service_category?.trim()) setServiceCategory(draft.service_category.trim());
+  };
+
+  const handleGenerateTemplateDraft = () => {
     const service = serviceCategory.trim();
     const market = region.trim();
     const keyword = targetKeyword.trim() || [service, market].filter(Boolean).join(' ').trim();
+    const audience = targetAudience.trim() || 'business owners';
 
     if (!service && !market && !keyword) {
       alert('Enter at least a service, region, or target keyword to generate a draft.');
@@ -111,25 +150,84 @@ export const AdminLandingPages = () => {
     const titleCandidate = `${serviceLabel}${locationSuffix}`.trim();
     const headingCandidate = `${serviceLabel}${locationSuffix}`.trim();
     const subheadingCandidate = `Performance-focused ${serviceLabel.toLowerCase()} services${
-      market ? ` for businesses in ${market}` : ''
+      market ? ` for ${audience} in ${market}` : ` for ${audience}`
     }.`;
     const seoTitleCandidate = `${titleCandidate} | Apex Digital Consultants`;
     const seoDescriptionCandidate = `Need ${serviceLabel.toLowerCase()}${
       locationSuffix ? locationSuffix : ''
-    }? Apex Digital Consultants delivers strategy and execution designed for measurable growth.`;
-    const bodyCandidate = `If you're searching for ${keyword || serviceLabel}, Apex Digital Consultants builds conversion-focused strategies tailored to your business goals.\n\nOur team combines strategy, design, and execution to help you attract qualified leads, improve visibility, and grow revenue${market ? ` in ${market}` : ''}.\n\nReady to move forward? Contact us for a custom growth plan and implementation roadmap.`;
+    }? Apex Digital Consultants helps ${audience} execute measurable growth strategies.`;
+    const bodyCandidate = `If you're searching for ${keyword || serviceLabel}, Apex Digital Consultants delivers conversion-focused execution built for ${audience}.\n\nWe combine strategy, design, and performance systems to attract qualified leads, strengthen visibility, and grow revenue${
+      market ? ` in ${market}` : ''
+    }.\n\nEvery campaign is tailored to your business goals with clear reporting and practical next steps.\n\nReady to move forward? Contact us for a custom growth plan and implementation roadmap.`;
 
-    setTitle((prev) => prev.trim() || titleCandidate);
-    if (!slugEdited) {
-      setSlug((prev) => prev.trim() || slugify(keyword || titleCandidate));
+    applyGeneratedDraft({
+      title: titleCandidate,
+      slug: slugEdited ? slug : slugify(keyword || titleCandidate),
+      hero_heading: headingCandidate,
+      hero_subheading: subheadingCandidate,
+      body_content: bodyCandidate,
+      seo_title: seoTitleCandidate,
+      seo_description: seoDescriptionCandidate,
+      cta_text: ctaText || 'Get A Quote',
+      cta_link: ctaLink || '/contact'
+    });
+    setGeneratorSource('template');
+    setGeneratorMessage('Template draft generated. Review and edit before saving.');
+  };
+
+  const handleGenerateAiDraft = async () => {
+    const service = serviceCategory.trim();
+    const market = region.trim();
+    const keyword = targetKeyword.trim();
+
+    if (!service && !market && !keyword) {
+      alert('Enter at least a service, region, or target keyword to generate AI content.');
+      return;
     }
-    setHeroHeading((prev) => prev.trim() || headingCandidate);
-    setHeroSubheading((prev) => prev.trim() || subheadingCandidate);
-    setBodyContent((prev) => prev.trim() || bodyCandidate);
-    setSeoTitle((prev) => prev.trim() || seoTitleCandidate);
-    setSeoDescription((prev) => prev.trim() || seoDescriptionCandidate);
-    setCtaText((prev) => prev.trim() || 'Get A Quote');
-    setCtaLink((prev) => prev.trim() || '/contact');
+
+    setGeneratingAi(true);
+    setGeneratorSource(null);
+    setGeneratorMessage(null);
+
+    try {
+      const res = await fetch('/api/landing-pages-generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          service,
+          location: market,
+          target_keyword: keyword,
+          target_audience: targetAudience.trim(),
+          cta_text: ctaText.trim(),
+          cta_link: ctaLink.trim()
+        })
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.message || `AI generation failed (${res.status})`);
+      }
+
+      const draft = (data?.item || {}) as GeneratedLandingPageDraft;
+      applyGeneratedDraft(draft);
+
+      const source = data?.source === 'ai' ? 'ai' : 'template';
+      setGeneratorSource(source);
+      setGeneratorMessage(
+        typeof data?.message === 'string' && data.message.trim()
+          ? data.message
+          : source === 'ai'
+            ? 'AI draft generated. Review and edit before publishing.'
+            : 'Template draft generated. Review and edit before publishing.'
+      );
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : 'Failed to generate AI draft');
+    } finally {
+      setGeneratingAi(false);
+    }
   };
 
   const handleCreate = async () => {
@@ -199,12 +297,13 @@ export const AdminLandingPages = () => {
             <div className="rounded-2xl border border-apple-gray-100 bg-apple-gray-50 p-6 space-y-4">
               <h2 className="text-xl font-semibold">Generator Inputs</h2>
               <p className="text-sm text-apple-gray-300">
-                Use this structured layer to draft content. A future AI service can plug into this same input model.
+                Generate landing page copy from structured service/location inputs. You can always edit everything
+                before saving.
               </p>
 
               <input
                 type="text"
-                placeholder="Service Category (example: Google Ads)"
+                placeholder="Service (example: Google Ads)"
                 value={serviceCategory}
                 onChange={(e) => setServiceCategory(e.target.value)}
                 className="w-full border border-apple-gray-100 p-4 rounded-xl bg-white"
@@ -212,7 +311,7 @@ export const AdminLandingPages = () => {
 
               <input
                 type="text"
-                placeholder="Region (example: Barbados)"
+                placeholder="Location (example: Barbados)"
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
                 className="w-full border border-apple-gray-100 p-4 rounded-xl bg-white"
@@ -226,9 +325,38 @@ export const AdminLandingPages = () => {
                 className="w-full border border-apple-gray-100 p-4 rounded-xl bg-white"
               />
 
-              <button onClick={handleGenerateDraft} className="apple-button apple-button-secondary">
-                Generate Structured Draft
-              </button>
+              <input
+                type="text"
+                placeholder="Target Audience (example: local business owners)"
+                value={targetAudience}
+                onChange={(e) => setTargetAudience(e.target.value)}
+                className="w-full border border-apple-gray-100 p-4 rounded-xl bg-white"
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  onClick={handleGenerateAiDraft}
+                  className="apple-button apple-button-primary"
+                  disabled={generatingAi}
+                >
+                  {generatingAi ? 'Generating...' : 'Generate with AI'}
+                </button>
+                <button
+                  onClick={handleGenerateTemplateDraft}
+                  className="apple-button apple-button-secondary"
+                >
+                  Quick Template Draft
+                </button>
+              </div>
+
+              {generatorMessage ? (
+                <p className="text-sm text-apple-gray-300">
+                  <span className="font-semibold text-apple-gray-500 uppercase tracking-wide mr-2">
+                    {generatorSource === 'ai' ? 'AI' : 'Template'}
+                  </span>
+                  {generatorMessage}
+                </p>
+              ) : null}
             </div>
 
             <input
