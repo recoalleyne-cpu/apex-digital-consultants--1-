@@ -89,12 +89,14 @@ export const Logos = () => {
               {statusMessage || 'No logos uploaded yet.'}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
               {logos.map((logo) => (
                 <div
                   key={logo.id}
-                  className="aspect-square rounded-[2rem] bg-apple-gray-50 flex items-center justify-center p-8 md:p-10 group hover:bg-white border border-transparent hover:border-apple-gray-100 transition-all duration-500"
+                  className="group relative isolate aspect-square overflow-hidden rounded-[2rem] border border-apple-gray-100/80 bg-gradient-to-br from-white via-apple-gray-50 to-white flex items-center justify-center p-7 md:p-10 shadow-[0_8px_24px_rgba(17,24,39,0.04)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(17,24,39,0.10)]"
                 >
+                  <div className="pointer-events-none absolute inset-0 rounded-[2rem] bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.85),rgba(255,255,255,0))]" />
+
                   {nonDisplayableLogoIds[logo.id] ? (
                     <div className="text-center text-apple-gray-300 text-sm leading-6">
                       <p className="font-medium text-apple-gray-500 mb-2">{logo.title}</p>
@@ -104,13 +106,21 @@ export const Logos = () => {
                     <img
                       src={logo.file_url}
                       alt={logo.alt_text || logo.title}
-                      className="max-w-full max-h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                      className="relative z-10 max-w-full max-h-full object-contain transition-all duration-500 ease-out md:grayscale md:contrast-125 md:opacity-75 md:group-hover:grayscale-0 md:group-hover:contrast-100 md:group-hover:opacity-100 md:group-hover:scale-105"
                       onError={() =>
                         setNonDisplayableLogoIds((prev) =>
                           prev[logo.id] ? prev : { ...prev, [logo.id]: true }
                         )
                       }
                     />
+                  )}
+
+                  {!nonDisplayableLogoIds[logo.id] && (
+                    <div className="pointer-events-none absolute inset-x-4 bottom-4 z-10 hidden md:block">
+                      <p className="truncate text-[10px] font-semibold tracking-[0.12em] uppercase text-apple-gray-300 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                        {logo.title}
+                      </p>
+                    </div>
                   )}
                 </div>
               ))}
