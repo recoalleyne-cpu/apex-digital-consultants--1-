@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Send, Loader2, Sparkles, PhoneCall } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
-const SYSTEM_INSTRUCTION = `You are the AI assistant for Apex Digital Consultants, a premier digital marketing agency in Nassau, Bahamas. 
+const SYSTEM_INSTRUCTION = `You are the AI assistant for Apex Digital Consultants, a premier digital marketing agency serving Barbados and the wider Caribbean.
 Your goal is to help potential clients understand our services, which include:
 - Strategic Marketing
 - Modern Design (Web, Branding, UI/UX)
@@ -13,9 +13,9 @@ Your goal is to help potential clients understand our services, which include:
 
 Be professional, helpful, and concise. If you don't know something specific about pricing or availability, encourage the user to book a consultation or use the contact form.
 Our contact info: 
-- Phone: +1 (242) 805-2739
+- Phone: +1 (246) 841-6543
 - Email: info@apexdigitalconsultants.com
-- Location: Nassau, Bahamas`;
+- Location: Bridgetown, Barbados`;
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,7 +58,23 @@ export default function ChatWidget() {
     setIsLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+      const apiKey =
+        import.meta.env.VITE_GEMINI_API_KEY ||
+        globalThis.process?.env?.GEMINI_API_KEY ||
+        '';
+
+      if (!apiKey) {
+        setMessages(prev => [
+          ...prev,
+          {
+            role: 'ai',
+            text: 'AI chat is temporarily unavailable. Please use the contact form or email us at info@apexdigitalconsultants.com.'
+          }
+        ]);
+        return;
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
       const model = ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: [

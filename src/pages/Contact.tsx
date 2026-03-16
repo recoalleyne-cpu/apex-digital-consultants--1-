@@ -13,6 +13,7 @@ export const Contact = () => {
     service: '',
     customService: ''
   });
+  const [submitMessage, setSubmitMessage] = useState('');
 
   const creativeOptions = [
     'Branding',
@@ -22,6 +23,46 @@ export const Contact = () => {
     'Hosting',
     'Add something else'
   ];
+
+  const resolveServiceValue = () => {
+    if (formData.service === 'Add something else') {
+      return formData.customService.trim();
+    }
+    return formData.service.trim();
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const requiredMissing = !formData.firstName.trim() ||
+      !formData.email.trim() ||
+      !formData.phone.trim() ||
+      !formData.companyName.trim();
+
+    if (requiredMissing) {
+      setSubmitMessage('Please complete all required fields before submitting.');
+      return;
+    }
+
+    const selectedService = resolveServiceValue() || 'Not specified';
+    const name = `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim();
+    const subject = encodeURIComponent(`New Quote Request: ${selectedService}`);
+    const body = encodeURIComponent(
+      [
+        `Name: ${name}`,
+        `Email: ${formData.email.trim()}`,
+        `Phone: ${formData.phone.trim()}`,
+        `Company: ${formData.companyName.trim()}`,
+        `Service Interest: ${selectedService}`,
+        '',
+        'Project Details:',
+        formData.projectDetails.trim() || 'Not provided'
+      ].join('\n')
+    );
+
+    window.location.href = `mailto:info@apexdigitalconsultants.com?subject=${subject}&body=${body}`;
+    setSubmitMessage('Your email client should open now. If not, email us at info@apexdigitalconsultants.com.');
+  };
 
   return (
     <div className="pt-16 md:pt-20">
@@ -105,7 +146,7 @@ export const Contact = () => {
 
             {/* Main Contact Form */}
             <div className="bg-white p-6 sm:p-8 md:p-10 lg:p-12 rounded-[2rem] sm:rounded-[3rem] border border-apple-gray-100 shadow-sm">
-              <form className="space-y-8 md:space-y-10">
+              <form className="space-y-8 md:space-y-10" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-10">
                   {/* Left Column */}
                   <div className="space-y-6">
@@ -122,6 +163,7 @@ export const Contact = () => {
                         value={formData.firstName}
                         onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                         className="w-full px-0 py-4 border-0 border-b border-apple-gray-100 bg-transparent text-base text-apple-gray-500 placeholder:text-apple-gray-300 focus:outline-none focus:border-apex-yellow"
+                        required
                       />
 
                       <input
@@ -140,6 +182,7 @@ export const Contact = () => {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         className="w-full px-0 py-4 border-0 border-b border-apple-gray-100 bg-transparent text-base text-apple-gray-500 placeholder:text-apple-gray-300 focus:outline-none focus:border-apex-yellow"
+                        required
                       />
 
                       <input
@@ -148,6 +191,7 @@ export const Contact = () => {
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         className="w-full px-0 py-4 border-0 border-b border-apple-gray-100 bg-transparent text-base text-apple-gray-500 placeholder:text-apple-gray-300 focus:outline-none focus:border-apex-yellow"
+                        required
                       />
                     </div>
 
@@ -157,6 +201,7 @@ export const Contact = () => {
                       value={formData.companyName}
                       onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                       className="w-full px-0 py-4 border-0 border-b border-apple-gray-100 bg-transparent text-base text-apple-gray-500 placeholder:text-apple-gray-300 focus:outline-none focus:border-apex-yellow"
+                      required
                     />
                   </div>
 
@@ -221,13 +266,17 @@ export const Contact = () => {
                       value={formData.customService}
                       onChange={(e) => setFormData({ ...formData, customService: e.target.value })}
                       className="w-full px-0 py-4 border-0 border-b border-apple-gray-100 bg-transparent text-base text-apple-gray-500 placeholder:text-apple-gray-300 focus:outline-none focus:border-apex-yellow"
+                      required
                     />
                   )}
                 </div>
 
-                <button className="apple-button apple-button-primary w-full md:w-auto px-10 flex items-center justify-center gap-2">
+                <button type="submit" className="apple-button apple-button-primary w-full md:w-auto px-10 flex items-center justify-center gap-2">
                   <Send size={18} /> Submit
                 </button>
+                {submitMessage && (
+                  <p className="text-sm text-apple-gray-300">{submitMessage}</p>
+                )}
               </form>
             </div>
           </div>
