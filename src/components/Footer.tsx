@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Facebook, ChevronDown } from 'lucide-react';
+import { BrandLockup } from './BrandLockup';
 
 export default function Footer() {
   const [formData, setFormData] = useState({
@@ -23,15 +24,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 lg:gap-8">
           {/* Brand Column */}
           <div className="lg:col-span-1">
-            <Link
-              to="/"
-              className="inline-flex flex-wrap items-baseline gap-x-2 text-xl sm:text-2xl font-bold tracking-tight mb-6 leading-tight"
-              aria-label="Apex Digital Consultants"
-            >
-              <span className="whitespace-nowrap">Apex</span>
-              <span className="whitespace-nowrap">Digital</span>
-              <span className="whitespace-nowrap text-apple-gray-300 font-light">Consultants</span>
-            </Link>
+            <BrandLockup variant="footer" className="mb-6" />
 
             <p className="text-apple-gray-300 text-sm leading-relaxed mb-8">
               Empowering businesses with dynamic marketing solutions that drive growth and engagement. Your vision is our mission.

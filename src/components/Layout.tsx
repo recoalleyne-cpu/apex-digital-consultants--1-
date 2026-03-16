@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ChevronRight } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { BrandLockup } from './BrandLockup';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -44,15 +45,7 @@ export const Header = () => {
       )}
     >
       <nav className="container-wide px-4 sm:px-6 flex items-center justify-between gap-3 sm:gap-4">
-        <Link
-          to="/"
-          className="inline-flex flex-wrap items-baseline gap-x-1.5 sm:gap-x-2 text-sm sm:text-base md:text-xl font-bold tracking-tight leading-tight"
-          aria-label="Apex Digital Consultants"
-        >
-          <span className="whitespace-nowrap">Apex</span>
-          <span className="whitespace-nowrap">Digital</span>
-          <span className="whitespace-nowrap text-apple-gray-300 font-light">Consultants</span>
-        </Link>
+        <BrandLockup variant="header" />
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-6 lg:gap-8">
