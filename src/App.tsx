@@ -31,6 +31,7 @@ import { applySeo } from './utils/seo';
 type RouteSeoConfig = {
   title: string;
   description: string;
+  image?: string;
 };
 
 const DEFAULT_SEO: RouteSeoConfig = {
@@ -40,7 +41,10 @@ const DEFAULT_SEO: RouteSeoConfig = {
 };
 
 const STATIC_ROUTE_SEO: Record<string, RouteSeoConfig> = {
-  '/': DEFAULT_SEO,
+  '/': {
+    ...DEFAULT_SEO,
+    image: '/black%20logo.png'
+  },
   '/about': {
     title: 'About | Apex Digital Consultants',
     description:
@@ -163,6 +167,11 @@ const RouteSeo = () => {
       applySeo({
         title: staticSeo.title,
         description: staticSeo.description,
+        image: staticSeo.image
+          ? staticSeo.image.startsWith('http')
+            ? staticSeo.image
+            : `${origin}${staticSeo.image}`
+          : undefined,
         robots: 'index, follow',
         canonical: `${origin}${normalizedPath}`
       });
