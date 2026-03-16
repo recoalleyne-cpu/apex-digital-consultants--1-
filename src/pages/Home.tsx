@@ -9,6 +9,7 @@ import { TestimonialsSection } from '../components/TestimonialsSection';
 export const Home = () => {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
+  const featuredLogo = '/black%20logo.png';
   const maskImage = useMotionTemplate`radial-gradient(500px circle at ${mouseX}px ${mouseY}px, transparent 0%, black 60%)`;
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
@@ -50,6 +51,18 @@ export const Home = () => {
 
         <div className="relative z-30 container-wide py-24 sm:py-28 md:py-32">
           <div className="mx-auto max-w-5xl rounded-[2rem] sm:rounded-[3rem] border border-white/20 bg-white/10 backdrop-blur-xl px-6 py-10 sm:px-8 sm:py-12 md:px-14 md:py-16 shadow-[0_20px_60px_rgba(0,0,0,0.22)]">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="mx-auto mb-8 inline-flex h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 items-center justify-center rounded-[1.5rem] bg-white/95 p-3 shadow-[0_16px_40px_rgba(0,0,0,0.22)]"
+            >
+              <img
+                src={featuredLogo}
+                alt="Apex Digital Consultants featured logo"
+                className="h-full w-full object-contain"
+              />
+            </motion.div>
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
