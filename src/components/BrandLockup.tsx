@@ -8,7 +8,7 @@ type BrandLockupProps = {
   className?: string;
 };
 
-const BRAND_LOGO_SRC = '/brand-logo-square.svg';
+const BRAND_LOGO_SRC = '/black%20logo.png';
 
 const byVariant = {
   header: {
