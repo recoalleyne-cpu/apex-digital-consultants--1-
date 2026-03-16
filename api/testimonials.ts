@@ -296,7 +296,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return res.status(400).send('Google import supports up to 50 items per request');
         }
 
-        const defaultFeatured = parseBoolean(payload.featured, true);
+        const defaultFeatured = parseBoolean(payload.featured, false);
         let synced = 0;
         let skipped = 0;
 

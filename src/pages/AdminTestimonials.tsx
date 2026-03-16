@@ -24,7 +24,7 @@ export const AdminTestimonials = () => {
   const [items, setItems] = useState<TestimonialItem[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [googleImportJson, setGoogleImportJson] = useState('');
-  const [googleImportFeatured, setGoogleImportFeatured] = useState(true);
+  const [googleImportFeatured, setGoogleImportFeatured] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importStatus, setImportStatus] = useState<string | null>(null);
 
@@ -270,6 +270,9 @@ export const AdminTestimonials = () => {
               <p className="text-sm text-apple-gray-300 leading-7">
                 Paste Google review JSON from a safe manual export or scheduled sync payload. Reviews are upserted by source + review ID, so repeat imports update existing entries instead of duplicating.
               </p>
+              <p className="text-sm text-apple-gray-300 leading-7">
+                Imported reviews are not featured on the homepage unless you explicitly enable it below.
+              </p>
 
               <textarea
                 placeholder='Paste JSON array or {"reviews":[...]}'
@@ -285,7 +288,7 @@ export const AdminTestimonials = () => {
                   onChange={(e) => setGoogleImportFeatured(e.target.checked)}
                   className="w-4 h-4"
                 />
-                Mark imported reviews as featured
+                Mark imported reviews as featured now
               </label>
 
               <button
