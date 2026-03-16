@@ -13,6 +13,8 @@ import { Contact } from './pages/Contact';
 import { FAQs } from './pages/FAQs';
 import { Blog } from './pages/Blog';
 import { BlogPost } from './pages/BlogPost';
+import { CaseStudies } from './pages/CaseStudies';
+import { CaseStudy } from './pages/CaseStudy';
 import { Terms } from './pages/Terms';
 import { Privacy } from './pages/Privacy';
 import { WebDesign } from './pages/WebDesign';
@@ -22,6 +24,7 @@ import { AdminMedia } from './pages/AdminMedia';
 import { AdminTestimonials } from './pages/AdminTestimonials';
 import { AdminBlog } from './pages/AdminBlog';
 import { AdminLandingPages } from './pages/AdminLandingPages';
+import { AdminCaseStudies } from './pages/AdminCaseStudies';
 import { LandingPage } from './pages/LandingPage';
 import { applySeo } from './utils/seo';
 
@@ -93,6 +96,11 @@ const STATIC_ROUTE_SEO: Record<string, RouteSeoConfig> = {
     description:
       'Read insights on digital strategy, marketing, branding, and business growth from Apex Digital Consultants.'
   },
+  '/case-studies': {
+    title: 'Case Studies | Apex Digital Consultants',
+    description:
+      'Explore Apex case studies with real client challenges, execution strategy, and measurable outcomes.'
+  },
   '/terms': {
     title: 'Terms and Conditions | Apex Digital Consultants',
     description: 'Review the terms and conditions for using Apex Digital Consultants services and website.'
@@ -112,6 +120,7 @@ const RESERVED_TOP_LEVEL_SEGMENTS = new Set([
   'contact',
   'faqs',
   'blog',
+  'case-studies',
   'terms',
   'privacy',
   'admin',
@@ -222,6 +231,8 @@ function App() {
             <Route path="/faqs" element={<FAQs />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/case-studies" element={<CaseStudies />} />
+            <Route path="/case-studies/:slug" element={<CaseStudy />} />
             <Route path="/lp/:slug" element={<LandingPage />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
@@ -233,6 +244,7 @@ function App() {
             <Route path="/admin/testimonials" element={<AdminTestimonials />} />
             <Route path="/admin/blog" element={<AdminBlog />} />
             <Route path="/admin/landing-pages" element={<AdminLandingPages />} />
+            <Route path="/admin/case-studies" element={<AdminCaseStudies />} />
           </Routes>
         </main>
         <Footer />
