@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { applySeo } from '../utils/seo';
 
 type LandingPageItem = {
   id: number;
@@ -93,42 +94,49 @@ export const LandingPage = () => {
   const subtitleBits = [item?.service_category, item?.region].filter(Boolean) as string[];
 
   useEffect(() => {
+    const canonicalPath = window.location.pathname;
+    const canonical = `${window.location.origin}${canonicalPath}`;
+
+    if (loading) {
+      applySeo({
+        title: 'Loading Service Page | Apex Digital Consultants',
+        description: DEFAULT_DESCRIPTION,
+        canonical
+      });
+      return;
+    }
+
+    if (notFound) {
+      applySeo({
+        title: 'Page Not Found | Apex Digital Consultants',
+        description: 'The requested landing page is not currently published.',
+        canonical
+      });
+      return;
+    }
+
+    if (errorMessage) {
+      applySeo({
+        title: 'Landing Page Temporarily Unavailable | Apex Digital Consultants',
+        description: errorMessage,
+        canonical
+      });
+      return;
+    }
+
     if (!item) return;
 
-    const previousTitle = document.title;
-    const previousMeta = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-    const previousDescription = previousMeta?.getAttribute('content') ?? null;
-
-    document.title = item.seo_title?.trim() || item.title;
-
+    const title = item.seo_title?.trim() || item.title;
     const description =
       item.seo_description?.trim() || item.hero_subheading?.trim() || DEFAULT_DESCRIPTION;
 
-    const descriptionMeta =
-      previousMeta ??
-      (() => {
-        const createdMeta = document.createElement('meta');
-        createdMeta.setAttribute('name', 'description');
-        document.head.appendChild(createdMeta);
-        return createdMeta;
-      })();
-
-    descriptionMeta.setAttribute('content', description);
-
-    return () => {
-      document.title = previousTitle;
-
-      if (previousMeta) {
-        if (previousDescription !== null) {
-          previousMeta.setAttribute('content', previousDescription);
-        } else {
-          previousMeta.removeAttribute('content');
-        }
-      } else {
-        descriptionMeta.remove();
-      }
-    };
-  }, [item]);
+    applySeo({
+      title,
+      description,
+      image: item.featured_image_url || FALLBACK_IMAGE,
+      canonical
+    });
+  }, [item, loading, notFound, errorMessage]);
 
   const bodyParagraphs = useMemo(() => {
     if (!item?.body_content) return [];

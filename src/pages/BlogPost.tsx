@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowRight, Calendar, User } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
+import { applySeo } from '../utils/seo';
 
 type BlogPostItem = {
   id: number;
@@ -105,44 +106,53 @@ export const BlogPost = () => {
   }, [slug]);
 
   useEffect(() => {
+    const canonicalPath = slug ? `/blog/${slug}` : '/blog';
+    const canonical = `${window.location.origin}${canonicalPath}`;
+
+    if (loading) {
+      applySeo({
+        title: 'Loading Article | Apex Digital Consultants',
+        description: DEFAULT_DESCRIPTION,
+        canonical,
+        type: 'article'
+      });
+      return;
+    }
+
+    if (notFound) {
+      applySeo({
+        title: 'Post Not Found | Apex Digital Consultants',
+        description: 'The requested article could not be found.',
+        canonical,
+        type: 'article'
+      });
+      return;
+    }
+
+    if (errorMessage) {
+      applySeo({
+        title: 'Blog Temporarily Unavailable | Apex Digital Consultants',
+        description: errorMessage,
+        canonical,
+        type: 'article'
+      });
+      return;
+    }
+
     if (!post) return;
 
-    const previousTitle = document.title;
-    const previousMeta = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-    const previousDescription = previousMeta?.getAttribute('content') ?? null;
-
-    document.title = post.seo_title?.trim() || post.title;
-
+    const title = post.seo_title?.trim() || post.title;
     const description =
-      post.seo_description?.trim() ||
-      post.excerpt?.trim() ||
-      DEFAULT_DESCRIPTION;
+      post.seo_description?.trim() || post.excerpt?.trim() || DEFAULT_DESCRIPTION;
 
-    const descriptionMeta =
-      previousMeta ??
-      (() => {
-        const createdMeta = document.createElement('meta');
-        createdMeta.setAttribute('name', 'description');
-        document.head.appendChild(createdMeta);
-        return createdMeta;
-      })();
-
-    descriptionMeta.setAttribute('content', description);
-
-    return () => {
-      document.title = previousTitle;
-
-      if (previousMeta) {
-        if (previousDescription !== null) {
-          previousMeta.setAttribute('content', previousDescription);
-        } else {
-          previousMeta.removeAttribute('content');
-        }
-      } else {
-        descriptionMeta.remove();
-      }
-    };
-  }, [post]);
+    applySeo({
+      title,
+      description,
+      image: post.featured_image_url || FALLBACK_IMAGE,
+      canonical,
+      type: 'article'
+    });
+  }, [slug, post, loading, notFound, errorMessage]);
 
   const paragraphs = useMemo(() => {
     if (!post?.body_content) return [];
