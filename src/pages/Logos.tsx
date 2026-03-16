@@ -89,11 +89,11 @@ export const Logos = () => {
               {statusMessage || 'No logos uploaded yet.'}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
               {logos.map((logo) => (
                 <div
                   key={logo.id}
-                  className="group relative isolate aspect-square overflow-hidden rounded-[2rem] border border-apple-gray-100/80 bg-gradient-to-br from-white via-apple-gray-50 to-white flex items-center justify-center p-7 md:p-10 shadow-[0_8px_24px_rgba(17,24,39,0.04)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(17,24,39,0.10)]"
+                  className="group relative isolate aspect-square overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] border border-apple-gray-100/80 bg-gradient-to-br from-white via-apple-gray-50 to-white flex items-center justify-center p-6 sm:p-7 md:p-8 lg:p-10 shadow-[0_8px_24px_rgba(17,24,39,0.04)] transition-all duration-500 active:scale-[0.995] md:hover:-translate-y-1 md:hover:shadow-[0_18px_36px_rgba(17,24,39,0.10)]"
                 >
                   <div className="pointer-events-none absolute inset-0 rounded-[2rem] bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.85),rgba(255,255,255,0))]" />
 
@@ -106,7 +106,7 @@ export const Logos = () => {
                     <img
                       src={logo.file_url}
                       alt={logo.alt_text || logo.title}
-                      className="relative z-10 max-w-full max-h-full object-contain transition-all duration-500 ease-out md:grayscale md:contrast-125 md:opacity-75 md:group-hover:grayscale-0 md:group-hover:contrast-100 md:group-hover:opacity-100 md:group-hover:scale-105"
+                      className="relative z-10 max-w-full max-h-full object-contain transition-all duration-500 ease-out xl:grayscale xl:contrast-125 xl:opacity-75 xl:group-hover:grayscale-0 xl:group-hover:contrast-100 xl:group-hover:opacity-100 xl:group-hover:scale-105"
                       onError={() =>
                         setNonDisplayableLogoIds((prev) =>
                           prev[logo.id] ? prev : { ...prev, [logo.id]: true }
