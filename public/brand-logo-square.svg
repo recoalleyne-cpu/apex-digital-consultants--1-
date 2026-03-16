@@ -1,10 +1,37 @@
-<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="apexGradient" x1="24" y1="24" x2="232" y2="232" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFE071"/>
-      <stop offset="1" stop-color="#F4C430"/>
-    </linearGradient>
-  </defs>
-  <rect x="24" y="24" width="208" height="208" rx="56" fill="url(#apexGradient)"/>
-  <path d="M128 74L177 182H154L143 156H113L102 182H79L128 74ZM120 137H136L128 119L120 137Z" fill="#1D1D1F"/>
+<svg
+  width="512"
+  height="512"
+  viewBox="0 0 512 512"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <path
+    d="M80 408L256 104L432 408"
+    stroke="#000000"
+    stroke-width="46"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M122 386L256 156L390 386"
+    stroke="#000000"
+    stroke-width="34"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M166 408L208 336L250 408"
+    stroke="#000000"
+    stroke-width="34"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M262 408L304 336L346 408"
+    stroke="#000000"
+    stroke-width="34"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path d="M256 210L294 270L256 330L218 270L256 210Z" fill="#000000" />
 </svg>
