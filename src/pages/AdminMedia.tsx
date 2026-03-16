@@ -11,6 +11,18 @@ type UploadResult = {
 const getFileBaseName = (fileName: string) =>
   fileName.replace(/\.[^/.]+$/, "").replace(/[-_]+/g, " ").trim();
 
+const IMAGE_EXTENSION_PATTERN =
+  /\.(avif|bmp|gif|heic|heif|ico|jpe?g|png|svg|tiff?|webp)$/i;
+
+const isImageFile = (file: File) =>
+  file.type.startsWith("image/") || IMAGE_EXTENSION_PATTERN.test(file.name);
+
+const isLogosWorkflow = (category: string, placement: string) => {
+  const normalizedCategory = category.trim().toLowerCase();
+  const normalizedPlacement = placement.trim().toLowerCase();
+  return normalizedCategory === "logos" || normalizedPlacement === "logos-page";
+};
+
 const toSafePathSegment = (value: string) => {
   const normalized = value
     .toLowerCase()
@@ -71,11 +83,40 @@ export const AdminMedia = () => {
     let failureCount = 0;
     let firstUploadedUrl = "";
     const nextResults: UploadResult[] = [];
+    const enforceImageOnly = isLogosWorkflow(category, placement);
+
+    const filesToUpload = enforceImageOnly
+      ? files.filter((file) => isImageFile(file))
+      : files;
+    const skippedFiles = enforceImageOnly
+      ? files.filter((file) => !isImageFile(file))
+      : [];
+
+    if (skippedFiles.length > 0) {
+      skippedFiles.forEach((file) => {
+        failureCount += 1;
+        nextResults.push({
+          fileName: file.name,
+          status: "failed",
+          message: "Skipped: Logos uploads only accept image files."
+        });
+      });
+      setUploadResults([...nextResults]);
+    }
+
+    if (!filesToUpload.length) {
+      setUploadProgress("");
+      setUploadSummary(
+        `Upload complete: ${successCount} succeeded, ${failureCount} failed.`
+      );
+      setUploading(false);
+      return;
+    }
 
     try {
-      for (let index = 0; index < files.length; index += 1) {
-        const file = files[index];
-        setUploadProgress(`Uploading ${index + 1} of ${files.length}: ${file.name}`);
+      for (let index = 0; index < filesToUpload.length; index += 1) {
+        const file = filesToUpload[index];
+        setUploadProgress(`Uploading ${index + 1} of ${filesToUpload.length}: ${file.name}`);
         const resolvedTitle = resolveTitleForFile(file);
 
         try {
@@ -213,6 +254,12 @@ export const AdminMedia = () => {
           {files.length > 0 && (
             <p className="text-sm text-apple-gray-300">
               Selected {files.length} file{files.length === 1 ? "" : "s"}.
+            </p>
+          )}
+
+          {isLogosWorkflow(category, placement) && (
+            <p className="text-sm text-apple-gray-300">
+              Logos uploads accept image files only (PNG, JPG, SVG, WebP, etc.).
             </p>
           )}
 
