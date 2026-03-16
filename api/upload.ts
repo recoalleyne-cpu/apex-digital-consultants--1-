@@ -1,81 +1,56 @@
-import { put } from '@vercel/blob';
-import { neon } from '@neondatabase/serverless';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 
 export const config = {
-  runtime: 'edge'
+  runtime: 'nodejs'
 };
 
-const getOptionalTextField = (formData: FormData, key: string) => {
-  const value = formData.get(key);
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length ? trimmed : null;
+const getRequestBody = (req: VercelRequest): HandleUploadBody | null => {
+  if (!req.body) return null;
+
+  if (typeof req.body === 'string') {
+    try {
+      return JSON.parse(req.body) as HandleUploadBody;
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof req.body === 'object') {
+    return req.body as HandleUploadBody;
+  }
+
+  return null;
 };
 
-const getRequiredTextWithFallback = (formData: FormData, key: string, fallback: string) => {
-  return getOptionalTextField(formData, key) || fallback;
-};
-
-export default async function handler(request: Request) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 });
+    if (req.method !== 'POST') {
+      return res.status(405).send('Method not allowed');
     }
 
-    const postgresUrl = process.env.POSTGRES_URL;
-    const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
-
-    if (!postgresUrl) {
-      return new Response('Missing POSTGRES_URL environment variable', { status: 500 });
+    const body = getRequestBody(req);
+    if (!body || typeof body !== 'object' || !('type' in body)) {
+      return res.status(400).send('Invalid upload request body');
     }
 
-    if (!blobToken) {
-      return new Response('Missing BLOB_READ_WRITE_TOKEN environment variable', { status: 500 });
-    }
-
-    const formData = await request.formData();
-    const fileValue = formData.get('file');
-
-    if (!(fileValue instanceof Blob)) {
-      return new Response('No file uploaded', { status: 400 });
-    }
-
-    const title = getRequiredTextWithFallback(formData, 'title', 'Untitled');
-    const category = getRequiredTextWithFallback(formData, 'category', 'uncategorized');
-    const description = getOptionalTextField(formData, 'description');
-    const techStack = getOptionalTextField(formData, 'tech_stack');
-    const features = getOptionalTextField(formData, 'features');
-    const placement = getOptionalTextField(formData, 'placement');
-    const fileName = (fileValue as File).name?.trim() || `upload-${Date.now()}.bin`;
-
-    const blob = await put(fileName, fileValue, {
-      access: 'public',
-      addRandomSuffix: true,
-      token: blobToken
+    const jsonResponse = await handleUpload({
+      request: req,
+      body,
+      onBeforeGenerateToken: async (_pathname, clientPayload) => {
+        return {
+          tokenPayload: clientPayload,
+          addRandomSuffix: true,
+          maximumSizeInBytes: 25 * 1024 * 1024,
+          allowedContentTypes: ['image/*']
+        };
+      },
+      onUploadCompleted: async () => {}
     });
 
-    const sql = neon(postgresUrl);
-
-    await sql`
-      INSERT INTO media (title, file_url, alt_text, category, placement, description, tech_stack, features)
-      VALUES (${title}, ${blob.url}, ${title}, ${category}, ${placement}, ${description}, ${techStack}, ${features})
-    `;
-
-    return Response.json(
-      {
-        success: true,
-        url: blob.url,
-        title,
-        category,
-        placement,
-        description,
-        tech_stack: techStack,
-        features
-      },
-      { status: 200 }
-    );
+    return res.status(200).json(jsonResponse);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown upload error';
-    return new Response(`Upload failed: ${message}`, { status: 500 });
+    return res.status(500).send(`Upload failed: ${message}`);
   }
 }

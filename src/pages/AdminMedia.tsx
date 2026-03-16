@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { upload } from "@vercel/blob/client";
 
 type UploadResult = {
   fileName: string;
@@ -9,6 +10,23 @@ type UploadResult = {
 
 const getFileBaseName = (fileName: string) =>
   fileName.replace(/\.[^/.]+$/, "").replace(/[-_]+/g, " ").trim();
+
+const toSafePathSegment = (value: string) => {
+  const normalized = value
+    .toLowerCase()
+    .replace(/[^a-z0-9.-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return normalized || "upload";
+};
+
+const getUploadPathname = (file: File) => {
+  const extensionMatch = file.name.toLowerCase().match(/\.[a-z0-9]+$/);
+  const extension = extensionMatch?.[0] || "";
+  const baseName = toSafePathSegment(getFileBaseName(file.name) || "upload");
+  return `media/${baseName}${extension}`;
+};
 
 export const AdminMedia = () => {
   const [files, setFiles] = useState<File[]>([]);
@@ -58,34 +76,42 @@ export const AdminMedia = () => {
       for (let index = 0; index < files.length; index += 1) {
         const file = files[index];
         setUploadProgress(`Uploading ${index + 1} of ${files.length}: ${file.name}`);
-
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("title", resolveTitleForFile(file));
-        formData.append("category", category);
-        formData.append("placement", placement);
-        formData.append("description", description);
-        formData.append("tech_stack", techStack);
-        formData.append("features", features);
+        const resolvedTitle = resolveTitleForFile(file);
 
         try {
-          const res = await fetch("/api/upload", {
-            method: "POST",
-            body: formData
+          const blob = await upload(getUploadPathname(file), file, {
+            access: "public",
+            handleUploadUrl: "/api/upload",
+            multipart: file.size > 8 * 1024 * 1024
           });
 
-          const text = await res.text();
-          if (res.status === 404) {
+          const metadataRes = await fetch("/api/media", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              title: resolvedTitle,
+              file_url: blob.url,
+              category,
+              placement,
+              description,
+              tech_stack: techStack,
+              features
+            })
+          });
+
+          const metadataText = await metadataRes.text();
+          if (metadataRes.status === 404) {
             throw new Error(
-              "Upload API route not found locally. Run the app with `npm run dev` (Vercel dev mode) so /api routes are served."
+              "Upload APIs are not available in this mode. Run with `npm run dev:vercel` so /api routes are served."
             );
           }
-          if (!res.ok) {
-            throw new Error(text || "Upload failed");
+          if (!metadataRes.ok) {
+            throw new Error(metadataText || "Upload metadata save failed");
           }
 
-          const data = JSON.parse(text);
-          const uploadedItemUrl = typeof data?.url === "string" ? data.url : "";
+          const uploadedItemUrl = blob.url;
           if (uploadedItemUrl && !firstUploadedUrl) {
             firstUploadedUrl = uploadedItemUrl;
           }
