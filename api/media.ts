@@ -62,13 +62,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const title = getRequiredTextWithFallback(body.title, 'Untitled');
       const category = getRequiredTextWithFallback(body.category, 'uncategorized');
       const placement = getOptionalTextField(body.placement);
+      const isLogosCategory = category.trim().toLowerCase() === 'logos';
+      const isLogosPlacement = placement?.trim().toLowerCase() === 'logos-page';
+      const resolvedPlacement = isLogosPlacement
+        ? 'logos-page'
+        : placement || (isLogosCategory ? 'logos-page' : null);
       const description = getOptionalTextField(body.description);
       const techStack = getOptionalTextField(body.tech_stack);
       const features = getOptionalTextField(body.features);
 
       await sql`
         INSERT INTO media (title, file_url, alt_text, category, placement, description, tech_stack, features)
-        VALUES (${title}, ${fileUrl}, ${title}, ${category}, ${placement}, ${description}, ${techStack}, ${features})
+        VALUES (${title}, ${fileUrl}, ${title}, ${category}, ${resolvedPlacement}, ${description}, ${techStack}, ${features})
       `;
 
       return res.status(200).json({
@@ -77,7 +82,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           title,
           file_url: fileUrl,
           category,
-          placement,
+          placement: resolvedPlacement,
           description,
           tech_stack: techStack,
           features
