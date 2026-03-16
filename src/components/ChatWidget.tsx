@@ -109,7 +109,7 @@ export default function ChatWidget() {
             exit={{ x: 100 }}
             whileHover={{ x: -5 }}
             onClick={() => setIsMinimized(false)}
-            className="fixed right-0 top-1/2 -translate-y-1/2 bg-apex-yellow py-6 px-3 rounded-l-2xl shadow-2xl border-l border-t border-b border-black/10 group z-[110] flex flex-col items-center gap-3 cursor-pointer"
+            className="fixed right-0 bottom-24 sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 bg-apex-yellow py-4 sm:py-6 px-2 sm:px-3 rounded-l-xl sm:rounded-l-2xl shadow-2xl border-l border-t border-b border-black/10 group z-[110] flex flex-col items-center gap-2 sm:gap-3 cursor-pointer"
           >
             <motion.div 
               animate={{ scale: [1, 1.2, 1] }}
@@ -117,9 +117,9 @@ export default function ChatWidget() {
               className="w-2 h-2 bg-apple-gray-500 rounded-full"
             />
             <div className="flex flex-col items-center gap-2">
-              <Sparkles size={16} className="text-apple-gray-500" />
-              <div className="h-12 w-[1px] bg-apple-gray-500/20" />
-              <span className="[writing-mode:vertical-rl] text-[12px] font-black uppercase tracking-[0.2em] text-apple-gray-500 py-2">
+              <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-apple-gray-500" />
+              <div className="h-9 sm:h-12 w-[1px] bg-apple-gray-500/20" />
+              <span className="[writing-mode:vertical-rl] text-[10px] sm:text-[12px] font-black uppercase tracking-[0.14em] sm:tracking-[0.2em] text-apple-gray-500 py-1 sm:py-2">
                 Support
               </span>
             </div>
