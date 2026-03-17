@@ -254,11 +254,20 @@ const ScrollToTop = () => {
 const AppFrame = () => {
   const { pathname } = useLocation();
   const isAdminRoute = pathname.startsWith('/admin');
+  const hasTransparentHero = pathname === '/';
 
   return (
     <div className="flex flex-col min-h-screen">
       {!isAdminRoute ? <Header /> : null}
-      <main className={!isAdminRoute ? 'flex-grow pt-20' : 'flex-grow'}>
+      <main
+        className={
+          !isAdminRoute
+            ? hasTransparentHero
+              ? 'flex-grow'
+              : 'flex-grow pt-20'
+            : 'flex-grow'
+        }
+      >
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
