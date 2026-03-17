@@ -137,7 +137,7 @@ export const Home = () => {
                   to={`/services/${service.id}`}
                   className="flex items-center gap-2 text-apex-yellow font-medium"
                 >
-                  View Service Funnel <ChevronRight size={16} />
+                  View Service <ChevronRight size={16} />
                 </Link>
 
               </div>

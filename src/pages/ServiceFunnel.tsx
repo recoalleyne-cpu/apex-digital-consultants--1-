@@ -9,7 +9,6 @@ type FunnelStep = {
 };
 
 type ServiceFunnelContent = {
-  qualifier: string;
   heroPromise: string;
   painPoints: string[];
   deliverables: string[];
@@ -21,7 +20,6 @@ type ServiceFunnelContent = {
 
 const SERVICE_FUNNEL_CONTENT: Record<string, ServiceFunnelContent> = {
   'web-development': {
-    qualifier: 'Web Development Funnel',
     heroPromise:
       'Launch a website that looks premium, loads fast, and guides visitors toward action.',
     painPoints: [
@@ -64,7 +62,6 @@ const SERVICE_FUNNEL_CONTENT: Record<string, ServiceFunnelContent> = {
     ctaLabel: 'Start My Website Funnel'
   },
   'marketing-management': {
-    qualifier: 'Marketing Management Funnel',
     heroPromise:
       'Move from disconnected marketing activity to a structured system that generates demand consistently.',
     painPoints: [
@@ -107,7 +104,6 @@ const SERVICE_FUNNEL_CONTENT: Record<string, ServiceFunnelContent> = {
     ctaLabel: 'Build My Marketing System'
   },
   'google-advertising': {
-    qualifier: 'Google Ads Funnel',
     heroPromise:
       'Capture high-intent traffic and turn paid clicks into measurable lead opportunities.',
     painPoints: [
@@ -150,7 +146,6 @@ const SERVICE_FUNNEL_CONTENT: Record<string, ServiceFunnelContent> = {
     ctaLabel: 'Launch My Google Ads Funnel'
   },
   'graphic-design': {
-    qualifier: 'Brand Identity Funnel',
     heroPromise:
       'Turn first impressions into trust with a brand identity designed for recognition and conversion.',
     painPoints: [
@@ -193,7 +188,6 @@ const SERVICE_FUNNEL_CONTENT: Record<string, ServiceFunnelContent> = {
     ctaLabel: 'Build My Brand Identity Funnel'
   },
   'photography-videography': {
-    qualifier: 'Visual Content Funnel',
     heroPromise:
       'Use strategic photo and video assets to increase trust, engagement, and action across your funnel.',
     painPoints: [
@@ -236,7 +230,6 @@ const SERVICE_FUNNEL_CONTENT: Record<string, ServiceFunnelContent> = {
     ctaLabel: 'Plan My Visual Content Funnel'
   },
   'business-digitization': {
-    qualifier: 'Digitization Funnel',
     heroPromise:
       'Replace manual bottlenecks with digital workflows that improve speed, visibility, and operational control.',
     painPoints: [
@@ -295,10 +288,7 @@ export const ServiceFunnel = () => {
         <div className="absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-apex-yellow/20 blur-3xl" />
         <div className="container-wide relative px-6 py-16 md:py-24">
           <div className="mx-auto max-w-4xl text-center">
-            <span className="inline-flex rounded-full border border-apple-gray-100 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-apple-gray-300">
-              {content.qualifier}
-            </span>
-            <h1 className="heading-xl mt-6">{service.title}</h1>
+            <h1 className="heading-xl">{service.title}</h1>
             <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-apple-gray-300">
               {service.description}
             </p>
