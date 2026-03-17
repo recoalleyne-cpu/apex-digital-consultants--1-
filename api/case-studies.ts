@@ -70,6 +70,89 @@ const parseDelimitedField = (value: unknown) => {
   return tokens.length ? tokens.join(', ') : null;
 };
 
+type CaseStudiesQueryOptions = {
+  slug: string | null;
+  includeDrafts: boolean;
+  featuredOnly: boolean;
+  limit: number;
+};
+
+const FALLBACK_CASE_STUDIES = INITIAL_CASE_STUDIES.map((item, index) => ({
+  id: index + 1,
+  title: item.title,
+  slug: item.slug,
+  client_name: item.client_name,
+  summary: item.summary,
+  challenge: item.challenge,
+  solution: item.solution,
+  results: item.results,
+  services_provided: parseDelimitedField(item.services_provided),
+  featured_image_url: parseText(item.featured_image_url),
+  gallery_images: parseDelimitedField(item.gallery_images),
+  tech_stack: parseDelimitedField(item.tech_stack),
+  cta_text: parseText(item.cta_text),
+  cta_link: parseText(item.cta_link),
+  is_featured: parseBoolean(item.is_featured, false),
+  is_published: parseBoolean(item.is_published, true),
+  created_at: null,
+  updated_at: null
+}));
+
+const queryFallbackCaseStudies = ({
+  slug,
+  includeDrafts,
+  featuredOnly,
+  limit
+}: CaseStudiesQueryOptions) => {
+  const source = includeDrafts
+    ? FALLBACK_CASE_STUDIES
+    : FALLBACK_CASE_STUDIES.filter((item) => item.is_published);
+
+  if (slug) {
+    const normalizedSlug = slug.trim().toLowerCase();
+    return (
+      source.find((item) => item.slug.toLowerCase() === normalizedSlug) || null
+    );
+  }
+
+  const filtered = featuredOnly
+    ? source.filter((item) => item.is_featured)
+    : source;
+
+  return filtered.slice(0, limit);
+};
+
+const respondWithFallbackCaseStudies = (
+  res: VercelResponse,
+  query: CaseStudiesQueryOptions,
+  reason: string
+) => {
+  console.warn(
+    `[api/case-studies] Serving approved fallback case studies. Reason: ${reason}`
+  );
+
+  const fallback = queryFallbackCaseStudies(query);
+
+  if (query.slug) {
+    if (!fallback) {
+      return res.status(404).json({
+        success: false,
+        message: 'Case study not found'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      item: fallback
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    items: fallback
+  });
+};
+
 const ensureCaseStudiesTable = async (sql: ReturnType<typeof neon>) => {
   await sql`
     CREATE TABLE IF NOT EXISTS case_studies (
@@ -173,16 +256,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(405).send('Method not allowed');
     }
 
+    const slug = parseText(req.query.slug);
+    const includeDrafts = parseBoolean(req.query.include_drafts, false);
+    const featuredOnly = parseBoolean(req.query.featured, false);
+    const limit = parseLimit(req.query.limit, 12);
+    const queryOptions: CaseStudiesQueryOptions = {
+      slug,
+      includeDrafts,
+      featuredOnly,
+      limit
+    };
+
     const postgresUrl = process.env.POSTGRES_URL;
 
     if (!postgresUrl) {
-      return res.status(500).send('Missing POSTGRES_URL environment variable');
+      if (req.method === 'POST') {
+        return res.status(500).send('Missing POSTGRES_URL environment variable');
+      }
+
+      return respondWithFallbackCaseStudies(
+        res,
+        queryOptions,
+        'POSTGRES_URL environment variable is missing'
+      );
     }
 
     const sql = neon(postgresUrl);
-    await ensureCaseStudiesTable(sql);
 
     if (req.method === 'POST') {
+      await ensureCaseStudiesTable(sql);
+
       let payload: Record<string, unknown>;
 
       try {
@@ -287,176 +390,191 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    const slug = parseText(req.query.slug);
-    const includeDrafts = parseBoolean(req.query.include_drafts, false);
-    const featuredOnly = parseBoolean(req.query.featured, false);
-    const limit = parseLimit(req.query.limit, 12);
+    try {
+      await ensureCaseStudiesTable(sql);
+      await ensureInitialCaseStudies(sql);
 
-    await ensureInitialCaseStudies(sql);
+      if (slug) {
+        const rows = includeDrafts
+          ? await sql`
+              SELECT
+                id,
+                title,
+                slug,
+                client_name,
+                summary,
+                challenge,
+                solution,
+                results,
+                services_provided,
+                featured_image_url,
+                gallery_images,
+                tech_stack,
+                cta_text,
+                cta_link,
+                is_featured,
+                is_published,
+                created_at,
+                updated_at
+              FROM case_studies
+              WHERE slug = ${slug}
+              LIMIT 1
+            `
+          : await sql`
+              SELECT
+                id,
+                title,
+                slug,
+                client_name,
+                summary,
+                challenge,
+                solution,
+                results,
+                services_provided,
+                featured_image_url,
+                gallery_images,
+                tech_stack,
+                cta_text,
+                cta_link,
+                is_featured,
+                is_published,
+                created_at,
+                updated_at
+              FROM case_studies
+              WHERE slug = ${slug}
+                AND is_published = TRUE
+              LIMIT 1
+            `;
 
-    if (slug) {
-      const rows = includeDrafts
-        ? await sql`
-            SELECT
-              id,
-              title,
-              slug,
-              client_name,
-              summary,
-              challenge,
-              solution,
-              results,
-              services_provided,
-              featured_image_url,
-              gallery_images,
-              tech_stack,
-              cta_text,
-              cta_link,
-              is_featured,
-              is_published,
-              created_at,
-              updated_at
-            FROM case_studies
-            WHERE slug = ${slug}
-            LIMIT 1
-          `
-        : await sql`
-            SELECT
-              id,
-              title,
-              slug,
-              client_name,
-              summary,
-              challenge,
-              solution,
-              results,
-              services_provided,
-              featured_image_url,
-              gallery_images,
-              tech_stack,
-              cta_text,
-              cta_link,
-              is_featured,
-              is_published,
-              created_at,
-              updated_at
-            FROM case_studies
-            WHERE slug = ${slug}
-              AND is_published = TRUE
-            LIMIT 1
-          `;
+        if (!rows.length) {
+          return res.status(404).json({
+            success: false,
+            message: 'Case study not found'
+          });
+        }
 
-      if (!rows.length) {
-        return res.status(404).json({
-          success: false,
-          message: 'Case study not found'
+        return res.status(200).json({
+          success: true,
+          item: rows[0]
         });
+      }
+
+      let rows;
+
+      if (includeDrafts && featuredOnly) {
+        rows = await sql`
+          SELECT
+            id,
+            title,
+            slug,
+            client_name,
+            summary,
+            services_provided,
+            featured_image_url,
+            tech_stack,
+            cta_text,
+            cta_link,
+            is_featured,
+            is_published,
+            created_at,
+            updated_at
+          FROM case_studies
+          WHERE is_featured = TRUE
+          ORDER BY updated_at DESC
+          LIMIT ${limit}
+        `;
+      } else if (includeDrafts) {
+        rows = await sql`
+          SELECT
+            id,
+            title,
+            slug,
+            client_name,
+            summary,
+            services_provided,
+            featured_image_url,
+            tech_stack,
+            cta_text,
+            cta_link,
+            is_featured,
+            is_published,
+            created_at,
+            updated_at
+          FROM case_studies
+          ORDER BY is_featured DESC, updated_at DESC
+          LIMIT ${limit}
+        `;
+      } else if (featuredOnly) {
+        rows = await sql`
+          SELECT
+            id,
+            title,
+            slug,
+            client_name,
+            summary,
+            services_provided,
+            featured_image_url,
+            tech_stack,
+            cta_text,
+            cta_link,
+            is_featured,
+            is_published,
+            created_at,
+            updated_at
+          FROM case_studies
+          WHERE is_featured = TRUE
+            AND is_published = TRUE
+          ORDER BY updated_at DESC
+          LIMIT ${limit}
+        `;
+      } else {
+        rows = await sql`
+          SELECT
+            id,
+            title,
+            slug,
+            client_name,
+            summary,
+            services_provided,
+            featured_image_url,
+            tech_stack,
+            cta_text,
+            cta_link,
+            is_featured,
+            is_published,
+            created_at,
+            updated_at
+          FROM case_studies
+          WHERE is_published = TRUE
+          ORDER BY is_featured DESC, updated_at DESC
+          LIMIT ${limit}
+        `;
       }
 
       return res.status(200).json({
         success: true,
-        item: rows[0]
+        items: rows
       });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Unknown case studies database error';
+
+      console.error(
+        '[api/case-studies] Database read failed, returning approved fallback case studies.',
+        {
+          message,
+          slug,
+          includeDrafts,
+          featuredOnly,
+          limit
+        }
+      );
+
+      return respondWithFallbackCaseStudies(res, queryOptions, message);
     }
-
-    let rows;
-
-    if (includeDrafts && featuredOnly) {
-      rows = await sql`
-        SELECT
-          id,
-          title,
-          slug,
-          client_name,
-          summary,
-          services_provided,
-          featured_image_url,
-          tech_stack,
-          cta_text,
-          cta_link,
-          is_featured,
-          is_published,
-          created_at,
-          updated_at
-        FROM case_studies
-        WHERE is_featured = TRUE
-        ORDER BY updated_at DESC
-        LIMIT ${limit}
-      `;
-    } else if (includeDrafts) {
-      rows = await sql`
-        SELECT
-          id,
-          title,
-          slug,
-          client_name,
-          summary,
-          services_provided,
-          featured_image_url,
-          tech_stack,
-          cta_text,
-          cta_link,
-          is_featured,
-          is_published,
-          created_at,
-          updated_at
-        FROM case_studies
-        ORDER BY is_featured DESC, updated_at DESC
-        LIMIT ${limit}
-      `;
-    } else if (featuredOnly) {
-      rows = await sql`
-        SELECT
-          id,
-          title,
-          slug,
-          client_name,
-          summary,
-          services_provided,
-          featured_image_url,
-          tech_stack,
-          cta_text,
-          cta_link,
-          is_featured,
-          is_published,
-          created_at,
-          updated_at
-        FROM case_studies
-        WHERE is_featured = TRUE
-          AND is_published = TRUE
-        ORDER BY updated_at DESC
-        LIMIT ${limit}
-      `;
-    } else {
-      rows = await sql`
-        SELECT
-          id,
-          title,
-          slug,
-          client_name,
-          summary,
-          services_provided,
-          featured_image_url,
-          tech_stack,
-          cta_text,
-          cta_link,
-          is_featured,
-          is_published,
-          created_at,
-          updated_at
-        FROM case_studies
-        WHERE is_published = TRUE
-        ORDER BY is_featured DESC, updated_at DESC
-        LIMIT ${limit}
-      `;
-    }
-
-    return res.status(200).json({
-      success: true,
-      items: rows
-    });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown case studies fetch error';
+    console.error(`[api/case-studies] Unhandled error: ${message}`);
     return res.status(500).send(`Case studies fetch failed: ${message}`);
   }
 }

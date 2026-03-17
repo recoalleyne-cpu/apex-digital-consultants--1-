@@ -2,18 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
+import {
+  buildFallbackCaseStudies,
+  normalizeCaseStudyCollection,
+  type CaseStudyRecord
+} from '../utils/caseStudies';
 
-type CaseStudySummary = {
-  id: number;
-  title: string;
-  slug: string;
-  client_name?: string | null;
-  summary?: string | null;
-  services_provided?: string | null;
-  featured_image_url?: string | null;
-  tech_stack?: string | null;
-  is_featured?: boolean;
-};
+const UNAVAILABLE_MESSAGE = 'Case studies are currently unavailable. Please try again shortly.';
 
 const FALLBACK_IMAGE =
   'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200';
@@ -38,7 +33,7 @@ const splitList = (value?: string | null) => {
 };
 
 export const CaseStudies = () => {
-  const [items, setItems] = useState<CaseStudySummary[]>([]);
+  const [items, setItems] = useState<CaseStudyRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -49,21 +44,55 @@ export const CaseStudies = () => {
     const loadItems = async () => {
       try {
         const response = await fetch('/api/case-studies?limit=30', {
+          headers: {
+            Accept: 'application/json'
+          },
           signal: controller.signal
         });
 
         if (!response.ok) {
-          throw new Error(`Case studies API failed (${response.status})`);
+          const responseText = await response.text();
+          throw new Error(
+            `Case studies API failed (${response.status}): ${
+              responseText.slice(0, 220) || 'No response body'
+            }`
+          );
+        }
+
+        const contentType = response.headers.get('content-type')?.toLowerCase() || '';
+        if (!contentType.includes('application/json')) {
+          const responsePreview = (await response.text()).slice(0, 220);
+          throw new Error(
+            `Case studies endpoint returned non-JSON content (${contentType || 'unknown'}). Preview: ${responsePreview}`
+          );
         }
 
         const data = await response.json();
-        const nextItems = Array.isArray(data?.items) ? data.items : [];
-        setItems(nextItems);
-        setErrorMessage(null);
+        const apiItems = normalizeCaseStudyCollection(
+          Array.isArray(data?.items) ? data.items : []
+        ).filter((item) => item.is_published);
+
+        if (apiItems.length > 0) {
+          setItems(apiItems);
+          setErrorMessage(null);
+          return;
+        }
+
+        console.warn(
+          '[CaseStudies] API returned no published entries; serving approved local fallback.'
+        );
+
+        const fallbackItems = buildFallbackCaseStudies({ limit: 30 });
+        setItems(fallbackItems);
+        setErrorMessage(fallbackItems.length ? null : UNAVAILABLE_MESSAGE);
       } catch (error) {
-        console.error(error);
-        setItems([]);
-        setErrorMessage('Case studies are currently unavailable. Please try again shortly.');
+        console.error(
+          '[CaseStudies] Failed to load case studies from API; serving approved local fallback.',
+          error
+        );
+        const fallbackItems = buildFallbackCaseStudies({ limit: 30 });
+        setItems(fallbackItems);
+        setErrorMessage(fallbackItems.length ? null : UNAVAILABLE_MESSAGE);
       } finally {
         clearTimeout(timeout);
         setLoading(false);
