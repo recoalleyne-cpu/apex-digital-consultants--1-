@@ -1,6 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { upload } from '@vercel/blob/client';
 import { CheckCircle2, RefreshCw } from 'lucide-react';
+import {
+  MEDIA_PLACEMENT_VALUES,
+  MEDIA_PLACEMENT_OPTIONS,
+  MEDIA_PLACEMENT_PRESETS
+} from '../constants/mediaPlacements';
 
 type UploadResult = {
   fileName: string;
@@ -18,12 +23,6 @@ type MediaRecord = {
   created_at?: string | null;
 };
 
-type MediaPreset = {
-  label: string;
-  category: string;
-  placement: string;
-};
-
 type AdminMediaProps = {
   pageTitle?: string;
   pageDescription?: string;
@@ -38,12 +37,7 @@ const DEFAULT_PAGE_TITLE = 'Media Upload';
 const DEFAULT_PAGE_DESCRIPTION =
   'Upload media and assign editable metadata for website sections powered by the media table.';
 
-const MEDIA_PRESETS: MediaPreset[] = [
-  { label: 'Portfolio Grid', category: 'portfolio', placement: 'portfolio-grid' },
-  { label: 'Logos Page', category: 'logos', placement: 'logos-page' },
-  { label: 'Founder Image', category: 'branding', placement: 'about-founder-image' },
-  { label: 'Certification Ticker', category: 'certifications', placement: 'home-certification-ticker' }
-];
+const CUSTOM_PLACEMENT_OPTION = '__custom__';
 
 const getFileBaseName = (fileName: string) =>
   fileName.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ').trim();
@@ -57,7 +51,10 @@ const isImageFile = (file: File) =>
 const isLogosWorkflow = (category: string, placement: string) => {
   const normalizedCategory = category.trim().toLowerCase();
   const normalizedPlacement = placement.trim().toLowerCase();
-  return normalizedCategory === 'logos' || normalizedPlacement === 'logos-page';
+  return (
+    normalizedCategory === 'logos' ||
+    normalizedPlacement === MEDIA_PLACEMENT_VALUES.LOGOS_PAGE
+  );
 };
 
 const toSafePathSegment = (value: string) => {
@@ -136,6 +133,28 @@ export const AdminMedia = ({
     () => isLogosWorkflow(category, placement),
     [category, placement]
   );
+  const selectedPlacementOption = useMemo(() => {
+    const normalized = placement.trim();
+    if (!normalized) {
+      return '';
+    }
+
+    const knownPlacement = MEDIA_PLACEMENT_OPTIONS.some((option) => option.value === normalized);
+    return knownPlacement ? normalized : CUSTOM_PLACEMENT_OPTION;
+  }, [placement]);
+  const selectedPlacementMeta = useMemo(
+    () => MEDIA_PLACEMENT_OPTIONS.find((option) => option.value === placement.trim()) || null,
+    [placement]
+  );
+  const selectedFilterPlacementOption = useMemo(() => {
+    const normalized = recordFilterPlacement.trim();
+    if (!normalized) {
+      return '';
+    }
+
+    const knownPlacement = MEDIA_PLACEMENT_OPTIONS.some((option) => option.value === normalized);
+    return knownPlacement ? normalized : CUSTOM_PLACEMENT_OPTION;
+  }, [recordFilterPlacement]);
 
   const resolveTitleForFile = (file: File) => {
     const manualTitle = title.trim();
@@ -187,7 +206,7 @@ export const AdminMedia = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const applyPreset = (preset: MediaPreset) => {
+  const applyPreset = (preset: (typeof MEDIA_PLACEMENT_PRESETS)[number]) => {
     if (!lockCategory) {
       setCategory(preset.category);
     }
@@ -327,7 +346,7 @@ export const AdminMedia = ({
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-apple-gray-300">
               Quick Presets
             </p>
-            {MEDIA_PRESETS.map((preset) => (
+            {MEDIA_PLACEMENT_PRESETS.map((preset) => (
               <button
                 key={preset.label}
                 type="button"
@@ -360,14 +379,54 @@ export const AdminMedia = ({
               className="w-full border border-apple-gray-100 p-4 rounded-xl disabled:bg-apple-gray-50 disabled:text-apple-gray-300"
             />
 
-            <input
-              type="text"
-              placeholder="Placement (example: portfolio-grid)"
-              value={placement}
-              onChange={(e) => setPlacement(e.target.value)}
-              disabled={lockPlacement}
-              className="w-full border border-apple-gray-100 p-4 rounded-xl disabled:bg-apple-gray-50 disabled:text-apple-gray-300"
-            />
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-apple-gray-500">Placement</label>
+              <select
+                value={selectedPlacementOption}
+                onChange={(e) => {
+                  const nextValue = e.target.value;
+                  if (nextValue === CUSTOM_PLACEMENT_OPTION) {
+                    if (!placement.trim()) {
+                      setPlacement('');
+                    }
+                    return;
+                  }
+
+                  setPlacement(nextValue);
+                }}
+                disabled={lockPlacement}
+                className="w-full border border-apple-gray-100 p-4 rounded-xl bg-white disabled:bg-apple-gray-50 disabled:text-apple-gray-300"
+              >
+                <option value="">No placement (unassigned)</option>
+                {MEDIA_PLACEMENT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+                <option value={CUSTOM_PLACEMENT_OPTION}>
+                  {placement.trim()
+                    ? `Custom placement (${placement.trim()})`
+                    : 'Custom placement...'}
+                </option>
+              </select>
+              <p className="text-xs text-apple-gray-300">
+                {selectedPlacementMeta
+                  ? `Selected: ${selectedPlacementMeta.label}`
+                  : placement.trim()
+                    ? `Selected custom placement: ${placement.trim()}`
+                    : 'Choose where this media should render.'}
+              </p>
+            </div>
+
+            {!lockPlacement && selectedPlacementOption === CUSTOM_PLACEMENT_OPTION ? (
+              <input
+                type="text"
+                placeholder="Custom placement slug (example: about-top-image)"
+                value={placement}
+                onChange={(e) => setPlacement(e.target.value)}
+                className="w-full border border-apple-gray-100 p-4 rounded-xl"
+              />
+            ) : null}
 
             <textarea
               placeholder="Description / Notes"
@@ -484,13 +543,42 @@ export const AdminMedia = ({
                 placeholder="Filter by category"
                 className="w-full border border-apple-gray-100 p-3 rounded-xl text-sm"
               />
-              <input
-                type="text"
-                value={recordFilterPlacement}
-                onChange={(e) => setRecordFilterPlacement(e.target.value)}
-                placeholder="Filter by placement"
-                className="w-full border border-apple-gray-100 p-3 rounded-xl text-sm"
-              />
+              <select
+                value={selectedFilterPlacementOption}
+                onChange={(e) => {
+                  const nextValue = e.target.value;
+                  if (nextValue === CUSTOM_PLACEMENT_OPTION) {
+                    if (!recordFilterPlacement.trim()) {
+                      setRecordFilterPlacement('');
+                    }
+                    return;
+                  }
+
+                  setRecordFilterPlacement(nextValue);
+                }}
+                className="w-full border border-apple-gray-100 p-3 rounded-xl text-sm bg-white"
+              >
+                <option value="">Filter by placement (all)</option>
+                {MEDIA_PLACEMENT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+                <option value={CUSTOM_PLACEMENT_OPTION}>
+                  {recordFilterPlacement.trim()
+                    ? `Custom placement (${recordFilterPlacement.trim()})`
+                    : 'Custom placement...'}
+                </option>
+              </select>
+              {selectedFilterPlacementOption === CUSTOM_PLACEMENT_OPTION ? (
+                <input
+                  type="text"
+                  value={recordFilterPlacement}
+                  onChange={(e) => setRecordFilterPlacement(e.target.value)}
+                  placeholder="Custom placement filter"
+                  className="w-full border border-apple-gray-100 p-3 rounded-xl text-sm"
+                />
+              ) : null}
               <button
                 type="button"
                 onClick={() => loadRecords(recordFilterCategory, recordFilterPlacement)}
