@@ -46,14 +46,14 @@ export const Home = () => {
           </video>
 
           <motion.div
-            className="absolute inset-0 z-10 backdrop-blur-3xl bg-white/8"
+            className="absolute inset-0 z-10 backdrop-blur-2xl bg-white/6"
             style={{
               maskImage,
               WebkitMaskImage: maskImage
             }}
           />
 
-          <div className="absolute inset-0 z-20 bg-gradient-to-b from-black/25 via-black/18 to-black/35" />
+          <div className="absolute inset-0 z-20 bg-gradient-to-b from-black/28 via-black/20 to-black/38" />
           <div className="absolute top-1/4 left-1/4 z-20 w-80 h-80 rounded-full bg-white/12 blur-3xl" />
           <div className="absolute bottom-1/4 right-1/4 z-20 w-72 h-72 rounded-full bg-apex-yellow/10 blur-3xl" />
         </div>
