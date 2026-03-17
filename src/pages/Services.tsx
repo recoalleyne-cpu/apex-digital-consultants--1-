@@ -47,7 +47,7 @@ export const Services = () => {
 
                   <div className="flex flex-wrap gap-4">
                     <Link to={`/services/${service.id}`} className="apple-button apple-button-secondary text-sm">
-                      Service Funnel
+                      View Service
                     </Link>
 
                     {service.id === 'web-development' && (
