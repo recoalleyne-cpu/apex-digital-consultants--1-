@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { upload } from '@vercel/blob/client';
 import { CheckCircle2, RefreshCw } from 'lucide-react';
 import {
+  MEDIA_CATEGORY_VALUES,
+  MEDIA_CATEGORY_OPTIONS,
   MEDIA_PLACEMENT_VALUES,
   MEDIA_PLACEMENT_OPTIONS,
   MEDIA_PLACEMENT_PRESETS
@@ -38,6 +40,7 @@ const DEFAULT_PAGE_DESCRIPTION =
   'Upload media and assign editable metadata for website sections powered by the media table.';
 
 const CUSTOM_PLACEMENT_OPTION = '__custom__';
+const CUSTOM_CATEGORY_OPTION = '__custom__';
 
 const getFileBaseName = (fileName: string) =>
   fileName.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ').trim();
@@ -52,7 +55,7 @@ const isLogosWorkflow = (category: string, placement: string) => {
   const normalizedCategory = category.trim().toLowerCase();
   const normalizedPlacement = placement.trim().toLowerCase();
   return (
-    normalizedCategory === 'logos' ||
+    normalizedCategory === MEDIA_CATEGORY_VALUES.LOGOS ||
     normalizedPlacement === MEDIA_PLACEMENT_VALUES.LOGOS_PAGE
   );
 };
@@ -146,6 +149,28 @@ export const AdminMedia = ({
     () => MEDIA_PLACEMENT_OPTIONS.find((option) => option.value === placement.trim()) || null,
     [placement]
   );
+  const selectedCategoryOption = useMemo(() => {
+    const normalized = category.trim();
+    if (!normalized) {
+      return '';
+    }
+
+    const knownCategory = MEDIA_CATEGORY_OPTIONS.some((option) => option.value === normalized);
+    return knownCategory ? normalized : CUSTOM_CATEGORY_OPTION;
+  }, [category]);
+  const selectedCategoryMeta = useMemo(
+    () => MEDIA_CATEGORY_OPTIONS.find((option) => option.value === category.trim()) || null,
+    [category]
+  );
+  const selectedFilterCategoryOption = useMemo(() => {
+    const normalized = recordFilterCategory.trim();
+    if (!normalized) {
+      return '';
+    }
+
+    const knownCategory = MEDIA_CATEGORY_OPTIONS.some((option) => option.value === normalized);
+    return knownCategory ? normalized : CUSTOM_CATEGORY_OPTION;
+  }, [recordFilterCategory]);
   const selectedFilterPlacementOption = useMemo(() => {
     const normalized = recordFilterPlacement.trim();
     if (!normalized) {
@@ -370,14 +395,54 @@ export const AdminMedia = ({
               className="w-full border border-apple-gray-100 p-4 rounded-xl"
             />
 
-            <input
-              type="text"
-              placeholder="Category (example: portfolio, logos, certifications)"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              disabled={lockCategory}
-              className="w-full border border-apple-gray-100 p-4 rounded-xl disabled:bg-apple-gray-50 disabled:text-apple-gray-300"
-            />
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-apple-gray-500">Category</label>
+              <select
+                value={selectedCategoryOption}
+                onChange={(e) => {
+                  const nextValue = e.target.value;
+                  if (nextValue === CUSTOM_CATEGORY_OPTION) {
+                    if (!category.trim()) {
+                      setCategory('');
+                    }
+                    return;
+                  }
+
+                  setCategory(nextValue);
+                }}
+                disabled={lockCategory}
+                className="w-full border border-apple-gray-100 p-4 rounded-xl bg-white disabled:bg-apple-gray-50 disabled:text-apple-gray-300"
+              >
+                <option value="">Auto (uncategorized)</option>
+                {MEDIA_CATEGORY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+                <option value={CUSTOM_CATEGORY_OPTION}>
+                  {category.trim()
+                    ? `Custom category (${category.trim()})`
+                    : 'Custom category...'}
+                </option>
+              </select>
+              <p className="text-xs text-apple-gray-300">
+                {selectedCategoryMeta
+                  ? `Selected: ${selectedCategoryMeta.label}`
+                  : category.trim()
+                    ? `Selected custom category: ${category.trim()}`
+                    : 'Leave blank to use default uncategorized category.'}
+              </p>
+            </div>
+
+            {!lockCategory && selectedCategoryOption === CUSTOM_CATEGORY_OPTION ? (
+              <input
+                type="text"
+                placeholder="Custom category slug (example: events)"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full border border-apple-gray-100 p-4 rounded-xl"
+              />
+            ) : null}
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-apple-gray-500">Placement</label>
@@ -536,13 +601,42 @@ export const AdminMedia = ({
             </div>
 
             <div className="space-y-3 mb-4">
-              <input
-                type="text"
-                value={recordFilterCategory}
-                onChange={(e) => setRecordFilterCategory(e.target.value)}
-                placeholder="Filter by category"
-                className="w-full border border-apple-gray-100 p-3 rounded-xl text-sm"
-              />
+              <select
+                value={selectedFilterCategoryOption}
+                onChange={(e) => {
+                  const nextValue = e.target.value;
+                  if (nextValue === CUSTOM_CATEGORY_OPTION) {
+                    if (!recordFilterCategory.trim()) {
+                      setRecordFilterCategory('');
+                    }
+                    return;
+                  }
+
+                  setRecordFilterCategory(nextValue);
+                }}
+                className="w-full border border-apple-gray-100 p-3 rounded-xl text-sm bg-white"
+              >
+                <option value="">Filter by category (all)</option>
+                {MEDIA_CATEGORY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+                <option value={CUSTOM_CATEGORY_OPTION}>
+                  {recordFilterCategory.trim()
+                    ? `Custom category (${recordFilterCategory.trim()})`
+                    : 'Custom category...'}
+                </option>
+              </select>
+              {selectedFilterCategoryOption === CUSTOM_CATEGORY_OPTION ? (
+                <input
+                  type="text"
+                  value={recordFilterCategory}
+                  onChange={(e) => setRecordFilterCategory(e.target.value)}
+                  placeholder="Custom category filter"
+                  className="w-full border border-apple-gray-100 p-3 rounded-xl text-sm"
+                />
+              ) : null}
               <select
                 value={selectedFilterPlacementOption}
                 onChange={(e) => {
