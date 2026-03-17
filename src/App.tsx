@@ -34,6 +34,7 @@ import { AdminPaymentGateways } from './pages/AdminPaymentGateways';
 import { AdminShell } from './components/admin/AdminShell';
 import { LandingPage } from './pages/LandingPage';
 import { applySeo } from './utils/seo';
+import { GoogleIntegrationRuntime } from './components/GoogleIntegrationRuntime';
 
 type RouteSeoConfig = {
   title: string;
@@ -314,6 +315,7 @@ function App() {
   return (
     <Router>
       <RouteSeo />
+      <GoogleIntegrationRuntime />
       <ScrollToTop />
       <AppFrame />
     </Router>
