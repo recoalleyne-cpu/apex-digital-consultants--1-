@@ -25,6 +25,10 @@ import { AdminTestimonials } from './pages/AdminTestimonials';
 import { AdminBlog } from './pages/AdminBlog';
 import { AdminLandingPages } from './pages/AdminLandingPages';
 import { AdminCaseStudies } from './pages/AdminCaseStudies';
+import { AdminDashboard } from './pages/AdminDashboard';
+import { AdminPortfolio } from './pages/AdminPortfolio';
+import { AdminLogos } from './pages/AdminLogos';
+import { AdminShell } from './components/admin/AdminShell';
 import { LandingPage } from './pages/LandingPage';
 import { applySeo } from './utils/seo';
 
@@ -221,44 +225,59 @@ const ScrollToTop = () => {
   return null;
 };
 
+const AppFrame = () => {
+  const { pathname } = useLocation();
+  const isAdminRoute = pathname.startsWith('/admin');
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      {!isAdminRoute ? <Header /> : null}
+      <main className={!isAdminRoute ? 'flex-grow pt-20' : 'flex-grow'}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/digital-solutions" element={<DigitalSolutions />} />
+          <Route path="/portfolio" element={<Portfolio />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/faqs" element={<FAQs />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/case-studies" element={<CaseStudies />} />
+          <Route path="/case-studies/:slug" element={<CaseStudy />} />
+          <Route path="/lp/:slug" element={<LandingPage />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/:slug" element={<LandingPage />} />
+          <Route path="/services/web-design" element={<WebDesign />} />
+          <Route path="/services/logos" element={<Logos />} />
+          <Route path="/services/websites" element={<Websites />} />
+
+          <Route path="/admin" element={<AdminShell />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="media" element={<AdminMedia />} />
+            <Route path="blog" element={<AdminBlog />} />
+            <Route path="testimonials" element={<AdminTestimonials />} />
+            <Route path="landing-pages" element={<AdminLandingPages />} />
+            <Route path="portfolio" element={<AdminPortfolio />} />
+            <Route path="logos" element={<AdminLogos />} />
+            <Route path="case-studies" element={<AdminCaseStudies />} />
+          </Route>
+        </Routes>
+      </main>
+      {!isAdminRoute ? <Footer /> : null}
+      {!isAdminRoute ? <ChatWidget /> : null}
+    </div>
+  );
+};
+
 function App() {
   return (
     <Router>
       <RouteSeo />
       <ScrollToTop />
-      <div className="flex flex-col min-h-screen">
-        <Header />
-        <main className="flex-grow pt-20">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/digital-solutions" element={<DigitalSolutions />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/faqs" element={<FAQs />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/case-studies" element={<CaseStudies />} />
-            <Route path="/case-studies/:slug" element={<CaseStudy />} />
-            <Route path="/lp/:slug" element={<LandingPage />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/:slug" element={<LandingPage />} />
-            <Route path="/services/web-design" element={<WebDesign />} />
-            <Route path="/services/logos" element={<Logos />} />
-            <Route path="/services/websites" element={<Websites />} />
-            <Route path="/admin/media" element={<AdminMedia />} />
-            <Route path="/admin/testimonials" element={<AdminTestimonials />} />
-            <Route path="/admin/blog" element={<AdminBlog />} />
-            <Route path="/admin/landing-pages" element={<AdminLandingPages />} />
-            <Route path="/admin/case-studies" element={<AdminCaseStudies />} />
-          </Routes>
-        </main>
-        <Footer />
-        <ChatWidget />
-      </div>
+      <AppFrame />
     </Router>
   );
 }
