@@ -16,6 +16,7 @@ const NAV_LINKS = [
   { name: 'Services', path: '/services' },
   { name: 'Digital Solutions', path: '/digital-solutions' },
   { name: 'Portfolio', path: '/portfolio' },
+  { name: 'Case Studies', path: '/case-studies' },
   { name: 'Pricing', path: '/pricing' },
   { name: 'Contact', path: '/contact' },
 ];
@@ -49,8 +50,8 @@ export const Header = () => {
           className={cn(
             'flex items-center justify-between gap-3 sm:gap-4 rounded-2xl border backdrop-blur-2xl shadow-[0_18px_48px_rgba(0,0,0,0.16)] transition-all duration-300 px-3 sm:px-4',
             scrolled
-              ? 'bg-white/72 border-white/60 py-2 sm:py-2.5'
-              : 'bg-white/42 border-white/35 py-2.5 sm:py-3'
+              ? 'bg-white/84 border-white/70 py-2 sm:py-2.5'
+              : 'bg-white/62 border-white/55 py-2.5 sm:py-3'
           )}
         >
           <BrandLockup variant="header" />
@@ -63,7 +64,7 @@ export const Header = () => {
                 to={link.path}
                 className={cn(
                   'text-sm font-medium transition-colors hover:text-apple-gray-500',
-                  location.pathname === link.path ? 'text-apple-gray-500' : 'text-apple-gray-400'
+                  location.pathname === link.path ? 'text-apple-gray-500' : 'text-apple-gray-500/85'
                 )}
               >
                 {link.name}
@@ -78,7 +79,7 @@ export const Header = () => {
           <button
             className={cn(
               'md:hidden rounded-xl border border-white/55 bg-white/22 p-1.5 sm:p-2 text-apple-gray-500 backdrop-blur-xl shadow-[0_8px_24px_rgba(0,0,0,0.10)]',
-              isOpen ? 'text-apple-gray-500' : 'text-apple-gray-400'
+              isOpen ? 'text-apple-gray-500' : 'text-apple-gray-500/85'
             )}
             onClick={() => setIsOpen(!isOpen)}
             aria-label={isOpen ? 'Close menu' : 'Open menu'}
@@ -105,7 +106,7 @@ export const Header = () => {
                     to={link.path}
                     className={cn(
                       'text-base sm:text-lg font-medium py-2.5 flex items-center justify-between',
-                      location.pathname === link.path ? 'text-apple-gray-500' : 'text-apple-gray-400'
+                      location.pathname === link.path ? 'text-apple-gray-500' : 'text-apple-gray-500/85'
                     )}
                   >
                     {link.name}
