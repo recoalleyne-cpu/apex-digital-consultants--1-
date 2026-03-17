@@ -330,3 +330,124 @@ When unsure:
 prefer stability over cleverness
 
 The production site must always remain deployable on Vercel.
+
+## Codex Development Protocol
+
+Before performing any work in this repository, the agent must read the following files:
+
+- PROJECT_ROADMAP.md
+- PROJECT_ARCHITECTURE.md
+- DATABASE_SCHEMA_PLAN.md
+- FEATURE_ROADMAP.md
+- CODEX_TASK_PLAYBOOK.md
+
+These files define the approved architecture and development direction for the Apex Digital Consultants platform.
+
+---
+
+## Project Context
+
+This repository powers the **Apex Digital Consultants marketing platform and CMS system**.
+
+Technology stack:
+
+- React + Vite
+- Tailwind CSS
+- Vercel hosting
+- Neon Postgres
+- Vercel Blob Storage
+- Serverless API routes
+
+The system functions as both:
+
+1. A marketing website
+2. A lightweight CMS platform
+
+---
+
+## Hosting Constraints
+
+This project runs on:
+
+Vercel Hobby Plan + Neon Free Tier
+
+The agent must design solutions that respect:
+
+- serverless cold starts
+- minimal dependencies in API routes
+- lightweight database queries
+- minimal runtime memory usage
+
+Heavy libraries or server frameworks should be avoided.
+
+---
+
+## Approved CMS Architecture
+
+The platform uses the **media table as the central asset registry**.
+
+Media items power:
+
+- certification ticker
+- founder image
+- portfolio grid
+- logos page
+- testimonials
+- landing pages
+
+Blog posts and landing pages are stored in dedicated tables.
+
+---
+
+## Development Principles
+
+The agent must:
+
+1. Audit existing code before making changes
+2. Avoid modifying unrelated files
+3. Prefer minimal safe changes
+4. Preserve the current design language
+5. Maintain compatibility with Vercel Hobby
+6. Ensure all APIs return fast responses
+7. Avoid blocking UI states
+
+---
+
+## Required Workflow
+
+When performing tasks the agent should:
+
+1. Audit the repository
+2. Explain the architectural choice
+3. Implement minimal safe code
+4. Verify local build
+5. Verify API behavior
+6. Summarize changes clearly
+7. Provide git commands
+
+---
+
+## Stop Conditions
+
+The agent must stop and request human input if:
+
+- database schema changes are required
+- DNS configuration is needed
+- domain connection is requested
+- production deployment decisions are needed
+- architecture changes are proposed
+
+---
+
+## Launch Awareness
+
+The final launch sequence for this project is:
+
+1. CMS systems verified
+2. dynamic content verified
+3. mobile QA completed
+4. SEO setup confirmed
+5. domain connected
+6. site indexed
+
+The agent must **not attempt to configure domains automatically**.

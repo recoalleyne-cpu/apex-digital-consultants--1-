@@ -40,70 +40,84 @@ export const Header = () => {
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
         scrolled
-          ? 'bg-white/80 backdrop-blur-md border-b border-apple-gray-100 py-2.5 sm:py-3'
-          : 'bg-transparent py-4 sm:py-5 lg:py-6'
+          ? 'py-2.5 sm:py-3'
+          : 'py-4 sm:py-5 lg:py-6'
       )}
     >
-      <nav className="container-wide px-4 sm:px-6 flex items-center justify-between gap-3 sm:gap-4">
-        <BrandLockup variant="header" />
-
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-6 lg:gap-8">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={cn(
-                'text-sm font-medium transition-colors hover:text-apple-gray-300',
-                location.pathname === link.path ? 'text-apple-gray-500' : 'text-apple-gray-300'
-              )}
-            >
-              {link.name}
-            </Link>
-          ))}
-          <Link to="/contact" className="apple-button apple-button-primary text-sm py-2 px-5">
-            Get A Quote
-          </Link>
-        </div>
-
-        {/* Mobile Menu Toggle */}
-        <button
-          className="md:hidden p-1.5 sm:p-2 text-apple-gray-500"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label={isOpen ? 'Close menu' : 'Open menu'}
+      <nav className="container-wide px-4 sm:px-6">
+        <div
+          className={cn(
+            'flex items-center justify-between gap-3 sm:gap-4 rounded-2xl border backdrop-blur-2xl shadow-[0_18px_48px_rgba(0,0,0,0.16)] transition-all duration-300 px-3 sm:px-4',
+            scrolled
+              ? 'bg-white/72 border-white/60 py-2 sm:py-2.5'
+              : 'bg-white/42 border-white/35 py-2.5 sm:py-3'
+          )}
         >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+          <BrandLockup variant="header" />
+
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center gap-6 lg:gap-8">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={cn(
+                  'text-sm font-medium transition-colors hover:text-apple-gray-500',
+                  location.pathname === link.path ? 'text-apple-gray-500' : 'text-apple-gray-400'
+                )}
+              >
+                {link.name}
+              </Link>
+            ))}
+            <Link to="/contact" className="apple-button apple-button-primary text-sm py-2 px-5">
+              Get A Quote
+            </Link>
+          </div>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            className={cn(
+              'md:hidden rounded-xl border border-white/55 bg-white/22 p-1.5 sm:p-2 text-apple-gray-500 backdrop-blur-xl shadow-[0_8px_24px_rgba(0,0,0,0.10)]',
+              isOpen ? 'text-apple-gray-500' : 'text-apple-gray-400'
+            )}
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label={isOpen ? 'Close menu' : 'Open menu'}
+          >
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </nav>
 
       {/* Mobile Nav */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute top-full left-0 right-0 bg-white border-b border-apple-gray-100 md:hidden overflow-hidden"
-          >
-            <div className="flex max-h-[calc(100vh-5rem)] flex-col overflow-y-auto p-4 sm:p-5 gap-2.5">
-              {NAV_LINKS.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={cn(
-                    'text-base sm:text-lg font-medium py-2.5 flex items-center justify-between',
-                    location.pathname === link.path ? 'text-apple-gray-500' : 'text-apple-gray-300'
-                  )}
-                >
-                  {link.name}
-                  <ChevronRight size={18} className="text-apple-gray-100" />
+          <div className="container-wide px-4 sm:px-6 md:hidden">
+            <motion.div
+              initial={{ opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              className="mt-2 overflow-hidden rounded-2xl border border-white/40 bg-white/26 backdrop-blur-3xl shadow-[0_18px_48px_rgba(0,0,0,0.14)]"
+            >
+              <div className="flex max-h-[calc(100vh-5rem)] flex-col overflow-y-auto p-4 sm:p-5 gap-2.5">
+                {NAV_LINKS.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className={cn(
+                      'text-base sm:text-lg font-medium py-2.5 flex items-center justify-between',
+                      location.pathname === link.path ? 'text-apple-gray-500' : 'text-apple-gray-400'
+                    )}
+                  >
+                    {link.name}
+                    <ChevronRight size={18} className="text-apple-gray-300" />
+                  </Link>
+                ))}
+                <Link to="/contact" className="apple-button apple-button-primary text-center mt-3">
+                  Get A Quote
                 </Link>
-              ))}
-              <Link to="/contact" className="apple-button apple-button-primary text-center mt-3">
-                Get A Quote
-              </Link>
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </header>

@@ -131,13 +131,24 @@ export const Contact = () => {
                 <h4 className="font-bold mb-5">Follow Our Journey</h4>
 
                 <div className="flex flex-wrap gap-5">
-                  {['Instagram', 'LinkedIn', 'Twitter', 'Facebook'].map((social) => (
+                  {[
+                    {
+                      label: 'Instagram',
+                      href: 'https://www.instagram.com/apexdigitalconsultants/'
+                    },
+                    {
+                      label: 'Facebook',
+                      href: 'https://www.facebook.com/ApexDigitalConsultants/'
+                    }
+                  ].map((social) => (
                     <a
-                      key={social}
-                      href="#"
+                      key={social.label}
+                      href={social.href}
+                      target="_blank"
+                      rel="noreferrer"
                       className="text-sm font-medium text-apple-gray-300 hover:text-apex-yellow transition-colors"
                     >
-                      {social}
+                      {social.label}
                     </a>
                   ))}
                 </div>
