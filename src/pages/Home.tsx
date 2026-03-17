@@ -10,6 +10,10 @@ export const Home = () => {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const featuredLogo = '/black%20logo.png';
+  const heroVideoSources = [
+    'https://videos.pexels.com/video-files/19948847/19948847-hd_1920_1080_60fps.mp4',
+    'https://videos.pexels.com/video-files/19948847/19948847-sd_960_540_30fps.mp4'
+  ];
   const maskImage = useMotionTemplate`radial-gradient(500px circle at ${mouseX}px ${mouseY}px, transparent 0%, black 60%)`;
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
@@ -28,13 +32,18 @@ export const Home = () => {
       >
 
         <div className="absolute inset-0">
-          <div
-            className="absolute inset-0 bg-cover bg-center scale-105"
-            style={{
-              backgroundImage:
-                'url("https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80&w=2000")'
-            }}
-          />
+          <video
+            className="absolute inset-0 h-full w-full object-cover scale-105"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+          >
+            {heroVideoSources.map((source) => (
+              <source key={source} src={source} type="video/mp4" />
+            ))}
+          </video>
 
           <motion.div
             className="absolute inset-0 z-10 backdrop-blur-3xl bg-white/8"
