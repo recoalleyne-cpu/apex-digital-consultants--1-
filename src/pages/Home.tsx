@@ -134,10 +134,10 @@ export const Home = () => {
                 </p>
 
                 <Link
-                  to="/services"
+                  to={`/services/${service.id}`}
                   className="flex items-center gap-2 text-apex-yellow font-medium"
                 >
-                  Learn More <ChevronRight size={16} />
+                  View Service Funnel <ChevronRight size={16} />
                 </Link>
 
               </div>

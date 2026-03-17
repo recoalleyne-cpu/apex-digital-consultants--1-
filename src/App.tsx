@@ -22,6 +22,7 @@ import { Privacy } from './pages/Privacy';
 import { WebDesign } from './pages/WebDesign';
 import { Logos } from './pages/Logos';
 import { Websites } from './pages/Websites';
+import { ServiceFunnel } from './pages/ServiceFunnel';
 import { AdminMedia } from './pages/AdminMedia';
 import { AdminTestimonials } from './pages/AdminTestimonials';
 import { AdminBlog } from './pages/AdminBlog';
@@ -63,6 +64,36 @@ const STATIC_ROUTE_SEO: Record<string, RouteSeoConfig> = {
     title: 'Services | Apex Digital Consultants',
     description:
       'Explore Apex services including web development, branding, Google advertising, and business digitization.'
+  },
+  '/services/web-development': {
+    title: 'Web Development and Design Funnel | Apex Digital Consultants',
+    description:
+      'Explore our web development and design funnel built to convert visitors into qualified leads.'
+  },
+  '/services/marketing-management': {
+    title: 'Marketing Management Funnel | Apex Digital Consultants',
+    description:
+      'Discover structured marketing management designed to improve campaign consistency and results.'
+  },
+  '/services/google-advertising': {
+    title: 'Google Advertising Funnel | Apex Digital Consultants',
+    description:
+      'See our Google advertising funnel approach for qualified traffic, conversion tracking, and ROI-focused optimization.'
+  },
+  '/services/graphic-design': {
+    title: 'Graphic Design and Logo Funnel | Apex Digital Consultants',
+    description:
+      'Review our brand identity and graphic design funnel for stronger trust, recognition, and conversion performance.'
+  },
+  '/services/photography-videography': {
+    title: 'Photography and Videography Funnel | Apex Digital Consultants',
+    description:
+      'Learn how our visual content funnel supports brand credibility and campaign performance.'
+  },
+  '/services/business-digitization': {
+    title: 'Business Digitization Funnel | Apex Digital Consultants',
+    description:
+      'See how our business digitization funnel streamlines operations and improves execution speed.'
   },
   '/services/web-design': {
     title: 'Web Design Services | Apex Digital Consultants',
@@ -274,6 +305,7 @@ const AppFrame = () => {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
+          <Route path="/services/:serviceId" element={<ServiceFunnel />} />
           <Route path="/digital-solutions" element={<DigitalSolutions />} />
           <Route path="/digital-solutions/:productId" element={<DigitalSolutionDetails />} />
           <Route path="/checkout/:productId" element={<DigitalSolutionCheckout />} />
