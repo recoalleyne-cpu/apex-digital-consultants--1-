@@ -31,6 +31,7 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminPortfolio } from './pages/AdminPortfolio';
 import { AdminLogos } from './pages/AdminLogos';
 import { AdminPaymentGateways } from './pages/AdminPaymentGateways';
+import { AdminGoogleIntegrations } from './pages/AdminGoogleIntegrations';
 import { AdminShell } from './components/admin/AdminShell';
 import { LandingPage } from './pages/LandingPage';
 import { applySeo } from './utils/seo';
@@ -301,6 +302,7 @@ const AppFrame = () => {
             <Route path="portfolio" element={<AdminPortfolio />} />
             <Route path="logos" element={<AdminLogos />} />
             <Route path="payment-gateways" element={<AdminPaymentGateways />} />
+            <Route path="google-integrations" element={<AdminGoogleIntegrations />} />
             <Route path="case-studies" element={<AdminCaseStudies />} />
           </Route>
         </Routes>

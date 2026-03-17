@@ -9,7 +9,8 @@ import {
   Layers,
   MessageSquareQuote,
   Newspaper,
-  Rocket
+  Rocket,
+  Settings2
 } from 'lucide-react';
 
 type AdminModuleCard = {
@@ -71,6 +72,13 @@ const MODULE_CARDS: AdminModuleCard[] = [
     chip: 'Payments'
   },
   {
+    title: 'Google Integrations',
+    description: 'Configure Analytics, GTM, Ads, Search Console, reCAPTCHA, and Maps.',
+    href: '/admin/google-integrations',
+    icon: Settings2,
+    chip: 'Tracking'
+  },
+  {
     title: 'Case Studies',
     description: 'Publish long-form project proof pages and outcomes.',
     href: '/admin/case-studies',
@@ -99,6 +107,10 @@ const QUICK_ACTIONS = [
   {
     label: 'Configure Card Gateway',
     href: '/admin/payment-gateways'
+  },
+  {
+    label: 'Review Google Setup',
+    href: '/admin/google-integrations'
   }
 ];
 
