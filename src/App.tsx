@@ -7,6 +7,8 @@ import { Home } from './pages/Home';
 import { About } from './pages/About';
 import { Services } from './pages/Services';
 import { DigitalSolutions } from './pages/DigitalSolutions';
+import { DigitalSolutionDetails } from './pages/DigitalSolutionDetails';
+import { DigitalSolutionCheckout } from './pages/DigitalSolutionCheckout';
 import { Portfolio } from './pages/Portfolio';
 import { Pricing } from './pages/Pricing';
 import { Contact } from './pages/Contact';
@@ -132,6 +134,7 @@ const RESERVED_TOP_LEVEL_SEGMENTS = new Set([
   'terms',
   'privacy',
   'admin',
+  'checkout',
   'lp'
 ]);
 
@@ -193,6 +196,28 @@ const RouteSeo = () => {
       return;
     }
 
+    if (/^\/digital-solutions\/[^/]+$/.test(normalizedPath)) {
+      applySeo({
+        title: 'Digital Solution Details | Apex Digital Consultants',
+        description:
+          'Review detailed funnel-driven product information, implementation value, and purchase options.',
+        canonical: `${origin}${normalizedPath}`,
+        robots: 'index, follow'
+      });
+      return;
+    }
+
+    if (/^\/checkout\/[^/]+$/.test(normalizedPath)) {
+      applySeo({
+        title: 'Secure Checkout | Apex Digital Consultants',
+        description:
+          'Complete your digital solution purchase details through the secure Apex checkout intake flow.',
+        canonical: `${origin}${normalizedPath}`,
+        robots: 'noindex, nofollow'
+      });
+      return;
+    }
+
     if (/^\/lp\/[^/]+$/.test(normalizedPath) || isTopLevelLandingPath(normalizedPath)) {
       applySeo({
         title: 'Service Page | Apex Digital Consultants',
@@ -238,6 +263,8 @@ const AppFrame = () => {
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
           <Route path="/digital-solutions" element={<DigitalSolutions />} />
+          <Route path="/digital-solutions/:productId" element={<DigitalSolutionDetails />} />
+          <Route path="/checkout/:productId" element={<DigitalSolutionCheckout />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/contact" element={<Contact />} />
