@@ -18,8 +18,11 @@ type CheckoutForm = {
   postalCode: string;
   licenseType: string;
   quantity: number;
-  timeline: string;
   paymentMethod: string;
+  cardholderName: string;
+  cardNumber: string;
+  cardExpiry: string;
+  cardCvv: string;
   businessGoals: string;
   technicalNotes: string;
   termsAccepted: boolean;
@@ -42,13 +45,22 @@ const DEFAULT_FORM: CheckoutForm = {
   postalCode: '',
   licenseType: 'single-site',
   quantity: 1,
-  timeline: 'asap',
-  paymentMethod: 'card',
+  paymentMethod: 'credit-card',
+  cardholderName: '',
+  cardNumber: '',
+  cardExpiry: '',
+  cardCvv: '',
   businessGoals: '',
   technicalNotes: '',
   termsAccepted: false,
   marketingOptIn: false
 };
+
+const LICENSE_OPTIONS = [
+  { value: 'single-site', label: 'Single Site', multiplier: 1 },
+  { value: 'multi-site', label: 'Multi Site', multiplier: 1.75 },
+  { value: 'agency', label: 'Agency', multiplier: 2.5 }
+] as const;
 
 const parsePrice = (value: string) => {
   const parsed = Number.parseFloat(value.replace(/[^0-9.]/g, ''));
@@ -90,7 +102,10 @@ export const DigitalSolutionCheckout = () => {
     );
   }
 
-  const unitPrice = parsePrice(product.price);
+  const basePrice = parsePrice(product.price);
+  const selectedLicense =
+    LICENSE_OPTIONS.find((option) => option.value === formData.licenseType) || LICENSE_OPTIONS[0];
+  const unitPrice = basePrice * selectedLicense.multiplier;
   const subtotal = unitPrice * Math.max(formData.quantity, 1);
   const serviceFee = 0;
   const total = subtotal + serviceFee;
@@ -129,6 +144,22 @@ export const DigitalSolutionCheckout = () => {
       nextErrors.quantity = 'Quantity must be at least 1.';
     }
 
+    if (formData.paymentMethod === 'credit-card') {
+      const digitsOnly = formData.cardNumber.replace(/\D/g, '');
+      if (!formData.cardholderName.trim()) {
+        nextErrors.cardholderName = 'Cardholder name is required.';
+      }
+      if (digitsOnly.length < 13 || digitsOnly.length > 19) {
+        nextErrors.cardNumber = 'Enter a valid card number.';
+      }
+      if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(formData.cardExpiry.trim())) {
+        nextErrors.cardExpiry = 'Use MM/YY format.';
+      }
+      if (!/^\d{3,4}$/.test(formData.cardCvv.trim())) {
+        nextErrors.cardCvv = 'Enter a valid CVV.';
+      }
+    }
+
     if (!formData.termsAccepted) {
       nextErrors.termsAccepted = 'You must accept the terms to continue.';
     }
@@ -142,10 +173,14 @@ export const DigitalSolutionCheckout = () => {
     if (!validate()) return;
 
     const subject = `Checkout Request - ${product.name}`;
+    const cardDigits = formData.cardNumber.replace(/\D/g, '');
+    const cardLast4 = cardDigits.length >= 4 ? cardDigits.slice(-4) : '';
     const body = [
       `Product: ${product.name}`,
       `Category: ${product.category}`,
-      `Unit Price: ${product.price}`,
+      `Base Price: ${formatUSD(basePrice)}`,
+      `License Type: ${selectedLicense.label} (x${selectedLicense.multiplier})`,
+      `Adjusted Unit Price: ${formatUSD(unitPrice)}`,
       `Quantity: ${formData.quantity}`,
       `Order Total: ${formatUSD(total)}`,
       '',
@@ -165,9 +200,10 @@ export const DigitalSolutionCheckout = () => {
       `Postal Code: ${formData.postalCode}`,
       '',
       'Order Preferences',
-      `License Type: ${formData.licenseType}`,
-      `Timeline: ${formData.timeline}`,
+      `License Type: ${selectedLicense.label}`,
       `Preferred Payment Method: ${formData.paymentMethod}`,
+      `Cardholder Name: ${formData.cardholderName || 'N/A'}`,
+      `Credit Card Last 4: ${cardLast4 || 'N/A'}`,
       '',
       'Business Goals',
       formData.businessGoals,
@@ -282,9 +318,11 @@ export const DigitalSolutionCheckout = () => {
                   onChange={(e) => setField('licenseType', e.target.value)}
                   className="w-full border border-apple-gray-100 rounded-xl p-4 bg-white"
                 >
-                  <option value="single-site">License: Single Site</option>
-                  <option value="multi-site">License: Multi Site</option>
-                  <option value="agency">License: Agency</option>
+                  {LICENSE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {`License: ${option.label} (${formatUSD(basePrice * option.multiplier)} each)`}
+                    </option>
+                  ))}
                 </select>
                 <input
                   type="number"
@@ -294,24 +332,52 @@ export const DigitalSolutionCheckout = () => {
                   className="w-full border border-apple-gray-100 rounded-xl p-4"
                 />
                 <select
-                  value={formData.timeline}
-                  onChange={(e) => setField('timeline', e.target.value)}
-                  className="w-full border border-apple-gray-100 rounded-xl p-4 bg-white"
-                >
-                  <option value="asap">Timeline: ASAP</option>
-                  <option value="2-4-weeks">Timeline: 2-4 Weeks</option>
-                  <option value="1-2-months">Timeline: 1-2 Months</option>
-                </select>
-                <select
                   value={formData.paymentMethod}
                   onChange={(e) => setField('paymentMethod', e.target.value)}
-                  className="w-full border border-apple-gray-100 rounded-xl p-4 bg-white"
+                  className="w-full border border-apple-gray-100 rounded-xl p-4 bg-white md:col-span-2"
                 >
-                  <option value="card">Preferred Payment: Card</option>
+                  <option value="credit-card">Preferred Payment: Credit Card</option>
                   <option value="paypal">Preferred Payment: PayPal</option>
                   <option value="bank-transfer">Preferred Payment: Bank Transfer</option>
                 </select>
               </div>
+
+              {formData.paymentMethod === 'credit-card' ? (
+                <div className="rounded-2xl border border-apple-gray-100 bg-apple-gray-50/70 p-5 sm:p-6 space-y-4">
+                  <p className="text-sm font-semibold text-apple-gray-500">Credit Card Details</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      value={formData.cardholderName}
+                      onChange={(e) => setField('cardholderName', e.target.value)}
+                      placeholder="Cardholder Name *"
+                      className="w-full border border-apple-gray-100 rounded-xl p-4 md:col-span-2"
+                    />
+                    <input
+                      value={formData.cardNumber}
+                      onChange={(e) => setField('cardNumber', e.target.value)}
+                      placeholder="Card Number *"
+                      className="w-full border border-apple-gray-100 rounded-xl p-4 md:col-span-2"
+                      inputMode="numeric"
+                    />
+                    <input
+                      value={formData.cardExpiry}
+                      onChange={(e) => setField('cardExpiry', e.target.value)}
+                      placeholder="Expiry (MM/YY) *"
+                      className="w-full border border-apple-gray-100 rounded-xl p-4"
+                    />
+                    <input
+                      value={formData.cardCvv}
+                      onChange={(e) => setField('cardCvv', e.target.value)}
+                      placeholder="CVV *"
+                      className="w-full border border-apple-gray-100 rounded-xl p-4"
+                      inputMode="numeric"
+                    />
+                  </div>
+                  <p className="text-xs text-apple-gray-300">
+                    For security, full card details are not transmitted in email. Only the last 4 digits are included in the request summary.
+                  </p>
+                </div>
+              ) : null}
 
               <textarea
                 value={formData.businessGoals}
@@ -376,7 +442,15 @@ export const DigitalSolutionCheckout = () => {
 
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between text-apple-gray-300">
-                  <span>Unit Price</span>
+                  <span>Base Price</span>
+                  <span>{formatUSD(basePrice)}</span>
+                </div>
+                <div className="flex items-center justify-between text-apple-gray-300">
+                  <span>License</span>
+                  <span>{`${selectedLicense.label} (x${selectedLicense.multiplier})`}</span>
+                </div>
+                <div className="flex items-center justify-between text-apple-gray-300">
+                  <span>Adjusted Unit Price</span>
                   <span>{formatUSD(unitPrice)}</span>
                 </div>
                 <div className="flex items-center justify-between text-apple-gray-300">
