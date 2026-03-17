@@ -15,6 +15,21 @@ const parseLimit = (value: unknown) => {
   return clamp(parsed, 1, 20);
 };
 
+const parseMaxReviews = (value: unknown, fallback = 10) => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return clamp(Math.floor(value), 1, 20);
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number.parseInt(value.trim(), 10);
+    if (Number.isFinite(parsed)) {
+      return clamp(parsed, 1, 20);
+    }
+  }
+
+  return clamp(fallback, 1, 20);
+};
+
 const parseFeaturedFlag = (value: unknown) => {
   if (typeof value !== 'string') return true;
   const normalized = value.trim().toLowerCase();
@@ -110,7 +125,8 @@ type GoogleImportItem = {
 
 const normalizeGoogleImportItem = (
   value: unknown,
-  defaultFeatured: boolean
+  defaultFeatured: boolean,
+  defaultCompany?: string | null
 ): GoogleImportItem | null => {
   const item = toObject(value);
   if (!item) return null;
@@ -119,21 +135,29 @@ const normalizeGoogleImportItem = (
   const textObject = toObject(item.text);
   const originalTextObject = toObject(item.originalText);
 
-  const externalId = pickFirstText(
-    item.review_id,
-    item.reviewId,
-    item.external_id,
-    item.externalId,
-    item.id,
-    item.name
-  );
-
   const name = pickFirstText(
     item.reviewer_name,
     item.reviewerName,
     item.author_name,
     item.authorName,
     author?.displayName
+  );
+
+  const timeFingerprint = pickFirstText(
+    typeof item.time === 'number' ? String(item.time) : item.time,
+    item.publishTime,
+    item.published_at,
+    item.publishedAt
+  );
+
+  const externalId = pickFirstText(
+    item.review_id,
+    item.reviewId,
+    item.external_id,
+    item.externalId,
+    item.id,
+    item.name,
+    name && timeFingerprint ? `${name}-${timeFingerprint}` : null
   );
 
   const quote = pickFirstText(
@@ -163,7 +187,7 @@ const normalizeGoogleImportItem = (
       item.profilePhotoUrl,
       author?.photoUri
     ),
-    company: pickFirstText(item.company, item.business),
+    company: pickFirstText(item.company, item.business, defaultCompany),
     role: pickFirstText(item.role, item.title),
     externalUrl: pickFirstText(
       item.external_url,
@@ -183,6 +207,120 @@ const normalizeGoogleImportItem = (
     ),
     featured: parseBoolean(item.featured, defaultFeatured)
   };
+};
+
+const syncGoogleImportItems = async (
+  sql: ReturnType<typeof neon>,
+  rawItems: unknown[],
+  defaultFeatured: boolean,
+  defaultCompany: string | null = null
+) => {
+  let synced = 0;
+  let skipped = 0;
+
+  for (const rawItem of rawItems) {
+    const item = normalizeGoogleImportItem(rawItem, defaultFeatured, defaultCompany);
+    if (!item) {
+      skipped += 1;
+      continue;
+    }
+
+    await sql`
+      INSERT INTO testimonials (
+        name, company, role, quote, rating, image_url, featured, source, external_id, external_url, published_at, last_synced_at
+      )
+      VALUES (
+        ${item.name},
+        ${item.company},
+        ${item.role},
+        ${item.quote},
+        ${item.rating},
+        ${item.imageUrl},
+        ${item.featured},
+        'google',
+        ${item.externalId},
+        ${item.externalUrl},
+        ${item.publishedAt},
+        NOW()
+      )
+      ON CONFLICT (source, external_id)
+      DO UPDATE SET
+        name = EXCLUDED.name,
+        company = EXCLUDED.company,
+        role = EXCLUDED.role,
+        quote = EXCLUDED.quote,
+        rating = EXCLUDED.rating,
+        image_url = EXCLUDED.image_url,
+        featured = EXCLUDED.featured,
+        external_url = EXCLUDED.external_url,
+        published_at = EXCLUDED.published_at,
+        last_synced_at = NOW()
+    `;
+
+    synced += 1;
+  }
+
+  return { synced, skipped };
+};
+
+const fetchGooglePlaceReviews = async (placeId: string, maxReviews: number) => {
+  const apiKey =
+    normalizeText(process.env.GOOGLE_MAPS_API_KEY) ||
+    normalizeText(process.env.GOOGLE_PLACES_API_KEY);
+
+  if (!apiKey) {
+    throw new Error('Missing GOOGLE_MAPS_API_KEY or GOOGLE_PLACES_API_KEY environment variable');
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10_000);
+
+  try {
+    const response = await fetch(
+      `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}?languageCode=en`,
+      {
+        method: 'GET',
+        headers: {
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': 'id,displayName,reviews'
+        },
+        signal: controller.signal
+      }
+    );
+
+    const text = await response.text();
+    let payload: Record<string, unknown> | null = null;
+    try {
+      payload = JSON.parse(text) as Record<string, unknown>;
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok) {
+      const apiError = payload ? toObject(payload.error) : null;
+      const message =
+        pickFirstText(apiError?.message, text) ||
+        `Google Places request failed (${response.status})`;
+      throw new Error(message);
+    }
+
+    const displayNameObject = payload ? toObject(payload.displayName) : null;
+    const businessName = pickFirstText(displayNameObject?.text, payload?.displayName);
+    const reviews = payload && Array.isArray(payload.reviews) ? payload.reviews : [];
+
+    return {
+      businessName,
+      items: reviews.slice(0, maxReviews)
+    };
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Google Places request timed out');
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 };
 
 const ensureTestimonialsTable = async (sql: ReturnType<typeof neon>) => {
@@ -297,55 +435,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const defaultFeatured = parseBoolean(payload.featured, false);
-        let synced = 0;
-        let skipped = 0;
-
-        for (const rawItem of rawItems) {
-          const item = normalizeGoogleImportItem(rawItem, defaultFeatured);
-          if (!item) {
-            skipped += 1;
-            continue;
-          }
-
-          await sql`
-            INSERT INTO testimonials (
-              name, company, role, quote, rating, image_url, featured, source, external_id, external_url, published_at, last_synced_at
-            )
-            VALUES (
-              ${item.name},
-              ${item.company},
-              ${item.role},
-              ${item.quote},
-              ${item.rating},
-              ${item.imageUrl},
-              ${item.featured},
-              'google',
-              ${item.externalId},
-              ${item.externalUrl},
-              ${item.publishedAt},
-              NOW()
-            )
-            ON CONFLICT (source, external_id)
-            DO UPDATE SET
-              name = EXCLUDED.name,
-              company = EXCLUDED.company,
-              role = EXCLUDED.role,
-              quote = EXCLUDED.quote,
-              rating = EXCLUDED.rating,
-              image_url = EXCLUDED.image_url,
-              featured = EXCLUDED.featured,
-              external_url = EXCLUDED.external_url,
-              published_at = EXCLUDED.published_at,
-              last_synced_at = NOW()
-          `;
-
-          synced += 1;
-        }
+        const { synced, skipped } = await syncGoogleImportItems(
+          sql,
+          rawItems,
+          defaultFeatured
+        );
 
         return res.status(200).json({
           success: true,
           mode: 'google-import',
           received: rawItems.length,
+          synced,
+          skipped
+        });
+      }
+
+      if (importMode === 'google-place-sync') {
+        const placeId = pickFirstText(payload.place_id, payload.placeId);
+        if (!placeId) {
+          return res.status(400).send('Google Place sync requires place_id');
+        }
+
+        const maxReviews = parseMaxReviews(
+          payload.max_reviews ?? payload.maxReviews,
+          10
+        );
+        const defaultFeatured = parseBoolean(payload.featured, false);
+
+        const fetched = await fetchGooglePlaceReviews(placeId, maxReviews);
+        const { synced, skipped } = await syncGoogleImportItems(
+          sql,
+          fetched.items,
+          defaultFeatured,
+          fetched.businessName
+        );
+
+        return res.status(200).json({
+          success: true,
+          mode: 'google-place-sync',
+          place_id: placeId,
+          business_name: fetched.businessName,
+          received: fetched.items.length,
           synced,
           skipped
         });
