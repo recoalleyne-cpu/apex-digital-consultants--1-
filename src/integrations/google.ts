@@ -1,4 +1,7 @@
-import { GOOGLE_INTEGRATIONS } from '../config/googleIntegrations';
+import {
+  GOOGLE_INTEGRATIONS,
+  GOOGLE_INTEGRATIONS_DIAGNOSTICS
+} from '../config/googleIntegrations';
 
 type ScriptLoadOptions = {
   id: string;
@@ -269,9 +272,33 @@ const initializeAdsTracking = () => {
 
 let integrationsInitialized = false;
 let lastTrackedPath: string | null = null;
+let diagnosticsLogged = false;
+
+const logInitializationDiagnosticsOnce = () => {
+  if (!canUseDom() || diagnosticsLogged) return;
+  diagnosticsLogged = true;
+
+  const enabled = GOOGLE_INTEGRATIONS_DIAGNOSTICS.enabledIntegrations;
+
+  if (!enabled.length) {
+    console.info(
+      '[GoogleIntegrations] No Google integrations are enabled in this build. Set VITE_GOOGLE_* (or NEXT_PUBLIC_GOOGLE_*) env variables in Vercel and redeploy.'
+    );
+    return;
+  }
+
+  if (GOOGLE_INTEGRATIONS.analytics.debugMode || import.meta.env.DEV) {
+    console.info('[GoogleIntegrations] Initialized with configuration:', {
+      mode: GOOGLE_INTEGRATIONS_DIAGNOSTICS.mode,
+      enabledIntegrations: enabled,
+      envSources: GOOGLE_INTEGRATIONS_DIAGNOSTICS.envSources
+    });
+  }
+};
 
 export const initializeGoogleIntegrations = () => {
   if (!canUseDom() || integrationsInitialized) return;
+  logInitializationDiagnosticsOnce();
 
   initializeSearchConsoleVerification();
   initializeGoogleFonts();
