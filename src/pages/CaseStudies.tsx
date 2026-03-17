@@ -9,6 +9,7 @@ type CaseStudySummary = {
   slug: string;
   client_name?: string | null;
   summary?: string | null;
+  services_provided?: string | null;
   featured_image_url?: string | null;
   tech_stack?: string | null;
   is_featured?: boolean;
@@ -17,12 +18,23 @@ type CaseStudySummary = {
 const FALLBACK_IMAGE =
   'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200';
 
+const isPlaceholderValue = (value?: string | null) => {
+  if (!value) return true;
+  const normalized = value.trim().toLowerCase();
+  return normalized === '[add url]' || normalized === '[add urls]';
+};
+
+const getRenderableImageUrl = (value?: string | null) => {
+  if (isPlaceholderValue(value)) return null;
+  return value?.trim() || null;
+};
+
 const splitList = (value?: string | null) => {
   if (!value) return [];
   return value
     .split(',')
     .map((item) => item.trim())
-    .filter(Boolean);
+    .filter((item) => Boolean(item) && !isPlaceholderValue(item));
 };
 
 export const CaseStudies = () => {
@@ -36,7 +48,7 @@ export const CaseStudies = () => {
 
     const loadItems = async () => {
       try {
-        const response = await fetch('/api/case-studies?limit=12', {
+        const response = await fetch('/api/case-studies?limit=30', {
           signal: controller.signal
         });
 
@@ -144,7 +156,7 @@ export const CaseStudies = () => {
                     <Link to={`/case-studies/${item.slug}`} className="group block">
                       <div className="aspect-[16/10] rounded-[2rem] overflow-hidden bg-apple-gray-50 mb-7">
                         <img
-                          src={item.featured_image_url || FALLBACK_IMAGE}
+                          src={getRenderableImageUrl(item.featured_image_url) || FALLBACK_IMAGE}
                           alt={item.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                           referrerPolicy="no-referrer"

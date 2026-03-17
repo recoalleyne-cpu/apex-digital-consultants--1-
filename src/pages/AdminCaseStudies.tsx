@@ -31,6 +31,9 @@ const formatDate = (value?: string | null) => {
   }).format(date);
 };
 
+const DEFAULT_SERVICES_PROVIDED =
+  'Website Design, Website Development, Responsive Web Design, Content Structuring, Brand Presentation';
+
 export const AdminCaseStudies = () => {
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
@@ -44,6 +47,7 @@ export const AdminCaseStudies = () => {
   const [featuredImageUrl, setFeaturedImageUrl] = useState('');
   const [galleryImages, setGalleryImages] = useState('');
   const [techStack, setTechStack] = useState('');
+  const [servicesProvided, setServicesProvided] = useState(DEFAULT_SERVICES_PROVIDED);
 
   const [ctaText, setCtaText] = useState('Start Your Project');
   const [ctaLink, setCtaLink] = useState('/contact');
@@ -89,6 +93,7 @@ export const AdminCaseStudies = () => {
     setFeaturedImageUrl('');
     setGalleryImages('');
     setTechStack('');
+    setServicesProvided(DEFAULT_SERVICES_PROVIDED);
     setCtaText('Start Your Project');
     setCtaLink('/contact');
     setIsFeatured(false);
@@ -131,6 +136,7 @@ export const AdminCaseStudies = () => {
           featured_image_url: featuredImageUrl,
           gallery_images: galleryImages,
           tech_stack: techStack,
+          services_provided: servicesProvided,
           cta_text: ctaText,
           cta_link: ctaLink,
           is_featured: isFeatured,
@@ -245,6 +251,13 @@ export const AdminCaseStudies = () => {
               placeholder="Tech Stack (comma or new-line separated)"
               value={techStack}
               onChange={(e) => setTechStack(e.target.value)}
+              className="w-full border border-apple-gray-100 p-4 rounded-xl min-h-[90px]"
+            />
+
+            <textarea
+              placeholder="Services Provided (comma or new-line separated)"
+              value={servicesProvided}
+              onChange={(e) => setServicesProvided(e.target.value)}
               className="w-full border border-apple-gray-100 p-4 rounded-xl min-h-[90px]"
             />
 

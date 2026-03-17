@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
+import { INITIAL_CASE_STUDIES } from '../src/constants/caseStudiesSeed';
 
 export const config = {
   runtime: 'nodejs'
@@ -80,6 +81,7 @@ const ensureCaseStudiesTable = async (sql: ReturnType<typeof neon>) => {
       challenge TEXT,
       solution TEXT,
       results TEXT,
+      services_provided TEXT,
       featured_image_url TEXT,
       gallery_images TEXT,
       tech_stack TEXT,
@@ -93,6 +95,11 @@ const ensureCaseStudiesTable = async (sql: ReturnType<typeof neon>) => {
   `;
 
   await sql`
+    ALTER TABLE case_studies
+    ADD COLUMN IF NOT EXISTS services_provided TEXT
+  `;
+
+  await sql`
     CREATE INDEX IF NOT EXISTS case_studies_slug_idx
     ON case_studies (slug)
   `;
@@ -101,6 +108,63 @@ const ensureCaseStudiesTable = async (sql: ReturnType<typeof neon>) => {
     CREATE INDEX IF NOT EXISTS case_studies_publish_idx
     ON case_studies (is_published, is_featured, updated_at DESC)
   `;
+};
+
+const ensureInitialCaseStudies = async (sql: ReturnType<typeof neon>) => {
+  const countRows = await sql`
+    SELECT COUNT(*)::int AS total
+    FROM case_studies
+  `;
+
+  const rawTotal = countRows[0]?.total;
+  const total =
+    typeof rawTotal === 'number'
+      ? rawTotal
+      : Number.parseInt(String(rawTotal ?? '0'), 10);
+
+  if (Number.isFinite(total) && total > 0) {
+    return;
+  }
+
+  for (const item of INITIAL_CASE_STUDIES) {
+    await sql`
+      INSERT INTO case_studies (
+        title,
+        slug,
+        client_name,
+        summary,
+        challenge,
+        solution,
+        results,
+        services_provided,
+        featured_image_url,
+        gallery_images,
+        tech_stack,
+        cta_text,
+        cta_link,
+        is_featured,
+        is_published
+      )
+      VALUES (
+        ${item.title},
+        ${item.slug},
+        ${item.client_name},
+        ${item.summary},
+        ${item.challenge},
+        ${item.solution},
+        ${item.results},
+        ${item.services_provided},
+        ${item.featured_image_url},
+        ${item.gallery_images},
+        ${item.tech_stack},
+        ${item.cta_text},
+        ${item.cta_link},
+        ${item.is_featured},
+        ${item.is_published}
+      )
+      ON CONFLICT (slug) DO NOTHING
+    `;
+  }
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -144,6 +208,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const challenge = parseText(payload.challenge);
       const solution = parseText(payload.solution);
       const results = parseText(payload.results);
+      const servicesProvided = parseDelimitedField(payload.services_provided);
       const featuredImageUrl = parseText(payload.featured_image_url);
       const galleryImages = parseDelimitedField(payload.gallery_images);
       const techStack = parseDelimitedField(payload.tech_stack);
@@ -162,6 +227,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             challenge,
             solution,
             results,
+            services_provided,
             featured_image_url,
             gallery_images,
             tech_stack,
@@ -178,6 +244,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ${challenge},
             ${solution},
             ${results},
+            ${servicesProvided},
             ${featuredImageUrl},
             ${galleryImages},
             ${techStack},
@@ -195,6 +262,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             challenge,
             solution,
             results,
+            services_provided,
             featured_image_url,
             gallery_images,
             tech_stack,
@@ -224,6 +292,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const featuredOnly = parseBoolean(req.query.featured, false);
     const limit = parseLimit(req.query.limit, 12);
 
+    await ensureInitialCaseStudies(sql);
+
     if (slug) {
       const rows = includeDrafts
         ? await sql`
@@ -236,6 +306,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               challenge,
               solution,
               results,
+              services_provided,
               featured_image_url,
               gallery_images,
               tech_stack,
@@ -259,6 +330,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               challenge,
               solution,
               results,
+              services_provided,
               featured_image_url,
               gallery_images,
               tech_stack,
@@ -297,6 +369,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           slug,
           client_name,
           summary,
+          services_provided,
           featured_image_url,
           tech_stack,
           cta_text,
@@ -318,6 +391,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           slug,
           client_name,
           summary,
+          services_provided,
           featured_image_url,
           tech_stack,
           cta_text,
@@ -338,6 +412,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           slug,
           client_name,
           summary,
+          services_provided,
           featured_image_url,
           tech_stack,
           cta_text,
@@ -360,6 +435,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           slug,
           client_name,
           summary,
+          services_provided,
           featured_image_url,
           tech_stack,
           cta_text,
