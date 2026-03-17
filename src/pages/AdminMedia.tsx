@@ -465,7 +465,9 @@ export const AdminMedia = ({
                 <option value="">No placement (unassigned)</option>
                 {MEDIA_PLACEMENT_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
-                    {option.label}
+                    {option.status === 'recommended-for-future-use'
+                      ? `${option.label} (Planned)`
+                      : option.label}
                   </option>
                 ))}
                 <option value={CUSTOM_PLACEMENT_OPTION}>
@@ -476,11 +478,18 @@ export const AdminMedia = ({
               </select>
               <p className="text-xs text-apple-gray-300">
                 {selectedPlacementMeta
-                  ? `Selected: ${selectedPlacementMeta.label}`
+                  ? `Selected: ${selectedPlacementMeta.label} (${
+                      selectedPlacementMeta.status === 'already-in-use'
+                        ? 'active'
+                        : 'planned'
+                    })`
                   : placement.trim()
                     ? `Selected custom placement: ${placement.trim()}`
                     : 'Choose where this media should render.'}
               </p>
+              {selectedPlacementMeta?.description ? (
+                <p className="text-xs text-apple-gray-300">{selectedPlacementMeta.description}</p>
+              ) : null}
             </div>
 
             {!lockPlacement && selectedPlacementOption === CUSTOM_PLACEMENT_OPTION ? (
@@ -655,7 +664,9 @@ export const AdminMedia = ({
                 <option value="">Filter by placement (all)</option>
                 {MEDIA_PLACEMENT_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
-                    {option.label}
+                    {option.status === 'recommended-for-future-use'
+                      ? `${option.label} (Planned)`
+                      : option.label}
                   </option>
                 ))}
                 <option value={CUSTOM_PLACEMENT_OPTION}>
