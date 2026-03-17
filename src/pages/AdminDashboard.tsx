@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
+  CreditCard,
   FileText,
   FolderKanban,
   ImageIcon,
@@ -63,6 +64,13 @@ const MODULE_CARDS: AdminModuleCard[] = [
     chip: 'Brand'
   },
   {
+    title: 'Payment Gateways',
+    description: 'Set up card gateway credentials and integration templates.',
+    href: '/admin/payment-gateways',
+    icon: CreditCard,
+    chip: 'Payments'
+  },
+  {
     title: 'Case Studies',
     description: 'Publish long-form project proof pages and outcomes.',
     href: '/admin/case-studies',
@@ -87,6 +95,10 @@ const QUICK_ACTIONS = [
   {
     label: 'Generate Landing Page',
     href: '/admin/landing-pages'
+  },
+  {
+    label: 'Configure Card Gateway',
+    href: '/admin/payment-gateways'
   }
 ];
 
