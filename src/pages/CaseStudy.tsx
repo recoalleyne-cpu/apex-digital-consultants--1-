@@ -13,6 +13,7 @@ type CaseStudyItem = {
   challenge?: string | null;
   solution?: string | null;
   results?: string | null;
+  services_provided?: string | null;
   featured_image_url?: string | null;
   gallery_images?: string | null;
   tech_stack?: string | null;
@@ -27,12 +28,23 @@ const FALLBACK_IMAGE =
 const DEFAULT_DESCRIPTION =
   'Read this Apex case study for a detailed breakdown of challenge, strategy, and outcomes.';
 
+const isPlaceholderValue = (value?: string | null) => {
+  if (!value) return true;
+  const normalized = value.trim().toLowerCase();
+  return normalized === '[add url]' || normalized === '[add urls]';
+};
+
+const getRenderableImageUrl = (value?: string | null) => {
+  if (isPlaceholderValue(value)) return null;
+  return value?.trim() || null;
+};
+
 const splitDelimited = (value?: string | null) => {
   if (!value) return [];
   return value
     .split(',')
     .map((entry) => entry.trim())
-    .filter(Boolean);
+    .filter((entry) => Boolean(entry) && !isPlaceholderValue(entry));
 };
 
 const toParagraphs = (value?: string | null) => {
@@ -147,7 +159,7 @@ export const CaseStudy = () => {
     applySeo({
       title: `${item.title} | Case Study | Apex Digital Consultants`,
       description: item.summary?.trim() || DEFAULT_DESCRIPTION,
-      image: item.featured_image_url || FALLBACK_IMAGE,
+      image: getRenderableImageUrl(item.featured_image_url) || FALLBACK_IMAGE,
       canonical,
       type: 'article'
     });
@@ -160,6 +172,10 @@ export const CaseStudy = () => {
   const techStack = useMemo(
     () => splitDelimited(item?.tech_stack),
     [item?.tech_stack]
+  );
+  const servicesProvided = useMemo(
+    () => splitDelimited(item?.services_provided),
+    [item?.services_provided]
   );
 
   if (loading) {
@@ -232,7 +248,7 @@ export const CaseStudy = () => {
             <article className="lg:col-span-3 rounded-[2.5rem] border border-apple-gray-100 bg-white p-8 md:p-10">
               <div className="aspect-[16/9] rounded-[2rem] overflow-hidden bg-apple-gray-50 mb-8">
                 <img
-                  src={item.featured_image_url || FALLBACK_IMAGE}
+                  src={getRenderableImageUrl(item.featured_image_url) || FALLBACK_IMAGE}
                   alt={item.title}
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
@@ -312,6 +328,14 @@ export const CaseStudy = () => {
                   <p className="text-apple-gray-300 leading-8 mb-6">
                     Stack: {techStack.join(' · ')}
                   </p>
+                )}
+                {servicesProvided.length > 0 && (
+                  <div className="mb-6">
+                    <p className="text-apple-gray-500 font-semibold mb-3">Services Provided</p>
+                    <p className="text-apple-gray-300 leading-8">
+                      {servicesProvided.join(' · ')}
+                    </p>
+                  </div>
                 )}
                 {item.cta_text && item.cta_link && (
                   <Link
