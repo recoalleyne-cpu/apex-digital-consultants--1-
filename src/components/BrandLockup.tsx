@@ -16,7 +16,7 @@ const byVariant = {
     logoWrap:
       'h-10 w-10 sm:h-11 sm:w-11 rounded-xl sm:rounded-2xl p-1.5 bg-white border border-apple-gray-100 shadow-[0_8px_24px_rgba(17,24,39,0.08)]',
     title: 'text-sm sm:text-base font-semibold tracking-tight leading-tight text-apple-gray-500',
-    subtitle: 'text-[11px] sm:text-xs tracking-[0.08em] uppercase font-medium text-apple-gray-300'
+    subtitle: 'text-[11px] sm:text-xs tracking-[0.08em] uppercase font-medium text-apple-gray-500/80'
   },
   footer: {
     link: 'inline-flex items-center gap-3.5 sm:gap-4 group shrink-0',
