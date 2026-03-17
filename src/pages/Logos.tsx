@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
+import { MEDIA_PLACEMENT_VALUES } from '../constants/mediaPlacements';
 
 type LogoItem = {
   id: number;
@@ -23,12 +24,15 @@ export const Logos = () => {
         setLoading(true);
         setStatusMessage('Loading logos...');
 
-        const res = await fetch('/api/media?placement=logos-page', {
+        const res = await fetch(
+          `/api/media?placement=${encodeURIComponent(MEDIA_PLACEMENT_VALUES.LOGOS_PAGE)}`,
+          {
           method: 'GET',
           headers: {
             Accept: 'application/json'
           }
-        });
+          }
+        );
 
         if (!res.ok) {
           throw new Error(`Logos API failed with status ${res.status}`);

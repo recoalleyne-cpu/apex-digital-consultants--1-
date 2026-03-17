@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
+import { MEDIA_PLACEMENT_VALUES } from '../constants/mediaPlacements';
 
 type MediaItem = {
   id: number;
@@ -8,23 +9,38 @@ type MediaItem = {
 };
 
 export const About = () => {
+  const [aboutTopImage, setAboutTopImage] = useState<string | null>(null);
   const [founderImage, setFounderImage] = useState<string | null>(null);
+  const brandLogo = '/black%20logo.png';
 
   useEffect(() => {
-    const loadFounderImage = async () => {
+    const loadPlacementImage = async (
+      placement: string,
+      setImage: (value: string | null) => void,
+      warningMessage: string
+    ) => {
       try {
-        const res = await fetch('/api/media?placement=about-founder-image');
+        const res = await fetch(`/api/media?placement=${encodeURIComponent(placement)}`);
         const data = await res.json();
 
         if (data?.items?.length) {
-          setFounderImage(data.items[0].file_url);
+          setImage(data.items[0].file_url);
         }
       } catch (err) {
-        console.warn('Failed to load founder image', err);
+        console.warn(warningMessage, err);
       }
     };
 
-    loadFounderImage();
+    void loadPlacementImage(
+      MEDIA_PLACEMENT_VALUES.ABOUT_TOP_IMAGE,
+      setAboutTopImage,
+      'Failed to load about top image'
+    );
+    void loadPlacementImage(
+      MEDIA_PLACEMENT_VALUES.ABOUT_FOUNDER_IMAGE,
+      setFounderImage,
+      'Failed to load founder image'
+    );
   }, []);
 
   return (
@@ -41,10 +57,9 @@ export const About = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-24 items-center">
             <div className="aspect-[4/5] rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-2xl border-4 sm:border-8 border-white">
               <img
-                src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=1200"
-                alt="Our Mission"
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
+                src={aboutTopImage || brandLogo}
+                alt="Apex Digital Consultants logo"
+                className="w-full h-full object-contain bg-white p-6 sm:p-8"
               />
             </div>
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { MEDIA_PLACEMENT_VALUES } from '../constants/mediaPlacements';
 
 type MediaItem = {
   id: number;
@@ -20,9 +21,14 @@ export const CertificationTicker = () => {
       const timeout = setTimeout(() => controller.abort(), 10000);
 
       try {
-        const res = await fetch('/api/media?placement=home-certification-ticker', {
-          signal: controller.signal
-        });
+        const res = await fetch(
+          `/api/media?placement=${encodeURIComponent(
+            MEDIA_PLACEMENT_VALUES.HOME_CERTIFICATION_TICKER
+          )}`,
+          {
+            signal: controller.signal
+          }
+        );
 
         clearTimeout(timeout);
 
