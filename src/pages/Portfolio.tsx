@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { buildFallbackCaseStudies } from '../utils/caseStudies';
 
 type MediaItem = {
   id: number;
@@ -43,6 +44,47 @@ const splitDelimited = (value?: string | null) => {
     .filter(Boolean);
 };
 
+const isLikelyModuleResponse = (payload: string) => {
+  const normalized = payload.trimStart();
+  return normalized.startsWith('import ') || normalized.startsWith('export ');
+};
+
+const parseJsonResponseSafely = async (res: Response) => {
+  const payload = await res.text();
+
+  try {
+    return JSON.parse(payload);
+  } catch {
+    if (isLikelyModuleResponse(payload)) {
+      throw new Error(
+        'Portfolio API returned JavaScript instead of JSON. Falling back to approved portfolio entries.'
+      );
+    }
+
+    throw new Error('Portfolio API returned invalid JSON.');
+  }
+};
+
+const buildPortfolioFallbackItems = (): MediaItem[] => {
+  return buildFallbackCaseStudies({ limit: 30 }).map((entry, index) => ({
+    id: -(index + 1),
+    title: entry.title,
+    client_name: entry.client_name || entry.title,
+    file_url: entry.featured_image_url || '[Add Image]',
+    alt_text: entry.client_name || entry.title,
+    category: 'portfolio',
+    placement: 'portfolio-grid',
+    description: entry.summary || '',
+    project_type: 'Website Design & Development',
+    services_provided: entry.services_provided || '',
+    project_url: `/case-studies/${entry.slug}`,
+    is_featured: entry.is_featured,
+    display_order: index + 1,
+    tech_stack: entry.tech_stack || null,
+    features: entry.services_provided || ''
+  }));
+};
+
 export const Portfolio = () => {
   const [projects, setProjects] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,7 +121,7 @@ export const Portfolio = () => {
           throw new Error(`Portfolio API failed with status ${res.status}`);
         }
 
-        const data = await res.json();
+        const data = await parseJsonResponseSafely(res);
 
         if (!isMounted) return;
 
@@ -95,13 +137,20 @@ export const Portfolio = () => {
 
         if (!isMounted) return;
 
-        setProjects([]);
-        if (err instanceof DOMException && err.name === 'AbortError') {
-          setStatusMessage('Portfolio request timed out. Please try again.');
+        const fallbackItems = buildPortfolioFallbackItems();
+
+        if (fallbackItems.length > 0) {
+          setProjects(fallbackItems);
+          setStatusMessage('Live portfolio feed unavailable. Showing approved portfolio entries.');
         } else {
-          setStatusMessage(
-            err instanceof Error ? err.message : 'Portfolio request failed.'
-          );
+          setProjects([]);
+          if (err instanceof DOMException && err.name === 'AbortError') {
+            setStatusMessage('Portfolio request timed out. Please try again.');
+          } else {
+            setStatusMessage(
+              err instanceof Error ? err.message : 'Portfolio request failed.'
+            );
+          }
         }
       } finally {
         clearTimeout(timeout);
