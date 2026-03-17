@@ -25,6 +25,8 @@ export const AdminTestimonials = () => {
   const [loadingItems, setLoadingItems] = useState(true);
   const [googleImportJson, setGoogleImportJson] = useState('');
   const [googleImportFeatured, setGoogleImportFeatured] = useState(false);
+  const [googlePlaceId, setGooglePlaceId] = useState('');
+  const [googlePlaceMaxReviews, setGooglePlaceMaxReviews] = useState('10');
   const [importing, setImporting] = useState(false);
   const [importStatus, setImportStatus] = useState<string | null>(null);
 
@@ -175,12 +177,68 @@ export const AdminTestimonials = () => {
     }
   };
 
+  const handleGooglePlaceImport = async () => {
+    const placeId = googlePlaceId.trim();
+    if (!placeId) {
+      alert('Enter a Google Place ID before syncing.');
+      return;
+    }
+
+    setImporting(true);
+    setImportStatus(null);
+
+    try {
+      const res = await fetch('/api/testimonials', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          import_mode: 'google-place-sync',
+          place_id: placeId,
+          max_reviews: Number.parseInt(googlePlaceMaxReviews, 10),
+          featured: googleImportFeatured
+        })
+      });
+
+      const text = await res.text();
+      let data: Record<string, unknown> = {};
+      try {
+        data = JSON.parse(text) as Record<string, unknown>;
+      } catch {
+        // Response can be plain text for errors.
+      }
+
+      if (!res.ok) {
+        throw new Error((typeof data.message === 'string' ? data.message : text) || 'Google Place sync failed');
+      }
+
+      const synced = typeof data.synced === 'number' ? data.synced : 0;
+      const skipped = typeof data.skipped === 'number' ? data.skipped : 0;
+      const received = typeof data.received === 'number' ? data.received : 0;
+      const businessName =
+        typeof data.business_name === 'string' && data.business_name.trim()
+          ? data.business_name.trim()
+          : '';
+
+      setImportStatus(
+        `Google Place sync completed${businessName ? ` for ${businessName}` : ''}: ${synced} synced, ${skipped} skipped, ${received} received.`
+      );
+      await loadTestimonials();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Google Place sync failed';
+      setImportStatus(`Import failed: ${message}`);
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <div className="container-wide py-32">
       <div className="max-w-5xl">
         <h1 className="heading-lg mb-4">Testimonials CMS</h1>
         <p className="text-apple-gray-300 leading-8 mb-10">
-          Add featured testimonials for homepage trust sections. Use source as manual now, with support for future Google review imports.
+          Add featured testimonials for homepage trust sections. Supports manual entries, Google Place ID sync, and JSON review imports.
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
@@ -268,7 +326,41 @@ export const AdminTestimonials = () => {
             <div className="rounded-2xl border border-apple-gray-100 bg-apple-gray-50 p-6 space-y-4">
               <h2 className="text-xl font-semibold">Google Reviews Import</h2>
               <p className="text-sm text-apple-gray-300 leading-7">
-                Paste Google review JSON from a safe manual export or scheduled sync payload. Reviews are upserted by source + review ID, so repeat imports update existing entries instead of duplicating.
+                Option A: sync directly from Google using a Place ID. This uses the server API key and upserts reviews by source + review ID.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input
+                  type="text"
+                  placeholder="Google Place ID"
+                  value={googlePlaceId}
+                  onChange={(e) => setGooglePlaceId(e.target.value)}
+                  className="md:col-span-2 w-full border border-apple-gray-100 p-4 rounded-xl"
+                />
+
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  placeholder="Max reviews"
+                  value={googlePlaceMaxReviews}
+                  onChange={(e) => setGooglePlaceMaxReviews(e.target.value)}
+                  className="w-full border border-apple-gray-100 p-4 rounded-xl"
+                />
+              </div>
+
+              <button
+                onClick={handleGooglePlaceImport}
+                className="apple-button apple-button-primary"
+                disabled={importing}
+              >
+                {importing ? 'Syncing...' : 'Sync Google Place Reviews'}
+              </button>
+
+              <div className="h-px bg-apple-gray-100" />
+
+              <p className="text-sm text-apple-gray-300 leading-7">
+                Option B: paste Google review JSON from a safe manual export or scheduled sync payload. Repeat imports update existing entries instead of duplicating.
               </p>
               <p className="text-sm text-apple-gray-300 leading-7">
                 Imported reviews are not featured on the homepage unless you explicitly enable it below.
