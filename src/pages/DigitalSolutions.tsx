@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingCart, ExternalLink, Box, Code, Settings, ShieldCheck, CheckCircle2, Plus, ChevronDown } from 'lucide-react';
+import { ShoppingCart, ExternalLink, CheckCircle2, Plus, ChevronDown } from 'lucide-react';
 import { DIGITAL_SOLUTIONS, DIGITAL_SOLUTIONS_FAQS } from '../constants';
 import { Link } from 'react-router-dom';
 
@@ -106,12 +106,18 @@ export const DigitalSolutions = () => {
                   )}
                 </div>
                 <div className="flex items-center gap-4 mt-auto">
-                  <button className="apple-button apple-button-primary flex items-center gap-2 text-xs py-3 px-6">
+                  <Link
+                    to={`/checkout/${product.id}`}
+                    className="apple-button apple-button-primary flex items-center gap-2 text-xs py-3 px-6"
+                  >
                     <ShoppingCart size={14} /> Purchase
-                  </button>
-                  <button className="apple-button apple-button-secondary flex items-center gap-2 text-xs py-3 px-6">
+                  </Link>
+                  <Link
+                    to={`/digital-solutions/${product.id}`}
+                    className="apple-button apple-button-secondary flex items-center gap-2 text-xs py-3 px-6"
+                  >
                     <ExternalLink size={14} /> Details
-                  </button>
+                  </Link>
                 </div>
               </motion.div>
             ))}
@@ -133,9 +139,14 @@ export const DigitalSolutions = () => {
                 <h3 className="text-2xl font-bold mb-8 text-apex-yellow">{cat}</h3>
                 <ul className="space-y-4">
                   {DIGITAL_SOLUTIONS.filter(p => p.category === cat).map((p, j) => (
-                    <li key={j} className="flex items-center justify-between group cursor-pointer">
-                      <span className="text-apple-gray-200 group-hover:text-apex-yellow transition-colors">{p.name}</span>
-                      <Plus size={16} className="text-white/30 group-hover:text-apex-yellow transition-all" />
+                    <li key={j}>
+                      <Link
+                        to={`/digital-solutions/${p.id}`}
+                        className="flex items-center justify-between group"
+                      >
+                        <span className="text-apple-gray-200 group-hover:text-apex-yellow transition-colors">{p.name}</span>
+                        <Plus size={16} className="text-white/30 group-hover:text-apex-yellow transition-all" />
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -166,7 +177,9 @@ export const DigitalSolutions = () => {
                     ))}
                   </ul>
                   <div className="flex gap-6">
-                    <button className="apple-button apple-button-primary">View Plugin Details</button>
+                    <Link to={`/digital-solutions/${featuredPlugin.id}`} className="apple-button apple-button-primary">
+                      View Plugin Details
+                    </Link>
                     <span className="text-2xl font-bold flex items-center text-apex-yellow">{featuredPlugin.price}</span>
                   </div>
                 </div>
