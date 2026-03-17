@@ -1,17 +1,46 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 type MediaItem = {
   id: number;
   title: string;
+  client_name?: string | null;
   file_url: string;
   alt_text?: string | null;
   category?: string | null;
   placement?: string | null;
   description?: string | null;
+  project_type?: string | null;
+  services_provided?: string | null;
+  project_url?: string | null;
+  is_featured?: boolean;
+  display_order?: number;
   tech_stack?: string | null;
   features?: string | null;
+};
+
+const PORTFOLIO_FALLBACK_IMAGE =
+  'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1400';
+
+const isPlaceholderImage = (value?: string | null) => {
+  if (!value) return true;
+  const normalized = value.trim().toLowerCase();
+  return normalized === '[add image]' || normalized === '[add url]' || normalized === '[add urls]';
+};
+
+const resolveProjectImage = (value?: string | null) => {
+  if (isPlaceholderImage(value)) return PORTFOLIO_FALLBACK_IMAGE;
+  return value?.trim() || PORTFOLIO_FALLBACK_IMAGE;
+};
+
+const splitDelimited = (value?: string | null) => {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 };
 
 export const Portfolio = () => {
@@ -98,13 +127,10 @@ export const Portfolio = () => {
     }
   }, [activeProject]);
 
-  const parsedFeatures = useMemo(() => {
-    if (!activeProject?.features) return [];
-    return activeProject.features
-      .split(',')
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }, [activeProject]);
+  const parsedFeatures = useMemo(
+    () => splitDelimited(activeProject?.services_provided || activeProject?.features),
+    [activeProject]
+  );
 
   const clamp = (value: number, min: number, max: number) =>
     Math.min(Math.max(value, min), max);
@@ -202,7 +228,7 @@ export const Portfolio = () => {
                 >
                   <div className="relative aspect-[16/10] overflow-hidden bg-apple-gray-50">
                     <img
-                      src={project.file_url}
+                      src={resolveProjectImage(project.file_url)}
                       alt={project.alt_text || project.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
@@ -219,11 +245,21 @@ export const Portfolio = () => {
 
                   <div className="p-6 md:p-8 space-y-5">
                     <div>
+                      <div className="flex items-center justify-between gap-3 mb-3">
+                        <p className="text-sm uppercase tracking-widest text-apple-gray-300">
+                          {project.client_name || project.title}
+                        </p>
+                        {project.is_featured ? (
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-apex-yellow">
+                            Featured
+                          </span>
+                        ) : null}
+                      </div>
                       <h3 className="text-2xl font-bold text-apple-gray-500 leading-tight">
                         {project.title}
                       </h3>
                       <p className="text-sm uppercase tracking-widest text-apex-yellow mt-3">
-                        Portfolio Project
+                        {project.project_type || project.tech_stack || 'Website Design & Development'}
                       </p>
                     </div>
 
@@ -233,27 +269,27 @@ export const Portfolio = () => {
                       </p>
                     )}
 
-                    {project.tech_stack && (
+                    {(project.services_provided || project.features) && (
                       <div>
                         <h4 className="text-sm font-semibold uppercase tracking-widest text-apple-gray-500 mb-3">
-                          Technology Used
+                          Services Provided
                         </h4>
                         <p className="text-apple-gray-300 leading-7">
-                          {project.tech_stack}
+                          {(splitDelimited(project.services_provided || project.features).slice(0, 5)).join(' · ')}
                         </p>
                       </div>
                     )}
 
-                    {project.features && (
+                    {project.project_url ? (
                       <div>
-                        <h4 className="text-sm font-semibold uppercase tracking-widest text-apple-gray-500 mb-3">
-                          Site Features
-                        </h4>
-                        <p className="text-apple-gray-300 leading-7">
-                          {project.features}
-                        </p>
+                        <Link
+                          to={project.project_url}
+                          className="apple-button apple-button-secondary text-sm"
+                        >
+                          View Case Study
+                        </Link>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               ))}
@@ -315,7 +351,7 @@ export const Portfolio = () => {
                   onPointerLeave={handlePointerUp}
                 >
                   <img
-                    src={activeProject.file_url}
+                    src={resolveProjectImage(activeProject.file_url)}
                     alt={activeProject.alt_text || activeProject.title}
                     onClick={handleImageClick}
                     draggable={false}
@@ -337,11 +373,14 @@ export const Portfolio = () => {
               <div className="p-6 sm:p-8 md:p-10 space-y-6">
                 <div>
                   <p className="text-sm uppercase tracking-widest text-apex-yellow mb-3">
-                    Portfolio Project
+                    {activeProject.project_type || activeProject.tech_stack || 'Website Design & Development'}
                   </p>
                   <h3 className="text-2xl md:text-3xl font-bold text-apple-gray-500 leading-tight">
                     {activeProject.title}
                   </h3>
+                  {activeProject.client_name ? (
+                    <p className="text-apple-gray-300 mt-3">{activeProject.client_name}</p>
+                  ) : null}
                 </div>
 
                 {activeProject.description && (
@@ -355,13 +394,13 @@ export const Portfolio = () => {
                   </div>
                 )}
 
-                {activeProject.tech_stack && (
+                {(activeProject.project_type || activeProject.tech_stack) && (
                   <div>
                     <h4 className="text-sm font-semibold uppercase tracking-widest text-apple-gray-500 mb-3">
-                      Technology Used
+                      Project Type
                     </h4>
                     <p className="text-apple-gray-300 leading-8">
-                      {activeProject.tech_stack}
+                      {activeProject.project_type || activeProject.tech_stack}
                     </p>
                   </div>
                 )}
@@ -369,7 +408,7 @@ export const Portfolio = () => {
                 {parsedFeatures.length > 0 && (
                   <div>
                     <h4 className="text-sm font-semibold uppercase tracking-widest text-apple-gray-500 mb-3">
-                      Site Features
+                      Services Provided
                     </h4>
                     <ul className="space-y-3 text-apple-gray-300">
                       {parsedFeatures.map((feature, index) => (
@@ -381,6 +420,17 @@ export const Portfolio = () => {
                     </ul>
                   </div>
                 )}
+
+                {activeProject.project_url ? (
+                  <div>
+                    <Link
+                      to={activeProject.project_url}
+                      className="apple-button apple-button-primary text-sm"
+                    >
+                      View Full Case Study
+                    </Link>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
