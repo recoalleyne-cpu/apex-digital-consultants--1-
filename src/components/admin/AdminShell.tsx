@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   ArrowUpRight,
+  CreditCard,
   FileText,
   FolderKanban,
   ImageIcon,
@@ -28,6 +29,7 @@ const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { label: 'Landing Pages', path: '/admin/landing-pages', icon: Rocket },
   { label: 'Portfolio Assets', path: '/admin/portfolio', icon: FolderKanban },
   { label: 'Logos & Brand', path: '/admin/logos', icon: Layers },
+  { label: 'Payment Gateways', path: '/admin/payment-gateways', icon: CreditCard },
   { label: 'Case Studies', path: '/admin/case-studies', icon: FileText }
 ];
 
@@ -72,6 +74,13 @@ const getPageMeta = (pathname: string) => {
     return {
       title: 'Logos & Brand Assets',
       description: 'Manage logo assets and keep placement mappings consistent.'
+    };
+  }
+  if (pathname.startsWith('/admin/payment-gateways')) {
+    return {
+      title: 'Payment Gateway Setup',
+      description:
+        'Configure provider credentials and environment templates for secure card processing.'
     };
   }
   if (pathname.startsWith('/admin/case-studies')) {

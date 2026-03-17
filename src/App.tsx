@@ -30,6 +30,7 @@ import { AdminCaseStudies } from './pages/AdminCaseStudies';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminPortfolio } from './pages/AdminPortfolio';
 import { AdminLogos } from './pages/AdminLogos';
+import { AdminPaymentGateways } from './pages/AdminPaymentGateways';
 import { AdminShell } from './components/admin/AdminShell';
 import { LandingPage } from './pages/LandingPage';
 import { applySeo } from './utils/seo';
@@ -289,6 +290,7 @@ const AppFrame = () => {
             <Route path="landing-pages" element={<AdminLandingPages />} />
             <Route path="portfolio" element={<AdminPortfolio />} />
             <Route path="logos" element={<AdminLogos />} />
+            <Route path="payment-gateways" element={<AdminPaymentGateways />} />
             <Route path="case-studies" element={<AdminCaseStudies />} />
           </Route>
         </Routes>
