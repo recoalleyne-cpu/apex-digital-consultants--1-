@@ -43,6 +43,20 @@ Set these in your deployment environment or `.env.local`:
 - `VITE_GOOGLE_FONTS_STYLESHEET_URL` (optional Google Fonts stylesheet URL override)
 - `VITE_GOOGLE_DEBUG` (`true` enables GA debug mode)
 
+Supported aliases (for Vercel compatibility): `NEXT_PUBLIC_GOOGLE_*` and `GOOGLE_*`.
+Preferred naming remains `VITE_GOOGLE_*`.
+
+### Vercel deployment checklist
+
+1. Add required env vars in Vercel Project Settings:
+   - Environment scopes: `Production`, `Preview`, and/or `Development` as needed.
+   - Use `VITE_GOOGLE_*` names to avoid client exposure mismatches.
+2. Redeploy after env changes:
+   - Vite reads these at build time, so changing env vars without redeploy keeps stale values.
+3. Verify in production:
+   - Visit `/admin/google-integrations` and confirm each service shows `Enabled`.
+   - Check `Resolved from` to confirm the env source key used by the deployed build.
+
 ### Behavior
 
 - Every integration is optional and conditionally loaded.
@@ -50,6 +64,7 @@ Set these in your deployment environment or `.env.local`:
 - SPA pageviews are tracked on route changes.
 - If GA4 and GTM are both configured, GA4 defaults to GTM transport mode to reduce duplicate instrumentation risk.
 - Search Console verification meta is injected into `head` from centralized config.
+- If no integrations are detected, a one-time console info message is emitted with setup guidance.
 
 ### Usage helpers
 

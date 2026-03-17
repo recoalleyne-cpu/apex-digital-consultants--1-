@@ -1,17 +1,57 @@
 const DEFAULT_GOOGLE_FONTS_STYLESHEET_URL =
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap';
 
+const BUILD_TIME_ENV_FALLBACKS: Record<string, unknown> = {
+  VITE_GOOGLE_ANALYTICS_ID: __APEX_GOOGLE_ANALYTICS_ID__,
+  VITE_GA4_MEASUREMENT_ID: __APEX_GOOGLE_ANALYTICS_ID__,
+  NEXT_PUBLIC_GOOGLE_ANALYTICS_ID: __APEX_GOOGLE_ANALYTICS_ID__,
+  NEXT_PUBLIC_GA4_MEASUREMENT_ID: __APEX_GOOGLE_ANALYTICS_ID__,
+  GOOGLE_ANALYTICS_ID: __APEX_GOOGLE_ANALYTICS_ID__,
+  GA4_MEASUREMENT_ID: __APEX_GOOGLE_ANALYTICS_ID__,
+  VITE_GOOGLE_TAG_MANAGER_ID: __APEX_GOOGLE_TAG_MANAGER_ID__,
+  NEXT_PUBLIC_GOOGLE_TAG_MANAGER_ID: __APEX_GOOGLE_TAG_MANAGER_ID__,
+  GOOGLE_TAG_MANAGER_ID: __APEX_GOOGLE_TAG_MANAGER_ID__,
+  VITE_GOOGLE_ANALYTICS_USE_GTM_TRANSPORT: __APEX_GOOGLE_ANALYTICS_USE_GTM_TRANSPORT__,
+  NEXT_PUBLIC_GOOGLE_ANALYTICS_USE_GTM_TRANSPORT: __APEX_GOOGLE_ANALYTICS_USE_GTM_TRANSPORT__,
+  GOOGLE_ANALYTICS_USE_GTM_TRANSPORT: __APEX_GOOGLE_ANALYTICS_USE_GTM_TRANSPORT__,
+  VITE_GOOGLE_SEARCH_CONSOLE_VERIFICATION: __APEX_GOOGLE_SEARCH_CONSOLE_VERIFICATION__,
+  NEXT_PUBLIC_GOOGLE_SEARCH_CONSOLE_VERIFICATION: __APEX_GOOGLE_SEARCH_CONSOLE_VERIFICATION__,
+  GOOGLE_SEARCH_CONSOLE_VERIFICATION: __APEX_GOOGLE_SEARCH_CONSOLE_VERIFICATION__,
+  VITE_GOOGLE_ADS_ID: __APEX_GOOGLE_ADS_ID__,
+  NEXT_PUBLIC_GOOGLE_ADS_ID: __APEX_GOOGLE_ADS_ID__,
+  GOOGLE_ADS_ID: __APEX_GOOGLE_ADS_ID__,
+  VITE_GOOGLE_ADS_CONVERSION_LABEL: __APEX_GOOGLE_ADS_CONVERSION_LABEL__,
+  NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL: __APEX_GOOGLE_ADS_CONVERSION_LABEL__,
+  GOOGLE_ADS_CONVERSION_LABEL: __APEX_GOOGLE_ADS_CONVERSION_LABEL__,
+  VITE_GOOGLE_RECAPTCHA_SITE_KEY: __APEX_GOOGLE_RECAPTCHA_SITE_KEY__,
+  NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY: __APEX_GOOGLE_RECAPTCHA_SITE_KEY__,
+  GOOGLE_RECAPTCHA_SITE_KEY: __APEX_GOOGLE_RECAPTCHA_SITE_KEY__,
+  VITE_GOOGLE_MAPS_API_KEY: __APEX_GOOGLE_MAPS_API_KEY__,
+  NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: __APEX_GOOGLE_MAPS_API_KEY__,
+  GOOGLE_MAPS_API_KEY: __APEX_GOOGLE_MAPS_API_KEY__,
+  VITE_GOOGLE_FONTS_ENABLED: __APEX_GOOGLE_FONTS_ENABLED__,
+  NEXT_PUBLIC_GOOGLE_FONTS_ENABLED: __APEX_GOOGLE_FONTS_ENABLED__,
+  GOOGLE_FONTS_ENABLED: __APEX_GOOGLE_FONTS_ENABLED__,
+  VITE_GOOGLE_FONTS_STYLESHEET_URL: __APEX_GOOGLE_FONTS_STYLESHEET_URL__,
+  NEXT_PUBLIC_GOOGLE_FONTS_STYLESHEET_URL: __APEX_GOOGLE_FONTS_STYLESHEET_URL__,
+  GOOGLE_FONTS_STYLESHEET_URL: __APEX_GOOGLE_FONTS_STYLESHEET_URL__,
+  VITE_GOOGLE_DEBUG: __APEX_GOOGLE_DEBUG__,
+  NEXT_PUBLIC_GOOGLE_DEBUG: __APEX_GOOGLE_DEBUG__,
+  GOOGLE_DEBUG: __APEX_GOOGLE_DEBUG__
+};
+
 const normalizeText = (value: unknown) => {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   return trimmed.length ? trimmed : null;
 };
 
-const parseBoolean = (value: unknown, fallback: boolean) => {
+const parseBoolean = (value: unknown) => {
   if (typeof value === 'boolean') return value;
-  if (typeof value !== 'string') return fallback;
+  if (typeof value !== 'string') return null;
 
   const normalized = value.trim().toLowerCase();
+  if (!normalized.length) return null;
 
   if (normalized === 'true' || normalized === '1' || normalized === 'yes' || normalized === 'on') {
     return true;
@@ -21,7 +61,7 @@ const parseBoolean = (value: unknown, fallback: boolean) => {
     return false;
   }
 
-  return fallback;
+  return null;
 };
 
 const readEnvValue = (...keys: string[]) => {
@@ -30,13 +70,34 @@ const readEnvValue = (...keys: string[]) => {
 
   for (const key of keys) {
     const fromVite = normalizeText(viteEnv[key]);
-    if (fromVite) return fromVite;
+    if (fromVite) {
+      return {
+        value: fromVite,
+        source: `import.meta.env.${key}`
+      };
+    }
+
+    const fromBuildTime = normalizeText(BUILD_TIME_ENV_FALLBACKS[key]);
+    if (fromBuildTime) {
+      return {
+        value: fromBuildTime,
+        source: `build-time.${key}`
+      };
+    }
 
     const fromRuntime = normalizeText(runtimeEnv?.[key]);
-    if (fromRuntime) return fromRuntime;
+    if (fromRuntime) {
+      return {
+        value: fromRuntime,
+        source: `runtime.${key}`
+      };
+    }
   }
 
-  return null;
+  return {
+    value: null,
+    source: null
+  };
 };
 
 const readBooleanEnvValue = (keys: string[], fallback: boolean) => {
@@ -44,57 +105,112 @@ const readBooleanEnvValue = (keys: string[], fallback: boolean) => {
   const runtimeEnv = globalThis.process?.env as Record<string, unknown> | undefined;
 
   for (const key of keys) {
-    if (viteEnv[key] !== undefined) {
-      return parseBoolean(viteEnv[key], fallback);
+    const fromVite = parseBoolean(viteEnv[key]);
+    if (fromVite !== null) {
+      return {
+        value: fromVite,
+        source: `import.meta.env.${key}`
+      };
     }
-    if (runtimeEnv?.[key] !== undefined) {
-      return parseBoolean(runtimeEnv[key], fallback);
+
+    const fromBuildTime = parseBoolean(BUILD_TIME_ENV_FALLBACKS[key]);
+    if (fromBuildTime !== null) {
+      return {
+        value: fromBuildTime,
+        source: `build-time.${key}`
+      };
+    }
+
+    const fromRuntime = parseBoolean(runtimeEnv?.[key]);
+    if (fromRuntime !== null) {
+      return {
+        value: fromRuntime,
+        source: `runtime.${key}`
+      };
     }
   }
 
-  return fallback;
+  return {
+    value: fallback,
+    source: null
+  };
 };
 
-const analyticsMeasurementId = readEnvValue(
+const analyticsMeasurementIdResolution = readEnvValue(
   'VITE_GOOGLE_ANALYTICS_ID',
   'VITE_GA4_MEASUREMENT_ID',
+  'NEXT_PUBLIC_GOOGLE_ANALYTICS_ID',
+  'NEXT_PUBLIC_GA4_MEASUREMENT_ID',
   'GOOGLE_ANALYTICS_ID',
   'GA4_MEASUREMENT_ID'
 );
 
-const tagManagerId = readEnvValue(
+const tagManagerIdResolution = readEnvValue(
   'VITE_GOOGLE_TAG_MANAGER_ID',
+  'NEXT_PUBLIC_GOOGLE_TAG_MANAGER_ID',
   'GOOGLE_TAG_MANAGER_ID'
 );
-const searchConsoleVerificationToken = readEnvValue(
+const searchConsoleVerificationTokenResolution = readEnvValue(
   'VITE_GOOGLE_SEARCH_CONSOLE_VERIFICATION',
+  'NEXT_PUBLIC_GOOGLE_SEARCH_CONSOLE_VERIFICATION',
   'GOOGLE_SEARCH_CONSOLE_VERIFICATION'
 );
-const adsConversionId = readEnvValue('VITE_GOOGLE_ADS_ID', 'GOOGLE_ADS_ID');
-const adsConversionLabel = readEnvValue(
+const adsConversionIdResolution = readEnvValue(
+  'VITE_GOOGLE_ADS_ID',
+  'NEXT_PUBLIC_GOOGLE_ADS_ID',
+  'GOOGLE_ADS_ID'
+);
+const adsConversionLabelResolution = readEnvValue(
   'VITE_GOOGLE_ADS_CONVERSION_LABEL',
+  'NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL',
   'GOOGLE_ADS_CONVERSION_LABEL'
 );
-const recaptchaSiteKey = readEnvValue(
+const recaptchaSiteKeyResolution = readEnvValue(
   'VITE_GOOGLE_RECAPTCHA_SITE_KEY',
+  'NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY',
   'GOOGLE_RECAPTCHA_SITE_KEY'
 );
-const mapsApiKey = readEnvValue('VITE_GOOGLE_MAPS_API_KEY', 'GOOGLE_MAPS_API_KEY');
+const mapsApiKeyResolution = readEnvValue(
+  'VITE_GOOGLE_MAPS_API_KEY',
+  'NEXT_PUBLIC_GOOGLE_MAPS_API_KEY',
+  'GOOGLE_MAPS_API_KEY'
+);
 
-const prefersGtmTransport = readBooleanEnvValue(
-  ['VITE_GOOGLE_ANALYTICS_USE_GTM_TRANSPORT', 'GOOGLE_ANALYTICS_USE_GTM_TRANSPORT'],
+const prefersGtmTransportResolution = readBooleanEnvValue(
+  [
+    'VITE_GOOGLE_ANALYTICS_USE_GTM_TRANSPORT',
+    'NEXT_PUBLIC_GOOGLE_ANALYTICS_USE_GTM_TRANSPORT',
+    'GOOGLE_ANALYTICS_USE_GTM_TRANSPORT'
+  ],
   true
 );
 
-const fontsEnabled = readBooleanEnvValue(
-  ['VITE_GOOGLE_FONTS_ENABLED', 'GOOGLE_FONTS_ENABLED'],
+const fontsEnabledResolution = readBooleanEnvValue(
+  ['VITE_GOOGLE_FONTS_ENABLED', 'NEXT_PUBLIC_GOOGLE_FONTS_ENABLED', 'GOOGLE_FONTS_ENABLED'],
   true
 );
 
-const configuredFontsStylesheetUrl = readEnvValue(
+const configuredFontsStylesheetUrlResolution = readEnvValue(
   'VITE_GOOGLE_FONTS_STYLESHEET_URL',
+  'NEXT_PUBLIC_GOOGLE_FONTS_STYLESHEET_URL',
   'GOOGLE_FONTS_STYLESHEET_URL'
 );
+
+const debugModeResolution = readBooleanEnvValue(
+  ['VITE_GOOGLE_DEBUG', 'NEXT_PUBLIC_GOOGLE_DEBUG', 'GOOGLE_DEBUG'],
+  false
+);
+
+const analyticsMeasurementId = analyticsMeasurementIdResolution.value;
+const tagManagerId = tagManagerIdResolution.value;
+const searchConsoleVerificationToken = searchConsoleVerificationTokenResolution.value;
+const adsConversionId = adsConversionIdResolution.value;
+const adsConversionLabel = adsConversionLabelResolution.value;
+const recaptchaSiteKey = recaptchaSiteKeyResolution.value;
+const mapsApiKey = mapsApiKeyResolution.value;
+const prefersGtmTransport = prefersGtmTransportResolution.value;
+const fontsEnabled = fontsEnabledResolution.value;
+const configuredFontsStylesheetUrl = configuredFontsStylesheetUrlResolution.value;
 
 const fontsStylesheetUrl = fontsEnabled
   ? configuredFontsStylesheetUrl || DEFAULT_GOOGLE_FONTS_STYLESHEET_URL
@@ -141,7 +257,7 @@ export const GOOGLE_INTEGRATIONS: GoogleIntegrationsConfig = {
     useTagManagerTransport: Boolean(
       analyticsMeasurementId && tagManagerId && prefersGtmTransport
     ),
-    debugMode: readBooleanEnvValue(['VITE_GOOGLE_DEBUG', 'GOOGLE_DEBUG'], false)
+    debugMode: debugModeResolution.value
   },
   tagManager: {
     id: tagManagerId,
@@ -168,4 +284,44 @@ export const GOOGLE_INTEGRATIONS: GoogleIntegrationsConfig = {
     stylesheetUrl: fontsStylesheetUrl,
     enabled: Boolean(fontsStylesheetUrl)
   }
+};
+
+export type GoogleIntegrationsDiagnostics = {
+  mode: string;
+  envSources: {
+    analyticsMeasurementId: string | null;
+    tagManagerId: string | null;
+    searchConsoleVerificationToken: string | null;
+    adsConversionId: string | null;
+    adsConversionLabel: string | null;
+    recaptchaSiteKey: string | null;
+    mapsApiKey: string | null;
+    analyticsUseTagManagerTransport: string | null;
+    fontsEnabled: string | null;
+    fontsStylesheetUrl: string | null;
+    debugMode: string | null;
+  };
+  enabledIntegrations: string[];
+};
+
+const enabledIntegrations = Object.entries(GOOGLE_INTEGRATIONS)
+  .filter(([, integration]) => integration.enabled)
+  .map(([name]) => name);
+
+export const GOOGLE_INTEGRATIONS_DIAGNOSTICS: GoogleIntegrationsDiagnostics = {
+  mode: import.meta.env.MODE,
+  envSources: {
+    analyticsMeasurementId: analyticsMeasurementIdResolution.source,
+    tagManagerId: tagManagerIdResolution.source,
+    searchConsoleVerificationToken: searchConsoleVerificationTokenResolution.source,
+    adsConversionId: adsConversionIdResolution.source,
+    adsConversionLabel: adsConversionLabelResolution.source,
+    recaptchaSiteKey: recaptchaSiteKeyResolution.source,
+    mapsApiKey: mapsApiKeyResolution.source,
+    analyticsUseTagManagerTransport: prefersGtmTransportResolution.source,
+    fontsEnabled: fontsEnabledResolution.source,
+    fontsStylesheetUrl: configuredFontsStylesheetUrlResolution.source,
+    debugMode: debugModeResolution.source
+  },
+  enabledIntegrations
 };

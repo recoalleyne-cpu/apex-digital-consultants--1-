@@ -1,6 +1,9 @@
 import React from 'react';
 import { CheckCircle2, Copy, Settings2, XCircle } from 'lucide-react';
-import { GOOGLE_INTEGRATIONS } from '../config/googleIntegrations';
+import {
+  GOOGLE_INTEGRATIONS,
+  GOOGLE_INTEGRATIONS_DIAGNOSTICS
+} from '../config/googleIntegrations';
 
 type IntegrationStatus = {
   id: string;
@@ -9,6 +12,7 @@ type IntegrationStatus = {
   enabled: boolean;
   value: string | null;
   envKeys: string[];
+  source: string | null;
 };
 
 const maskValue = (value: string | null) => {
@@ -18,6 +22,7 @@ const maskValue = (value: string | null) => {
 };
 
 const ENV_TEMPLATE = [
+  '# Preferred in Vercel (client-visible):',
   'VITE_GOOGLE_ANALYTICS_ID=',
   'VITE_GOOGLE_TAG_MANAGER_ID=',
   'VITE_GOOGLE_ANALYTICS_USE_GTM_TRANSPORT=true',
@@ -43,7 +48,8 @@ export const AdminGoogleIntegrations = () => {
       description: 'Tracks page views and custom events.',
       enabled: GOOGLE_INTEGRATIONS.analytics.enabled,
       value: GOOGLE_INTEGRATIONS.analytics.measurementId,
-      envKeys: ['VITE_GOOGLE_ANALYTICS_ID']
+      envKeys: ['VITE_GOOGLE_ANALYTICS_ID', 'NEXT_PUBLIC_GOOGLE_ANALYTICS_ID', 'GOOGLE_ANALYTICS_ID'],
+      source: GOOGLE_INTEGRATIONS_DIAGNOSTICS.envSources.analyticsMeasurementId
     },
     {
       id: 'gtm',
@@ -51,7 +57,8 @@ export const AdminGoogleIntegrations = () => {
       description: 'Loads GTM dataLayer and container script.',
       enabled: GOOGLE_INTEGRATIONS.tagManager.enabled,
       value: GOOGLE_INTEGRATIONS.tagManager.id,
-      envKeys: ['VITE_GOOGLE_TAG_MANAGER_ID']
+      envKeys: ['VITE_GOOGLE_TAG_MANAGER_ID', 'NEXT_PUBLIC_GOOGLE_TAG_MANAGER_ID', 'GOOGLE_TAG_MANAGER_ID'],
+      source: GOOGLE_INTEGRATIONS_DIAGNOSTICS.envSources.tagManagerId
     },
     {
       id: 'search-console',
@@ -59,7 +66,12 @@ export const AdminGoogleIntegrations = () => {
       description: 'Adds the verification meta tag to the site head.',
       enabled: GOOGLE_INTEGRATIONS.searchConsole.enabled,
       value: GOOGLE_INTEGRATIONS.searchConsole.verificationToken,
-      envKeys: ['VITE_GOOGLE_SEARCH_CONSOLE_VERIFICATION']
+      envKeys: [
+        'VITE_GOOGLE_SEARCH_CONSOLE_VERIFICATION',
+        'NEXT_PUBLIC_GOOGLE_SEARCH_CONSOLE_VERIFICATION',
+        'GOOGLE_SEARCH_CONSOLE_VERIFICATION'
+      ],
+      source: GOOGLE_INTEGRATIONS_DIAGNOSTICS.envSources.searchConsoleVerificationToken
     },
     {
       id: 'ads',
@@ -67,7 +79,13 @@ export const AdminGoogleIntegrations = () => {
       description: 'Enables conversion tracking event helpers.',
       enabled: GOOGLE_INTEGRATIONS.ads.enabled,
       value: GOOGLE_INTEGRATIONS.ads.conversionId,
-      envKeys: ['VITE_GOOGLE_ADS_ID', 'VITE_GOOGLE_ADS_CONVERSION_LABEL']
+      envKeys: [
+        'VITE_GOOGLE_ADS_ID',
+        'NEXT_PUBLIC_GOOGLE_ADS_ID',
+        'GOOGLE_ADS_ID',
+        'VITE_GOOGLE_ADS_CONVERSION_LABEL'
+      ],
+      source: GOOGLE_INTEGRATIONS_DIAGNOSTICS.envSources.adsConversionId
     },
     {
       id: 'recaptcha',
@@ -75,7 +93,12 @@ export const AdminGoogleIntegrations = () => {
       description: 'Supports secure token validation for forms.',
       enabled: GOOGLE_INTEGRATIONS.recaptcha.enabled,
       value: GOOGLE_INTEGRATIONS.recaptcha.siteKey,
-      envKeys: ['VITE_GOOGLE_RECAPTCHA_SITE_KEY']
+      envKeys: [
+        'VITE_GOOGLE_RECAPTCHA_SITE_KEY',
+        'NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY',
+        'GOOGLE_RECAPTCHA_SITE_KEY'
+      ],
+      source: GOOGLE_INTEGRATIONS_DIAGNOSTICS.envSources.recaptchaSiteKey
     },
     {
       id: 'maps',
@@ -83,7 +106,8 @@ export const AdminGoogleIntegrations = () => {
       description: 'Supports embeds and API-driven map loading.',
       enabled: GOOGLE_INTEGRATIONS.maps.enabled,
       value: GOOGLE_INTEGRATIONS.maps.apiKey,
-      envKeys: ['VITE_GOOGLE_MAPS_API_KEY']
+      envKeys: ['VITE_GOOGLE_MAPS_API_KEY', 'NEXT_PUBLIC_GOOGLE_MAPS_API_KEY', 'GOOGLE_MAPS_API_KEY'],
+      source: GOOGLE_INTEGRATIONS_DIAGNOSTICS.envSources.mapsApiKey
     },
     {
       id: 'fonts',
@@ -91,7 +115,8 @@ export const AdminGoogleIntegrations = () => {
       description: 'Injects fonts stylesheet links when enabled.',
       enabled: GOOGLE_INTEGRATIONS.fonts.enabled,
       value: GOOGLE_INTEGRATIONS.fonts.stylesheetUrl,
-      envKeys: ['VITE_GOOGLE_FONTS_ENABLED', 'VITE_GOOGLE_FONTS_STYLESHEET_URL']
+      envKeys: ['VITE_GOOGLE_FONTS_ENABLED', 'NEXT_PUBLIC_GOOGLE_FONTS_ENABLED', 'GOOGLE_FONTS_ENABLED'],
+      source: GOOGLE_INTEGRATIONS_DIAGNOSTICS.envSources.fontsEnabled
     }
   ];
 
@@ -124,6 +149,9 @@ export const AdminGoogleIntegrations = () => {
             {enabledCount}/{integrationRows.length} Enabled
           </span>
         </div>
+        <p className="mt-3 text-xs font-mono text-apple-gray-300">
+          Build mode: {GOOGLE_INTEGRATIONS_DIAGNOSTICS.mode}
+        </p>
       </section>
 
       <section className="rounded-3xl border border-apple-gray-100 bg-white p-6 sm:p-8">
@@ -154,6 +182,10 @@ export const AdminGoogleIntegrations = () => {
               </p>
               <p className="mt-3 text-xs text-apple-gray-300">
                 Env: <span className="font-mono text-apple-gray-400">{item.envKeys.join(', ')}</span>
+              </p>
+              <p className="mt-2 text-xs text-apple-gray-300">
+                Resolved from:{' '}
+                <span className="font-mono text-apple-gray-400">{item.source || 'Not detected'}</span>
               </p>
             </article>
           ))}
