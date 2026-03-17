@@ -3,30 +3,19 @@ import { ArrowRight } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
 import { applySeo } from '../utils/seo';
-
-type CaseStudyItem = {
-  id: number;
-  title: string;
-  slug: string;
-  client_name?: string | null;
-  summary?: string | null;
-  challenge?: string | null;
-  solution?: string | null;
-  results?: string | null;
-  services_provided?: string | null;
-  featured_image_url?: string | null;
-  gallery_images?: string | null;
-  tech_stack?: string | null;
-  cta_text?: string | null;
-  cta_link?: string | null;
-  updated_at?: string | null;
-};
+import {
+  findFallbackCaseStudyBySlug,
+  normalizeCaseStudy,
+  type CaseStudyRecord
+} from '../utils/caseStudies';
 
 const FALLBACK_IMAGE =
   'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=1400';
 
 const DEFAULT_DESCRIPTION =
   'Read this Apex case study for a detailed breakdown of challenge, strategy, and outcomes.';
+const UNAVAILABLE_MESSAGE =
+  'This case study is temporarily unavailable. Please try again shortly.';
 
 const isPlaceholderValue = (value?: string | null) => {
   if (!value) return true;
@@ -57,7 +46,7 @@ const toParagraphs = (value?: string | null) => {
 
 export const CaseStudy = () => {
   const { slug } = useParams();
-  const [item, setItem] = useState<CaseStudyItem | null>(null);
+  const [item, setItem] = useState<CaseStudyRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -80,23 +69,53 @@ export const CaseStudy = () => {
     const loadItem = async () => {
       try {
         const response = await fetch(`/api/case-studies?slug=${encodeURIComponent(slug)}`, {
+          headers: {
+            Accept: 'application/json'
+          },
           signal: controller.signal
         });
 
         if (response.status === 404) {
+          const fallbackItem = findFallbackCaseStudyBySlug(slug);
+          if (fallbackItem) {
+            setItem(fallbackItem);
+            setNotFound(false);
+            return;
+          }
+
           setItem(null);
           setNotFound(true);
           return;
         }
 
         if (!response.ok) {
-          throw new Error(`Case studies API failed (${response.status})`);
+          const responseText = await response.text();
+          throw new Error(
+            `Case studies API failed (${response.status}): ${
+              responseText.slice(0, 220) || 'No response body'
+            }`
+          );
+        }
+
+        const contentType = response.headers.get('content-type')?.toLowerCase() || '';
+        if (!contentType.includes('application/json')) {
+          const responsePreview = (await response.text()).slice(0, 220);
+          throw new Error(
+            `Case study endpoint returned non-JSON content (${contentType || 'unknown'}). Preview: ${responsePreview}`
+          );
         }
 
         const data = await response.json();
-        const nextItem = data?.item ?? null;
+        const nextItem = normalizeCaseStudy(data?.item ?? null);
 
-        if (!nextItem) {
+        if (!nextItem || !nextItem.is_published) {
+          const fallbackItem = findFallbackCaseStudyBySlug(slug);
+          if (fallbackItem) {
+            setItem(fallbackItem);
+            setNotFound(false);
+            return;
+          }
+
           setItem(null);
           setNotFound(true);
           return;
@@ -105,10 +124,20 @@ export const CaseStudy = () => {
         setItem(nextItem);
         setNotFound(false);
       } catch (error) {
-        console.error(error);
+        console.error(
+          '[CaseStudy] Failed to load case study from API; attempting approved local fallback.',
+          error
+        );
+        const fallbackItem = findFallbackCaseStudyBySlug(slug);
+        if (fallbackItem) {
+          setItem(fallbackItem);
+          setNotFound(false);
+          setErrorMessage(null);
+          return;
+        }
         setItem(null);
         setNotFound(false);
-        setErrorMessage('This case study is temporarily unavailable. Please try again shortly.');
+        setErrorMessage(UNAVAILABLE_MESSAGE);
       } finally {
         clearTimeout(timeout);
         setLoading(false);
