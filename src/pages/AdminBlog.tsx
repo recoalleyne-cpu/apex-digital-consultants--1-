@@ -139,7 +139,7 @@ export const AdminBlog = () => {
   };
 
   return (
-    <div className="container-wide py-32">
+    <div className="container-wide py-6">
       <div className="max-w-6xl">
         <h1 className="heading-lg mb-4">Blog Editor</h1>
         <p className="text-apple-gray-300 leading-8 mb-10">
