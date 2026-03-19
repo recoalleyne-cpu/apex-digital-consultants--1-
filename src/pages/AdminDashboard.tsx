@@ -72,11 +72,11 @@ const MODULE_CARDS: AdminModuleCard[] = [
     chip: 'Payments'
   },
   {
-    title: 'Google Integrations',
-    description: 'Configure Analytics, GTM, Ads, Search Console, reCAPTCHA, and Maps.',
+    title: 'Integrations',
+    description: 'Configure Google tracking services and email marketing provider drafts.',
     href: '/admin/google-integrations',
     icon: Settings2,
-    chip: 'Tracking'
+    chip: 'Settings'
   },
   {
     title: 'Case Studies',
@@ -109,7 +109,7 @@ const QUICK_ACTIONS = [
     href: '/admin/payment-gateways'
   },
   {
-    label: 'Review Google Setup',
+    label: 'Review Integrations',
     href: '/admin/google-integrations'
   }
 ];
