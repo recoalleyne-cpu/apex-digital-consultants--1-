@@ -237,7 +237,7 @@ export const NewsletterSignupModal = () => {
   return (
     <AnimatePresence>
       {isOpen ? (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center px-4 py-5 sm:px-6">
+        <div className="fixed inset-0 z-[120] flex items-start justify-center px-3 py-3 sm:items-center sm:px-5 sm:py-5">
           <motion.button
             aria-label="Dismiss newsletter modal backdrop"
             className="absolute inset-0 bg-apple-gray-500/62 backdrop-blur-md"
@@ -255,41 +255,41 @@ export const NewsletterSignupModal = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.98 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="relative z-10 w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/45 bg-white shadow-[0_30px_70px_rgba(7,23,37,0.35)]"
+            className="relative z-10 w-full max-w-5xl max-h-[calc(100dvh-1.5rem)] overflow-y-auto overflow-x-hidden rounded-[1.5rem] border border-white/45 bg-white shadow-[0_30px_70px_rgba(7,23,37,0.35)] sm:max-h-[calc(100dvh-2.5rem)] sm:rounded-[2rem]"
           >
             <button
               type="button"
               onClick={handleDismiss}
-              className="absolute right-4 top-4 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/55 bg-white/85 text-apple-gray-500 transition-colors hover:bg-white"
+              className="absolute right-3 top-3 z-20 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/55 bg-white/90 text-apple-gray-500 transition-colors hover:bg-white sm:right-4 sm:top-4"
               aria-label="Close newsletter modal"
             >
               <X size={18} />
             </button>
 
-            <div className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr]">
-              <div className="relative overflow-hidden bg-gradient-to-br from-[#0f7ea6] via-[#0a6f93] to-[#084b6d] px-6 py-8 text-white sm:px-10 sm:py-11 md:px-12 md:py-14">
-                <div className="absolute -left-14 top-12 h-40 w-40 rounded-full bg-white/14 blur-3xl" />
-                <div className="absolute bottom-4 right-2 h-28 w-28 rounded-full bg-apex-yellow/25 blur-3xl" />
+            <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr]">
+              <div className="relative overflow-hidden bg-gradient-to-br from-[#0f7ea6] via-[#0a6f93] to-[#084b6d] px-5 py-7 text-white sm:px-8 sm:py-9 md:px-10 md:py-11 lg:px-12 lg:py-14">
+                <div className="absolute -left-14 top-12 hidden h-40 w-40 rounded-full bg-white/14 blur-3xl sm:block" />
+                <div className="absolute bottom-4 right-2 hidden h-28 w-28 rounded-full bg-apex-yellow/25 blur-3xl sm:block" />
 
-                <div className="relative">
-                  <p className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/14 px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white/95">
+                <div className="relative pr-11 sm:pr-12">
+                  <p className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/14 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/95 sm:px-4 sm:text-xs sm:tracking-[0.14em]">
                     <Sparkles size={14} />
                     Apex Growth Brief
                   </p>
 
                   <h2
                     id="newsletter-modal-heading"
-                    className="mt-5 text-3xl font-semibold leading-tight sm:text-4xl"
+                    className="mt-4 text-2xl font-semibold leading-tight sm:mt-5 sm:text-3xl lg:text-4xl"
                   >
                     Stay Ahead with Digital Insights
                   </h2>
 
-                  <p className="mt-4 max-w-xl text-sm leading-7 text-white/90 sm:text-base">
+                  <p className="mt-3 max-w-xl text-sm leading-6 text-white/90 sm:mt-4 sm:leading-7 sm:text-base">
                     Join our newsletter for practical website growth strategies, marketing
                     insights, and actionable updates for Barbados and Caribbean businesses.
                   </p>
 
-                  <form onSubmit={handleSubscribe} className="mt-7 space-y-3">
+                  <form onSubmit={handleSubscribe} className="mt-6 space-y-3 sm:mt-7">
                     <label htmlFor="newsletter-email" className="sr-only">
                       Email address
                     </label>
@@ -308,14 +308,14 @@ export const NewsletterSignupModal = () => {
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="inline-flex items-center justify-center rounded-2xl bg-apex-yellow px-5 py-3 text-sm font-semibold text-apple-gray-500 transition-colors hover:bg-apex-yellow-hover disabled:cursor-not-allowed disabled:opacity-70"
+                        className="inline-flex w-full items-center justify-center rounded-2xl bg-apex-yellow px-5 py-3 text-sm font-semibold text-apple-gray-500 transition-colors hover:bg-apex-yellow-hover disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
                       >
                         {isSubmitting ? 'Joining...' : 'Join the Newsletter'}
                       </button>
                       <button
                         type="button"
                         onClick={handleDismiss}
-                        className="inline-flex items-center justify-center rounded-2xl border border-white/35 bg-white/14 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/22"
+                        className="inline-flex w-full items-center justify-center rounded-2xl border border-white/35 bg-white/14 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/22 sm:w-auto"
                       >
                         Not Right Now
                       </button>
@@ -328,7 +328,7 @@ export const NewsletterSignupModal = () => {
                 </div>
               </div>
 
-              <div className="relative bg-[linear-gradient(180deg,#f7fcff_0%,#e9f3fb_100%)] px-6 py-8 sm:px-9 sm:py-10 md:px-10 md:py-12">
+              <div className="relative hidden bg-[linear-gradient(180deg,#f7fcff_0%,#e9f3fb_100%)] px-7 py-8 sm:block sm:px-8 sm:py-9 md:px-9 md:py-10 lg:px-10 lg:py-12">
                 <div className="absolute -right-12 top-0 h-36 w-36 rounded-full bg-[#b2def4]/65 blur-3xl" />
                 <div className="relative space-y-4">
                   <div className="rounded-3xl border border-[#d5e7f3] bg-white/95 p-5 shadow-[0_15px_35px_rgba(26,65,92,0.14)]">
@@ -363,4 +363,3 @@ export const NewsletterSignupModal = () => {
     </AnimatePresence>
   );
 };
-
