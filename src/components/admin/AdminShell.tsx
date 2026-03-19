@@ -31,7 +31,7 @@ const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { label: 'Portfolio Assets', path: '/admin/portfolio', icon: FolderKanban },
   { label: 'Logos & Brand', path: '/admin/logos', icon: Layers },
   { label: 'Payment Gateways', path: '/admin/payment-gateways', icon: CreditCard },
-  { label: 'Google Integrations', path: '/admin/google-integrations', icon: Settings2 },
+  { label: 'Integrations', path: '/admin/google-integrations', icon: Settings2 },
   { label: 'Case Studies', path: '/admin/case-studies', icon: FileText }
 ];
 
@@ -80,9 +80,9 @@ const getPageMeta = (pathname: string) => {
   }
   if (pathname.startsWith('/admin/google-integrations')) {
     return {
-      title: 'Google Integrations',
+      title: 'Integrations Settings',
       description:
-        'Review and manage Google Analytics, GTM, Ads, Search Console, reCAPTCHA, and Maps setup.'
+        'Manage Google analytics/tracking setup and email marketing integration drafts in one workspace.'
     };
   }
   if (pathname.startsWith('/admin/payment-gateways')) {
