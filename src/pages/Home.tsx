@@ -11,8 +11,7 @@ export const Home = () => {
   const mouseY = useMotionValue(0);
   const featuredLogo = '/black%20logo.png';
   const heroVideoSources = [
-    'https://videos.pexels.com/video-files/18421470/18421470-hd_1920_1080_60fps.mp4',
-    'https://videos.pexels.com/video-files/18421470/18421470-sd_960_540_30fps.mp4'
+    'https://videos.pexels.com/video-files/33834276/14359124_2560_1440_30fps.mp4'
   ];
   const maskImage = useMotionTemplate`radial-gradient(500px circle at ${mouseX}px ${mouseY}px, transparent 0%, black 60%)`;
 
