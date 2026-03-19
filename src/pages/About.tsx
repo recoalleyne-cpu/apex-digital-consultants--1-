@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
 import { MEDIA_PLACEMENT_VALUES } from '../constants/mediaPlacements';
 
@@ -46,9 +47,9 @@ export const About = () => {
   return (
     <div className="pt-16 md:pt-20">
       <PageHeader
-        title="Forward-Thinking Digital Solutions."
+        title="Barbados & Caribbean Website Development Team."
         subtitle="About Apex Digital Consultants"
-        description="Apex Digital Consultants is a forward-thinking digital solutions company dedicated to helping businesses establish, grow, and optimize their online presence."
+        description="Apex Digital Consultants helps businesses in Barbados and across the Caribbean build modern websites, stronger digital brands, and scalable growth systems."
       />
 
       {/* Mission / Details */}
@@ -58,7 +59,7 @@ export const About = () => {
             <div className="aspect-[4/5] rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-2xl border-4 sm:border-8 border-white">
               <img
                 src={aboutTopImage || brandLogo}
-                alt="Apex Digital Consultants logo"
+                alt="Apex Digital Consultants website development and digital services brand logo"
                 className="w-full h-full object-contain bg-white p-6 sm:p-8"
               />
             </div>
@@ -67,15 +68,15 @@ export const About = () => {
               <h2 className="heading-lg leading-tight">Our Approach</h2>
 
               <p className="text-base md:text-lg text-apple-gray-300 leading-8">
-                The company specializes in delivering strategic digital services including website development, branding and logo design, digital marketing solutions, and custom digital tools that empower businesses to operate more efficiently in the modern digital landscape.
+                The company specializes in delivering strategic digital services including website development, web design, branding and logo design, digital marketing solutions, and custom digital tools that empower businesses to operate more efficiently in the modern digital landscape.
               </p>
 
               <p className="text-base md:text-lg text-apple-gray-300 leading-8">
-                At Apex Digital Consultants, the focus is on combining creativity, technology, and practical business strategy to produce solutions that not only look exceptional but also deliver measurable results. From professional websites and brand identities to custom digital solutions and automation tools, the company works with businesses to build strong digital foundations that support long-term growth.
+                At Apex Digital Consultants, the focus is on combining creativity, technology, and practical business strategy to produce solutions that not only look exceptional but also deliver measurable results. From professional websites and brand identities to custom digital solutions and automation tools, the company works with businesses in Barbados and the wider Caribbean to build strong digital foundations that support long-term growth.
               </p>
 
               <p className="text-base md:text-lg text-apple-gray-300 leading-8">
-                Apex Digital Consultants takes a client-focused approach to every project, ensuring that each solution is tailored to the unique goals and needs of the business it serves. By prioritizing quality, innovation, and reliability, the company aims to provide digital solutions that help organizations strengthen their brand, improve customer engagement, and unlock new opportunities online.
+                Apex Digital Consultants takes a client-focused approach to every project, ensuring that each solution is tailored to the unique goals and needs of the business it serves. By prioritizing quality, innovation, and reliability, the company provides professional website services that help organizations strengthen their brand, improve customer engagement, and unlock new opportunities online.
               </p>
             </div>
           </div>
@@ -113,8 +114,10 @@ export const About = () => {
                 {founderImage ? (
                   <img
                     src={founderImage}
-                    alt="Reco Alleyne - Founder"
+                    alt="Reco Alleyne founder of Apex Digital Consultants in Barbados"
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-apple-gray-300">
@@ -162,6 +165,30 @@ export const About = () => {
               <p className="text-apple-gray-200 leading-8">
                 Attention to detail is at the core of everything we do, from code to copy.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-padding">
+        <div className="container-wide">
+          <div className="rounded-[2.5rem] border border-apple-gray-100 bg-white p-8 md:p-10 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-apple-gray-500 mb-4">
+              Ready to Work With Apex?
+            </h2>
+            <p className="mx-auto max-w-3xl text-base md:text-lg leading-8 text-apple-gray-300 mb-8">
+              Explore our website development services, review recent project outcomes, and request a strategy call for your Barbados or Caribbean business.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link to="/services" className="apple-button apple-button-secondary text-sm">
+                Explore Services
+              </Link>
+              <Link to="/portfolio" className="apple-button apple-button-secondary text-sm">
+                See Portfolio
+              </Link>
+              <Link to="/contact" className="apple-button apple-button-primary text-sm">
+                Contact Apex
+              </Link>
             </div>
           </div>
         </div>

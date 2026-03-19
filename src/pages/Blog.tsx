@@ -78,7 +78,7 @@ export const Blog = () => {
       <PageHeader 
         title="The APEX Journal."
         subtitle="Insights"
-        description="Expert perspectives on digital strategy, design, and business innovation."
+        description="Expert perspectives on website development, web design, SEO, and digital growth for businesses in Barbados and across the Caribbean."
       />
 
       <section className="pb-24">
@@ -127,6 +127,8 @@ export const Blog = () => {
                         alt={post.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         referrerPolicy="no-referrer"
+                        loading="lazy"
+                        decoding="async"
                       />
                     </div>
                     <div className="px-4">

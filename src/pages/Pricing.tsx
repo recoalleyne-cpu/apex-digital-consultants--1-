@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { PRICING } from '../constants';
 import { Check } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 import { PageHeader } from '../components/PageHeader';
 
@@ -46,11 +47,28 @@ export const Pricing = () => {
                   ))}
                 </ul>
 
-                <button className="apple-button apple-button-primary w-full">
+                <Link to="/contact" className="apple-button apple-button-primary w-full text-center">
                   Get A Quote
-                </button>
+                </Link>
               </motion.div>
             ))}
+          </div>
+
+          <div className="mt-10 rounded-[2rem] border border-apple-gray-100 bg-white p-6 sm:p-7 md:p-8">
+            <p className="text-sm md:text-base text-apple-gray-300 leading-7 mb-4">
+              Need a package aligned to your market? Explore dedicated service pages for website development in Barbados and the Caribbean.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link to="/website-development-barbados" className="apple-button apple-button-secondary text-sm">
+                Website Development Barbados
+              </Link>
+              <Link to="/website-development-caribbean" className="apple-button apple-button-secondary text-sm">
+                Website Development Caribbean
+              </Link>
+              <Link to="/ecommerce-website-development-barbados" className="apple-button apple-button-secondary text-sm">
+                Ecommerce Website Development
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -65,9 +83,9 @@ export const Pricing = () => {
               For larger projects, ongoing retainers, or full-scale digital transformations, we provide custom quotes tailored to your specific needs.
             </p>
 
-            <button className="apple-button apple-button-secondary">
+            <Link to="/contact" className="apple-button apple-button-secondary">
               Get A Quote
-            </button>
+            </Link>
           </div>
         </div>
       </section>

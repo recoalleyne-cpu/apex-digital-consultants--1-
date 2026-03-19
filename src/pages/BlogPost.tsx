@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowRight, Calendar, User } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
-import { applySeo } from '../utils/seo';
+import { applySeo, removeJsonLd, toAbsoluteUrl, upsertJsonLd } from '../utils/seo';
 
 type BlogPostItem = {
   id: number;
@@ -154,6 +154,44 @@ export const BlogPost = () => {
     });
   }, [slug, post, loading, notFound, errorMessage]);
 
+  useEffect(() => {
+    if (loading || notFound || errorMessage || !post || !slug) {
+      removeJsonLd('blog-post-article');
+      return;
+    }
+
+    const origin = window.location.origin;
+    const canonical = `${origin}/blog/${slug}`;
+
+    upsertJsonLd('blog-post-article', {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: post.title,
+      description: post.excerpt?.trim() || post.seo_description?.trim() || DEFAULT_DESCRIPTION,
+      image: toAbsoluteUrl(post.featured_image_url || FALLBACK_IMAGE),
+      datePublished: post.publish_date || post.created_at || undefined,
+      dateModified: post.publish_date || post.created_at || undefined,
+      author: {
+        '@type': 'Person',
+        name: post.author_name || 'Apex Editorial Team'
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Apex Digital Consultants',
+        logo: {
+          '@type': 'ImageObject',
+          url: toAbsoluteUrl('/black%20logo.png')
+        }
+      },
+      mainEntityOfPage: canonical,
+      articleSection: post.category || 'Insights'
+    });
+
+    return () => {
+      removeJsonLd('blog-post-article');
+    };
+  }, [slug, post, loading, notFound, errorMessage]);
+
   const paragraphs = useMemo(() => {
     if (!post?.body_content) return [];
     return post.body_content
@@ -295,6 +333,14 @@ export const BlogPost = () => {
                 <Link to="/blog" className="text-sm font-semibold tracking-wider uppercase text-apple-gray-300">
                   Back to All Articles
                 </Link>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link to="/services/websites" className="apple-button apple-button-secondary text-sm">
+                    Website Development
+                  </Link>
+                  <Link to="/web-design-barbados" className="apple-button apple-button-secondary text-sm">
+                    Web Design Barbados
+                  </Link>
+                </div>
               </div>
             </aside>
           </div>

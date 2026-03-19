@@ -12,7 +12,7 @@ export const WebDesign = () => {
       <PageHeader 
         title="Custom Website Design."
         subtitle="Service Details"
-        description="We create custom, mobile-friendly websites that are visually appealing, easy to navigate, and designed to convert visitors into customers."
+        description="We provide conversion-focused web design in Barbados and the Caribbean, creating custom, mobile-friendly websites designed to turn visits into qualified leads."
       />
 
       <section className="pb-24">
@@ -21,7 +21,7 @@ export const WebDesign = () => {
             <div className="order-2 lg:order-1">
               <h2 className="heading-lg mb-8">Design with Purpose.</h2>
               <p className="text-lg text-apple-gray-300 mb-8 leading-relaxed">
-                Whether you need a simple landing page or a full-service site, we build with purpose and style. Our design process focuses on user experience, brand alignment, and conversion optimization.
+                Whether you need a simple landing page or a full-service website, we design with clear business intent. Our process prioritizes user experience, brand alignment, search visibility, and conversion performance.
               </p>
               <ul className="space-y-4 mb-12">
                 {[
@@ -40,13 +40,20 @@ export const WebDesign = () => {
               <Link to="/contact" className="apple-button apple-button-primary">
                 Start Your Project
               </Link>
+              <div className="mt-4">
+                <Link to="/web-design-barbados" className="text-sm font-semibold text-apple-gray-400 hover:text-apple-gray-500 transition-colors">
+                  View Web Design Barbados Page
+                </Link>
+              </div>
             </div>
             <div className="order-1 lg:order-2 aspect-square rounded-[3rem] overflow-hidden bg-apple-gray-50 shadow-2xl">
               <img 
                 src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200" 
-                alt="Web Design" 
+                alt="Web design planning workspace for responsive website design and development" 
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>

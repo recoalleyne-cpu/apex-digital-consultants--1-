@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
-import { applySeo } from '../utils/seo';
+import { applySeo, removeJsonLd, toAbsoluteUrl, upsertJsonLd } from '../utils/seo';
 import {
   findFallbackCaseStudyBySlug,
   normalizeCaseStudy,
@@ -194,6 +194,41 @@ export const CaseStudy = () => {
     });
   }, [slug, item, loading, notFound, errorMessage]);
 
+  useEffect(() => {
+    if (loading || notFound || errorMessage || !item || !slug) {
+      removeJsonLd('case-study-article');
+      return;
+    }
+
+    const canonical = `${window.location.origin}/case-studies/${slug}`;
+
+    upsertJsonLd('case-study-article', {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: item.title,
+      description: item.summary?.trim() || DEFAULT_DESCRIPTION,
+      image: toAbsoluteUrl(getRenderableImageUrl(item.featured_image_url) || FALLBACK_IMAGE),
+      author: {
+        '@type': 'Organization',
+        name: 'Apex Digital Consultants'
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Apex Digital Consultants',
+        logo: {
+          '@type': 'ImageObject',
+          url: toAbsoluteUrl('/black%20logo.png')
+        }
+      },
+      mainEntityOfPage: canonical,
+      about: item.client_name || item.title
+    });
+
+    return () => {
+      removeJsonLd('case-study-article');
+    };
+  }, [slug, item, loading, notFound, errorMessage]);
+
   const galleryImages = useMemo(
     () => splitDelimited(item?.gallery_images),
     [item?.gallery_images]
@@ -383,6 +418,21 @@ export const CaseStudy = () => {
                 >
                   Back to All Case Studies
                 </Link>
+              </div>
+
+              <div className="rounded-[2.5rem] border border-apple-gray-100 bg-white p-8">
+                <h3 className="text-xl font-semibold text-apple-gray-500 mb-4">Related Services</h3>
+                <div className="flex flex-wrap gap-3">
+                  <Link to="/services/websites" className="apple-button apple-button-secondary text-sm">
+                    Website Development
+                  </Link>
+                  <Link to="/services/web-design" className="apple-button apple-button-secondary text-sm">
+                    Web Design
+                  </Link>
+                  <Link to="/contact" className="apple-button apple-button-primary text-sm">
+                    Start Your Project
+                  </Link>
+                </div>
               </div>
             </aside>
           </div>

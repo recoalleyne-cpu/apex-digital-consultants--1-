@@ -123,6 +123,21 @@ type GoogleImportItem = {
   featured: boolean;
 };
 
+const SYSTEM_GOOGLE_REVIEW_SEED_ITEMS = [
+  {
+    review_id: 'google-review-anna-evelyn-2022-09-29',
+    reviewer_name: 'Anna Evelyn',
+    review_text:
+      'Always was super friendly and professional!\nMade my dreams into a reality for my new website!\nI recommend them 10/10.',
+    rating: 5,
+    company: 'Google Review',
+    featured: true,
+    published_at: '2022-09-29T00:00:00Z'
+  }
+];
+
+let hasSeededSystemGoogleReview = false;
+
 const normalizeGoogleImportItem = (
   value: unknown,
   defaultFeatured: boolean,
@@ -263,6 +278,12 @@ const syncGoogleImportItems = async (
   return { synced, skipped };
 };
 
+const ensureSystemGoogleReviewSeed = async (sql: ReturnType<typeof neon>) => {
+  if (hasSeededSystemGoogleReview) return;
+  await syncGoogleImportItems(sql, SYSTEM_GOOGLE_REVIEW_SEED_ITEMS, true);
+  hasSeededSystemGoogleReview = true;
+};
+
 const fetchGooglePlaceReviews = async (placeId: string, maxReviews: number) => {
   const apiKey =
     normalizeText(process.env.GOOGLE_MAPS_API_KEY) ||
@@ -379,6 +400,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const sql = neon(postgresUrl);
     await ensureTestimonialsTable(sql);
+    await ensureSystemGoogleReviewSeed(sql);
 
     if (req.method === 'GET') {
       const featuredOnly = parseFeaturedFlag(req.query.featured);

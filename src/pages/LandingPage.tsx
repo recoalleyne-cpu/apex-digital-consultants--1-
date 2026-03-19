@@ -244,6 +244,8 @@ export const LandingPage = () => {
                   alt={item.title}
                   className="w-full h-[260px] md:h-[320px] object-cover"
                   referrerPolicy="no-referrer"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
 

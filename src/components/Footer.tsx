@@ -27,7 +27,7 @@ export default function Footer() {
             <BrandLockup variant="footer" className="mb-6" />
 
             <p className="text-apple-gray-300 text-sm leading-relaxed mb-8">
-              Empowering businesses with dynamic marketing solutions that drive growth and engagement. Your vision is our mission.
+              Apex Digital Consultants delivers website development and web design services for businesses in Barbados and across the Caribbean.
             </p>
 
             <div className="flex items-center gap-4">
@@ -79,6 +79,16 @@ export default function Footer() {
                 <li>
                   <Link to="/pricing" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">
                     Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/website-development-barbados" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">
+                    Website Development Barbados
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/website-development-caribbean" className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors">
+                    Website Development Caribbean
                   </Link>
                 </li>
               </ul>
@@ -191,7 +201,7 @@ export default function Footer() {
           </div>
 
           <div className="text-[11px] font-bold text-white uppercase tracking-[0.08em] sm:tracking-wider text-center md:text-right break-all">
-            info@apexdigitalconsultants.com
+            info@apexdigitalconsultants.com • Bridgetown, Barbados
           </div>
         </div>
       </div>

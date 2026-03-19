@@ -148,8 +148,10 @@ export const TestimonialsSection = () => {
                 {item.image_url ? (
                   <img
                     src={item.image_url}
-                    alt={item.name}
+                    alt={`Photo of ${item.name}, Apex client testimonial`}
                     className="w-12 h-12 rounded-full object-cover border border-apple-gray-100"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-apple-gray-50 border border-apple-gray-100 flex items-center justify-center text-sm font-bold text-apple-gray-500 uppercase">
@@ -175,4 +177,3 @@ export const TestimonialsSection = () => {
     </SectionShell>
   );
 };
-
