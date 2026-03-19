@@ -117,11 +117,28 @@ export const CaseStudies = () => {
       <PageHeader
         title="Case Studies."
         subtitle="Proof of Impact"
-        description="Explore detailed project stories showing how Apex digital strategy translates into measurable business outcomes."
+        description="Explore detailed project stories showing how Apex website development and web design strategy translates into measurable business outcomes for Barbados and Caribbean businesses."
       />
 
       <section className="pb-24">
         <div className="container-wide px-6">
+          <div className="mb-10 rounded-[2rem] border border-apple-gray-100 bg-white p-6 sm:p-7 md:p-8">
+            <p className="text-sm md:text-base text-apple-gray-300 leading-7 mb-4">
+              Planning a similar project? Compare service options for website development in Barbados and the wider Caribbean.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link to="/website-development-barbados" className="apple-button apple-button-secondary text-sm">
+                Website Development Barbados
+              </Link>
+              <Link to="/web-design-barbados" className="apple-button apple-button-secondary text-sm">
+                Web Design Barbados
+              </Link>
+              <Link to="/seo-friendly-websites-barbados" className="apple-button apple-button-secondary text-sm">
+                SEO-Friendly Websites
+              </Link>
+            </div>
+          </div>
+
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               {Array.from({ length: 4 }).map((_, index) => (
@@ -189,6 +206,8 @@ export const CaseStudies = () => {
                           alt={item.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                           referrerPolicy="no-referrer"
+                          loading="lazy"
+                          decoding="async"
                         />
                       </div>
 
@@ -223,6 +242,23 @@ export const CaseStudies = () => {
                     </Link>
                   </article>
                 ))}
+              </div>
+
+              <div className="mt-12 rounded-[2rem] border border-apple-gray-100 bg-apple-gray-50 p-6 sm:p-7 md:p-8">
+                <h2 className="text-2xl font-semibold text-apple-gray-500 mb-3">
+                  Need Similar Results for Your Business?
+                </h2>
+                <p className="text-apple-gray-300 leading-8 mb-5">
+                  Talk with Apex about custom website development, web design, ecommerce execution, and SEO-friendly website improvements.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link to="/services" className="apple-button apple-button-secondary text-sm">
+                    Explore Website Development Services
+                  </Link>
+                  <Link to="/contact" className="apple-button apple-button-primary text-sm">
+                    Discuss Your Website Project
+                  </Link>
+                </div>
               </div>
             </>
           )}

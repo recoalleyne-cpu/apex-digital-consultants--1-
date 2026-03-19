@@ -65,8 +65,6 @@ const GOOGLE_ENV_TEMPLATE = [
   'VITE_GOOGLE_DEBUG=false'
 ].join('\n');
 
-const EMAIL_SETTINGS_STORAGE_KEY = 'apex-email-integrations-v1';
-
 const DEFAULT_EMAIL_PROVIDER_CONFIG: EmailProviderConfig = {
   enabled: false,
   apiKey: '',
@@ -185,6 +183,54 @@ const normalizeText = (value: unknown) => (typeof value === 'string' ? value : '
 
 const normalizeBoolean = (value: unknown) => (typeof value === 'boolean' ? value : false);
 
+const toObject = (value: unknown): Record<string, unknown> | null => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  return value as Record<string, unknown>;
+};
+
+const parseEmailSettingsItem = (itemValue: unknown) => {
+  const item = toObject(itemValue);
+  const providers = toObject(item?.providers);
+  const configs = buildDefaultEmailConfigs();
+
+  if (providers) {
+    EMAIL_MARKETING_PROVIDERS.forEach((provider) => {
+      const providerPayload = toObject(providers[provider.id]);
+      configs[provider.id] = {
+        enabled: normalizeBoolean(providerPayload?.enabled),
+        apiKey: normalizeText(providerPayload?.apiKey),
+        accountId: normalizeText(providerPayload?.accountId),
+        listId: normalizeText(providerPayload?.listId)
+      };
+    });
+  }
+
+  return {
+    configs,
+    updatedAt:
+      typeof item?.updated_at === 'string'
+        ? item.updated_at
+        : item?.updated_at instanceof Date
+          ? item.updated_at.toISOString()
+          : null
+  };
+};
+
+const formatSavedTimestamp = (value: string | null) => {
+  if (!value) return null;
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return null;
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  }).format(date);
+};
+
 export const AdminGoogleIntegrations = () => {
   const [expandedSections, setExpandedSections] = React.useState<Record<SectionKey, boolean>>({
     overview: true,
@@ -200,50 +246,68 @@ export const AdminGoogleIntegrations = () => {
     'Google integrations are controlled via environment variables and loaded safely at runtime.'
   );
   const [emailStatusMessage, setEmailStatusMessage] = React.useState(
-    'Email marketing integrations are configured as admin drafts and ready for future API wiring.'
+    'Loading email marketing integration settings from backend...'
   );
+  const [emailSettingsLoading, setEmailSettingsLoading] = React.useState(true);
+  const [emailSavingProvider, setEmailSavingProvider] = React.useState<EmailProviderId | null>(null);
+  const [emailSettingsUpdatedAt, setEmailSettingsUpdatedAt] = React.useState<string | null>(null);
   const [emailConfigs, setEmailConfigs] = React.useState<Record<EmailProviderId, EmailProviderConfig>>(
     buildDefaultEmailConfigs
   );
 
   React.useEffect(() => {
-    if (typeof window === 'undefined') return;
+    let isMounted = true;
+    const controller = new AbortController();
 
-    try {
-      const stored = window.localStorage.getItem(EMAIL_SETTINGS_STORAGE_KEY);
-      if (!stored) return;
-
-      const parsed = JSON.parse(stored) as Partial<Record<EmailProviderId, Partial<EmailProviderConfig>>>;
-
-      setEmailConfigs((current) => {
-        const next = { ...current };
-        EMAIL_MARKETING_PROVIDERS.forEach((provider) => {
-          const savedConfig = parsed[provider.id];
-          if (!savedConfig || typeof savedConfig !== 'object') return;
-
-          next[provider.id] = {
-            enabled: normalizeBoolean(savedConfig.enabled),
-            apiKey: normalizeText(savedConfig.apiKey),
-            accountId: normalizeText(savedConfig.accountId),
-            listId: normalizeText(savedConfig.listId)
-          };
+    const loadEmailSettings = async () => {
+      try {
+        const response = await fetch('/api/email-integrations', {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json'
+          },
+          signal: controller.signal
         });
-        return next;
-      });
-    } catch {
-      setEmailStatusMessage('Unable to load saved email integration drafts from local storage.');
-    }
+
+        if (!response.ok) {
+          const responseText = await response.text();
+          throw new Error(
+            `Email integrations API failed (${response.status}): ${
+              responseText.slice(0, 220) || 'No response body'
+            }`
+          );
+        }
+
+        const data = await response.json();
+        const parsedSettings = parseEmailSettingsItem(data?.item);
+
+        if (isMounted) {
+          setEmailConfigs(parsedSettings.configs);
+          setEmailSettingsUpdatedAt(parsedSettings.updatedAt);
+          setEmailStatusMessage(
+            'Email marketing integration settings loaded from backend.'
+          );
+        }
+      } catch (error) {
+        if (!isMounted) return;
+        console.error('Failed to load email marketing integration settings:', error);
+        setEmailStatusMessage(
+          'Unable to load email marketing settings from backend. Showing unsaved defaults.'
+        );
+      } finally {
+        if (isMounted) {
+          setEmailSettingsLoading(false);
+        }
+      }
+    };
+
+    loadEmailSettings();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, []);
-
-  React.useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    try {
-      window.localStorage.setItem(EMAIL_SETTINGS_STORAGE_KEY, JSON.stringify(emailConfigs));
-    } catch {
-      setEmailStatusMessage('Unable to persist email integration drafts in local storage.');
-    }
-  }, [emailConfigs]);
 
   const integrationRows: IntegrationStatus[] = [
     {
@@ -388,6 +452,7 @@ export const AdminGoogleIntegrations = () => {
   const enabledGoogleCount = integrationRows.filter((item) => item.enabled).length;
   const enabledEmailCount = EMAIL_MARKETING_PROVIDERS.filter((provider) => emailConfigs[provider.id].enabled)
     .length;
+  const formattedEmailUpdatedAt = formatSavedTimestamp(emailSettingsUpdatedAt);
 
   const isGoogleIntegrationExpanded = (integrationId: string, defaultExpanded: boolean) =>
     expandedIntegrations[integrationId] ?? defaultExpanded;
@@ -490,18 +555,62 @@ export const AdminGoogleIntegrations = () => {
     if (provider) {
       setEmailStatusMessage(
         enabled
-          ? `${provider.name} marked as connected (draft mode).`
-          : `${provider.name} marked as disconnected (draft mode).`
+          ? `${provider.name} marked as connected. Save settings to persist in backend.`
+          : `${provider.name} marked as disconnected. Save settings to persist in backend.`
       );
     }
   };
 
-  const runEmailProviderAction = (providerId: EmailProviderId, action: 'save' | 'test') => {
+  const saveEmailProviderSettings = async (providerId: EmailProviderId) => {
+    const provider = EMAIL_MARKETING_PROVIDERS.find((item) => item.id === providerId);
+    if (!provider) return false;
+
+    try {
+      setEmailSavingProvider(providerId);
+
+      const response = await fetch('/api/email-integrations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({
+          providers: emailConfigs
+        })
+      });
+
+      if (!response.ok) {
+        const responseText = await response.text();
+        throw new Error(
+          `Email integrations save failed (${response.status}): ${
+            responseText.slice(0, 220) || 'No response body'
+          }`
+        );
+      }
+
+      const data = await response.json();
+      const parsedSettings = parseEmailSettingsItem(data?.item);
+      setEmailConfigs(parsedSettings.configs);
+      setEmailSettingsUpdatedAt(parsedSettings.updatedAt);
+      setEmailStatusMessage(`${provider.name} settings saved to backend.`);
+      return true;
+    } catch (error) {
+      console.error('Failed to save email integration settings:', error);
+      setEmailStatusMessage(
+        `Unable to save ${provider.name} settings to backend. Please try again.`
+      );
+      return false;
+    } finally {
+      setEmailSavingProvider(null);
+    }
+  };
+
+  const runEmailProviderAction = async (providerId: EmailProviderId, action: 'save' | 'test') => {
     const provider = EMAIL_MARKETING_PROVIDERS.find((item) => item.id === providerId);
     if (!provider) return;
 
     if (action === 'save') {
-      setEmailStatusMessage(`${provider.name} draft settings saved locally.`);
+      await saveEmailProviderSettings(providerId);
       return;
     }
 
@@ -689,7 +798,7 @@ export const AdminGoogleIntegrations = () => {
 
       <AdminSettingsAccordion
         title="Email Marketing Integrations"
-        description="Configure provider drafts and reveal provider-specific fields only when a provider is enabled."
+        description="Configure provider settings and persist them in backend storage for reliable reload across admin sessions."
         isOpen={expandedSections.emailIntegrations}
         onToggle={() => toggleSection('emailIntegrations')}
         badge={
@@ -728,12 +837,23 @@ export const AdminGoogleIntegrations = () => {
           </p>
         }
       >
-        <p className="mb-4 text-sm leading-7 text-apple-gray-300">{emailStatusMessage}</p>
+        <div className="mb-4 space-y-1">
+          <p className="text-sm leading-7 text-apple-gray-300">{emailStatusMessage}</p>
+          {formattedEmailUpdatedAt ? (
+            <p className="text-xs text-apple-gray-300">
+              Last saved: <span className="font-medium text-apple-gray-400">{formattedEmailUpdatedAt}</span>
+            </p>
+          ) : null}
+          {emailSettingsLoading ? (
+            <p className="text-xs text-apple-gray-300">Loading backend settings...</p>
+          ) : null}
+        </div>
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {EMAIL_MARKETING_PROVIDERS.map((provider) => {
             const config = emailConfigs[provider.id];
             const providerExpanded = isEmailProviderExpanded(provider.id, config.enabled);
+            const isSavingThisProvider = emailSavingProvider === provider.id;
 
             return (
               <article
@@ -764,6 +884,7 @@ export const AdminGoogleIntegrations = () => {
                     <button
                       type="button"
                       onClick={() => setEmailProviderEnabled(provider.id, false)}
+                      disabled={emailSettingsLoading || isSavingThisProvider}
                       className="inline-flex items-center rounded-xl border border-apple-gray-100 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-300 transition-colors hover:text-apple-gray-500"
                     >
                       Disconnect
@@ -772,16 +893,29 @@ export const AdminGoogleIntegrations = () => {
                     <button
                       type="button"
                       onClick={() => setEmailProviderEnabled(provider.id, true)}
+                      disabled={emailSettingsLoading || isSavingThisProvider}
                       className="inline-flex items-center rounded-xl border border-apple-gray-100 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-300 transition-colors hover:text-apple-gray-500"
                     >
                       Connect
                     </button>
                   )}
 
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void runEmailProviderAction(provider.id, 'save');
+                    }}
+                    disabled={emailSettingsLoading || isSavingThisProvider}
+                    className="inline-flex items-center rounded-xl border border-apple-gray-100 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-300 transition-colors hover:text-apple-gray-500"
+                  >
+                    {isSavingThisProvider ? 'Saving...' : 'Save Settings'}
+                  </button>
+
                   {config.enabled ? (
                     <button
                       type="button"
                       onClick={() => toggleEmailProvider(provider.id, config.enabled)}
+                      disabled={emailSettingsLoading}
                       className="inline-flex items-center rounded-xl border border-apple-gray-100 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-300 transition-colors hover:text-apple-gray-500"
                     >
                       {providerExpanded ? 'Hide Settings' : 'Show Settings'}
@@ -806,6 +940,7 @@ export const AdminGoogleIntegrations = () => {
                             onChange={(event) =>
                               updateEmailConfig(provider.id, field.key, event.target.value)
                             }
+                            disabled={emailSettingsLoading || isSavingThisProvider}
                             placeholder={field.placeholder}
                             className="mt-2 w-full rounded-lg border border-apple-gray-100 px-3 py-2 text-sm text-apple-gray-500"
                           />
@@ -830,23 +965,20 @@ export const AdminGoogleIntegrations = () => {
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
-                        onClick={() => runEmailProviderAction(provider.id, 'test')}
+                        onClick={() => {
+                          void runEmailProviderAction(provider.id, 'test');
+                        }}
+                        disabled={emailSettingsLoading || isSavingThisProvider}
                         className="inline-flex items-center rounded-xl border border-apple-gray-100 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-300 transition-colors hover:text-apple-gray-500"
                       >
                         Test Connection
                       </button>
                       <button
                         type="button"
-                        onClick={() => runEmailProviderAction(provider.id, 'save')}
-                        className="inline-flex items-center rounded-xl border border-apple-gray-100 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-300 transition-colors hover:text-apple-gray-500"
-                      >
-                        Save Settings
-                      </button>
-                      <button
-                        type="button"
                         onClick={() => {
                           void copyEmailEnvKeys(provider);
                         }}
+                        disabled={emailSettingsLoading || isSavingThisProvider}
                         className="inline-flex items-center gap-2 rounded-xl border border-apple-gray-100 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-300 transition-colors hover:text-apple-gray-500"
                       >
                         <Copy size={13} />
@@ -904,12 +1036,12 @@ export const AdminGoogleIntegrations = () => {
       <section className="rounded-3xl border border-apple-gray-100 bg-white p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-apple-gray-300">
-            Need backend wiring next? Connect these draft controls to server actions after provider credential
-            validation routes are ready.
+            Backend persistence is active. Next step is wiring real provider connect/test/disconnect server actions
+            with credential validation and secure auth controls.
           </p>
           <span className="inline-flex items-center gap-2 rounded-full border border-apple-gray-100 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-apple-gray-300">
             <Link2 size={13} />
-            UI Scaffold Complete
+            Backend Save/Load Ready
           </span>
         </div>
       </section>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
 
 export const Contact = () => {
@@ -69,8 +70,32 @@ export const Contact = () => {
       <PageHeader
         title="Let's Build Something Great Together."
         subtitle="Contact Us"
-        description="Have a question or ready to start your project? We're here to assist you in any way we can."
+        description="Request custom website development, web design, ecommerce website services, or SEO-friendly redesign support for your business in Barbados or across the Caribbean."
       />
+
+      <section className="pt-8 pb-2">
+        <div className="container-wide px-6 md:px-8">
+          <div className="rounded-[2rem] border border-apple-gray-100 bg-apple-gray-50 p-6 md:p-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-apple-gray-500 mb-3">
+              Start a Website Project With Apex
+            </h2>
+            <p className="text-apple-gray-300 leading-8 mb-5">
+              We work with businesses in Barbados and across the Caribbean on custom website development, web design, ecommerce builds, redesigns, and ongoing website support.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link to="/services" className="apple-button apple-button-secondary text-sm">
+                Explore Website Development Services
+              </Link>
+              <Link to="/portfolio" className="apple-button apple-button-secondary text-sm">
+                See Website Development Portfolio
+              </Link>
+              <Link to="/case-studies" className="apple-button apple-button-secondary text-sm">
+                Read Website Case Studies
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section id="quote" className="pt-10 md:pt-14 pb-24 md:pb-32 scroll-mt-32">
         <div className="container-wide px-6 md:px-8">
@@ -101,7 +126,7 @@ export const Contact = () => {
                   </div>
 
                   <div>
-                    <h4 className="text-xl font-bold mb-2">Call Us</h4>
+                    <h4 className="text-xl font-bold mb-2">Whatsapp Us</h4>
                     <p className="text-apple-gray-300 mb-2">Mon-Fri from 9am to 5pm.</p>
                     <a
                       href="tel:2468416543"
@@ -157,6 +182,12 @@ export const Contact = () => {
 
             {/* Main Contact Form */}
             <div className="bg-white p-6 sm:p-8 md:p-10 lg:p-12 rounded-[2rem] sm:rounded-[3rem] border border-apple-gray-100 shadow-sm">
+              <div className="mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold text-apple-gray-500 mb-3">Request a Quote</h2>
+                <p className="text-apple-gray-300 leading-7">
+                  Share your project goals and we will respond with the best-fit next step.
+                </p>
+              </div>
               <form className="space-y-8 md:space-y-10" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-10">
                   {/* Left Column */}

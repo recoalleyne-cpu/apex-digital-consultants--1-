@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, useMotionTemplate, useMotionValue } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { SERVICES } from '../constants';
+import { FAQS, SERVICES } from '../constants';
 import { CertificationTicker } from '../components/CertificationTicker';
 import { TestimonialsSection } from '../components/TestimonialsSection';
 
@@ -77,8 +77,8 @@ export const Home = () => {
               animate={{ opacity: 1, y: 0 }}
               className="heading-xl mb-10 text-white"
             >
-              Apex Digital{' '}<br className="hidden md:block" />
-              Consultants
+              Website Development{' '}<br className="hidden md:block" />
+              Barbados & Caribbean
             </motion.h1>
 
             <motion.p
@@ -87,13 +87,24 @@ export const Home = () => {
               transition={{ delay: 0.1 }}
               className="text-base sm:text-lg md:text-xl text-white max-w-3xl mx-auto mb-8 sm:mb-10"
             >
-              We offer a wide selection of digital services ranging from Website Development
-              & Design, Logo Creation, to Google Advertising and Digital Campaigns.
+              Apex Digital Consultants delivers website development and web design services for businesses in Barbados and across the Caribbean. We build custom, responsive, SEO-friendly websites designed to convert visitors into qualified leads.
             </motion.p>
 
-            <Link to="/contact" className="apple-button apple-button-primary">
-              Get A Quote
-            </Link>
+            <p className="text-sm sm:text-base text-apple-gray-200 max-w-2xl mx-auto mb-8">
+              From business websites and ecommerce builds to website redesigns and ongoing support, Apex helps growth-focused teams launch digital experiences that perform.
+            </p>
+
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <Link to="/contact" className="apple-button apple-button-primary">
+                Get Your Website Quote
+              </Link>
+              <Link
+                to="/website-development-barbados"
+                className="inline-flex items-center gap-2 rounded-2xl border border-white/30 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              >
+                Explore Barbados Website Services <ChevronRight size={16} />
+              </Link>
+            </div>
 
           </div>
         </div>
@@ -108,11 +119,10 @@ export const Home = () => {
 
           <div className="text-center mb-20">
             <h2 className="heading-lg mb-6">
-              Solutions Tailored to Your Success
+              Website Services Built for Real Business Growth
             </h2>
             <p className="text-apple-gray-300 max-w-2xl mx-auto">
-              From branding to advanced digital systems, we help businesses build
-              a strong digital presence that drives real results.
+              From custom website development in Barbados to Caribbean-ready web design systems, we help businesses build digital foundations that improve visibility, trust, and conversions.
             </p>
           </div>
 
@@ -136,7 +146,7 @@ export const Home = () => {
                   to={`/services/${service.id}`}
                   className="flex items-center gap-2 text-apex-yellow font-medium"
                 >
-                  View Service <ChevronRight size={16} />
+                  View {service.title} <ChevronRight size={16} />
                 </Link>
 
               </div>
@@ -147,22 +157,171 @@ export const Home = () => {
         </div>
       </section>
 
+      <section className="section-padding bg-apple-gray-50">
+        <div className="container-wide">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 md:gap-12 items-start">
+            <div>
+              <h2 className="heading-lg mb-6">Website Development in Barbados and the Caribbean</h2>
+              <p className="text-apple-gray-300 text-base md:text-lg leading-8 mb-6">
+                We help local businesses and regional brands launch high-performing websites with clear service messaging, SEO-friendly page structure, and conversion-focused design.
+              </p>
+              <p className="text-apple-gray-300 text-base md:text-lg leading-8 mb-8">
+                Whether you need a professional company website, ecommerce website development, or a full website redesign, our process is built around measurable business outcomes.
+              </p>
+
+              <div className="flex flex-wrap gap-3">
+                <Link to="/website-development-barbados" className="apple-button apple-button-secondary text-sm">
+                  Website Development Barbados
+                </Link>
+                <Link to="/website-development-caribbean" className="apple-button apple-button-secondary text-sm">
+                  Website Development Caribbean
+                </Link>
+                <Link to="/ecommerce-website-development-barbados" className="apple-button apple-button-secondary text-sm">
+                  Ecommerce Website Development
+                </Link>
+                <Link to="/seo-friendly-websites-barbados" className="apple-button apple-button-secondary text-sm">
+                  SEO-Friendly Website Builds
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-[2rem] border border-apple-gray-100 bg-white p-7 sm:p-8 md:p-9">
+              <h3 className="text-2xl font-semibold text-apple-gray-500 mb-5">Why Businesses Choose Apex</h3>
+              <ul className="space-y-4 text-apple-gray-300 leading-7">
+                <li>Custom website strategy aligned to your offer and audience.</li>
+                <li>Responsive design optimized for mobile-first behavior.</li>
+                <li>SEO web design foundations from day one.</li>
+                <li>Conversion-focused layouts and stronger call-to-action flow.</li>
+                <li>Support for updates, scaling, and ongoing optimization.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-padding">
+        <div className="container-wide">
+          <div className="text-center mb-14">
+            <h2 className="heading-lg mb-6">How We Work</h2>
+            <p className="text-apple-gray-300 max-w-2xl mx-auto">
+              A structured process that keeps delivery clear, collaborative, and outcome-focused.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[
+              {
+                title: 'Discovery',
+                description: 'We map your goals, audience, and service priorities before design begins.'
+              },
+              {
+                title: 'Planning',
+                description: 'We structure pages, messaging, and CTA paths for better conversion readiness.'
+              },
+              {
+                title: 'Build',
+                description: 'We design and develop responsive website experiences built for performance.'
+              },
+              {
+                title: 'Launch + Improve',
+                description: 'We launch with tracking in place and support ongoing optimization.'
+              }
+            ].map((step) => (
+              <article key={step.title} className="rounded-2xl border border-apple-gray-100 bg-white p-6">
+                <h3 className="text-xl font-semibold text-apple-gray-500 mb-3">{step.title}</h3>
+                <p className="text-apple-gray-300 leading-7">{step.description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section-padding bg-apple-gray-50">
+        <div className="container-wide">
+          <div className="text-center mb-14">
+            <h2 className="heading-lg mb-6">Proof From Recent Website Projects</h2>
+            <p className="text-apple-gray-300 max-w-3xl mx-auto">
+              See how our Barbados and Caribbean website development projects combine strategy, design, and technical execution to drive measurable business results.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            {[
+              {
+                title: 'The Science Plug',
+                summary: 'Custom website development with booking and growth-focused user flow.'
+              },
+              {
+                title: 'Jriver Transport & Logistics (Barbados)',
+                summary: 'Service-focused website structure designed for clarity and trust.'
+              },
+              {
+                title: 'Hitz 106.7 FM — Initial Build',
+                summary: 'Media-ready build supporting stronger digital presence and engagement.'
+              }
+            ].map((item) => (
+              <article key={item.title} className="rounded-2xl border border-apple-gray-100 bg-white p-6">
+                <h3 className="text-xl font-semibold text-apple-gray-500 mb-3">{item.title}</h3>
+                <p className="text-apple-gray-300 leading-7">{item.summary}</p>
+              </article>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link to="/portfolio" className="apple-button apple-button-secondary text-sm">
+              See Website Development Portfolio
+            </Link>
+            <Link to="/case-studies" className="apple-button apple-button-secondary text-sm">
+              Read Website Case Studies
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <TestimonialsSection />
+
+      <section className="section-padding">
+        <div className="container-wide">
+          <div className="text-center mb-12">
+            <h2 className="heading-lg mb-6">Website Development FAQs</h2>
+            <p className="text-apple-gray-300 max-w-2xl mx-auto">
+              Quick answers to common questions from businesses in Barbados and across the Caribbean.
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto space-y-4">
+            {FAQS.map((faq) => (
+              <details key={faq.question} className="rounded-2xl border border-apple-gray-100 bg-white p-6">
+                <summary className="cursor-pointer list-none text-lg font-semibold text-apple-gray-500">
+                  {faq.question}
+                </summary>
+                <p className="mt-4 text-apple-gray-300 leading-8">{faq.answer}</p>
+              </details>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <Link to="/faqs" className="apple-button apple-button-secondary text-sm">
+              View Full Website Development FAQs
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* CTA */}
       <section className="section-padding bg-apple-gray-500 text-white text-center">
         <div className="container-wide">
 
           <h2 className="heading-lg mb-6">
-            Ready to Elevate Your Brand?
+            Ready to Build a High-Converting Website?
           </h2>
 
           <p className="max-w-xl mx-auto mb-8 sm:mb-10 text-apple-gray-200 text-sm sm:text-base">
-            Let Apex Digital Consultants help you design, build, and scale your digital presence.
+            Talk with Apex about custom website development, web design, ecommerce builds, and SEO-friendly website strategy for your business.
           </p>
 
           <Link to="/contact" className="apple-button apple-button-primary">
-            Get A Quote
+            Book a Website Strategy Call
           </Link>
 
         </div>

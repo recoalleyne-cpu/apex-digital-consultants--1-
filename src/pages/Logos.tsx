@@ -111,6 +111,8 @@ export const Logos = () => {
                       src={logo.file_url}
                       alt={logo.alt_text || logo.title}
                       className="relative z-10 max-w-full max-h-full object-contain transition-all duration-500 ease-out xl:grayscale xl:contrast-125 xl:opacity-75 xl:group-hover:grayscale-0 xl:group-hover:contrast-100 xl:group-hover:opacity-100 xl:group-hover:scale-105"
+                      loading="lazy"
+                      decoding="async"
                       onError={() =>
                         setNonDisplayableLogoIds((prev) =>
                           prev[logo.id] ? prev : { ...prev, [logo.id]: true }

@@ -255,11 +255,28 @@ export const Portfolio = () => {
       <PageHeader
         title="Our Work"
         subtitle="Portfolio"
-        description="A growing collection of digital projects, client builds, and creative solutions delivered through Apex Digital Consultants."
+        description="A growing collection of website development, web design, and digital project outcomes delivered for Barbados and Caribbean businesses."
       />
 
       <section className="section-padding">
         <div className="container-wide">
+          <div className="mb-10 rounded-[2rem] border border-apple-gray-100 bg-white p-6 sm:p-7 md:p-8">
+            <p className="text-sm md:text-base text-apple-gray-300 leading-7 mb-4">
+              Looking for similar outcomes? Explore our dedicated pages for website development Barbados and Caribbean service delivery.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link to="/website-development-barbados" className="apple-button apple-button-secondary text-sm">
+                Website Development Barbados
+              </Link>
+              <Link to="/website-development-caribbean" className="apple-button apple-button-secondary text-sm">
+                Website Development Caribbean
+              </Link>
+              <Link to="/ecommerce-website-development-barbados" className="apple-button apple-button-secondary text-sm">
+                Ecommerce Website Development
+              </Link>
+            </div>
+          </div>
+
           {loading ? (
             <div className="text-center py-20">
               <p className="text-apple-gray-300">{statusMessage}</p>
@@ -269,80 +286,104 @@ export const Portfolio = () => {
               <p className="text-apple-gray-300">{statusMessage || 'No portfolio projects uploaded yet.'}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12">
-              {projects.map((project) => (
-                <div
-                  key={project.id}
-                  className="group bg-white rounded-[2rem] overflow-hidden border border-apple-gray-100 shadow-sm hover:shadow-xl transition-all duration-300"
-                >
-                  <div className="relative aspect-[16/10] overflow-hidden bg-apple-gray-50">
-                    <img
-                      src={resolveProjectImage(project.file_url)}
-                      alt={project.alt_text || project.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12">
+                {projects.map((project) => (
+                  <div
+                    key={project.id}
+                    className="group bg-white rounded-[2rem] overflow-hidden border border-apple-gray-100 shadow-sm hover:shadow-xl transition-all duration-300"
+                  >
+                    <div className="relative aspect-[16/10] overflow-hidden bg-apple-gray-50">
+                      <img
+                        src={resolveProjectImage(project.file_url)}
+                        alt={project.alt_text || project.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        loading="lazy"
+                        decoding="async"
+                      />
 
-                    <button
-                      type="button"
-                      onClick={() => setActiveProject(project)}
-                      className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-medium text-apple-gray-500 shadow-md hover:bg-white transition"
-                    >
-                      <ZoomIn size={16} />
-                      View Larger
-                    </button>
-                  </div>
-
-                  <div className="p-6 md:p-8 space-y-5">
-                    <div>
-                      <div className="flex items-center justify-between gap-3 mb-3">
-                        <p className="text-sm uppercase tracking-widest text-apple-gray-300">
-                          {project.client_name || project.title}
-                        </p>
-                        {project.is_featured ? (
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-apex-yellow">
-                            Featured
-                          </span>
-                        ) : null}
-                      </div>
-                      <h3 className="text-2xl font-bold text-apple-gray-500 leading-tight">
-                        {project.title}
-                      </h3>
-                      <p className="text-sm uppercase tracking-widest text-apex-yellow mt-3">
-                        {project.project_type || project.tech_stack || 'Website Design & Development'}
-                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setActiveProject(project)}
+                        className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-medium text-apple-gray-500 shadow-md hover:bg-white transition"
+                      >
+                        <ZoomIn size={16} />
+                        View Larger
+                      </button>
                     </div>
 
-                    {project.description && (
-                      <p className="text-apple-gray-300 leading-8">
-                        {project.description}
-                      </p>
-                    )}
-
-                    {(project.services_provided || project.features) && (
+                    <div className="p-6 md:p-8 space-y-5">
                       <div>
-                        <h4 className="text-sm font-semibold uppercase tracking-widest text-apple-gray-500 mb-3">
-                          Services Provided
-                        </h4>
-                        <p className="text-apple-gray-300 leading-7">
-                          {(splitDelimited(project.services_provided || project.features).slice(0, 5)).join(' · ')}
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <p className="text-sm uppercase tracking-widest text-apple-gray-300">
+                            {project.client_name || project.title}
+                          </p>
+                          {project.is_featured ? (
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-apex-yellow">
+                              Featured
+                            </span>
+                          ) : null}
+                        </div>
+                        <h3 className="text-2xl font-bold text-apple-gray-500 leading-tight">
+                          {project.title}
+                        </h3>
+                        <p className="text-sm uppercase tracking-widest text-apex-yellow mt-3">
+                          {project.project_type || project.tech_stack || 'Website Design & Development'}
                         </p>
                       </div>
-                    )}
 
-                    {project.project_url ? (
-                      <div>
-                        <Link
-                          to={project.project_url}
-                          className="apple-button apple-button-secondary text-sm"
-                        >
-                          View Case Study
-                        </Link>
-                      </div>
-                    ) : null}
+                      {project.description && (
+                        <p className="text-apple-gray-300 leading-8">
+                          {project.description}
+                        </p>
+                      )}
+
+                      {(project.services_provided || project.features) && (
+                        <div>
+                          <h4 className="text-sm font-semibold uppercase tracking-widest text-apple-gray-500 mb-3">
+                            Services Provided
+                          </h4>
+                          <p className="text-apple-gray-300 leading-7">
+                            {(splitDelimited(project.services_provided || project.features).slice(0, 5)).join(' · ')}
+                          </p>
+                        </div>
+                      )}
+
+                      {project.project_url ? (
+                        <div>
+                          <Link
+                            to={project.project_url}
+                            className="apple-button apple-button-secondary text-sm"
+                          >
+                            View Case Study
+                          </Link>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
+                ))}
+              </div>
+
+              <div className="mt-12 rounded-[2rem] border border-apple-gray-100 bg-apple-gray-50 p-6 sm:p-7 md:p-8">
+                <h2 className="text-2xl font-semibold text-apple-gray-500 mb-3">
+                  Need Website Development Like This for Your Business?
+                </h2>
+                <p className="text-apple-gray-300 leading-8 mb-5">
+                  Explore our service options and discuss your project goals with the Apex team.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link to="/services" className="apple-button apple-button-secondary text-sm">
+                    Explore Website Development Services
+                  </Link>
+                  <Link to="/case-studies" className="apple-button apple-button-secondary text-sm">
+                    Read Website Case Studies
+                  </Link>
+                  <Link to="/contact" className="apple-button apple-button-primary text-sm">
+                    Discuss Your Website Project
+                  </Link>
                 </div>
-              ))}
-            </div>
+              </div>
+            </>
           )}
         </div>
       </section>

@@ -12,7 +12,7 @@ export const FAQs = () => {
       <PageHeader 
         title="Frequently Asked Questions."
         subtitle="Support"
-        description="Everything you need to know about working with APEX."
+        description="Answers about website development, web design, timelines, and support for businesses in Barbados and across the Caribbean."
       />
 
       <section className="pb-24">
