@@ -19,16 +19,20 @@ export const DigitalSolutions = () => {
         title="Digital Solutions for WordPress Websites."
         subtitle="Premium Assets"
         description="Custom plugins, automation tools, and powerful website enhancements designed to improve performance, increase conversions, and simplify business operations."
-      >
-        <div className="flex flex-wrap gap-6 mt-12">
-          <a href="#solutions" className="apple-button apple-button-primary">
-            Explore Digital Solutions
-          </a>
-          <Link to="/contact" className="apple-button apple-button-secondary">
-            Request Custom Plugin
-          </Link>
+      />
+
+      <section className="pb-8">
+        <div className="container-wide">
+          <div className="flex flex-wrap gap-6">
+            <a href="#solutions" className="apple-button apple-button-primary">
+              Explore Digital Solutions
+            </a>
+            <Link to="/contact" className="apple-button apple-button-secondary">
+              Request Custom Plugin
+            </Link>
+          </div>
         </div>
-      </PageHeader>
+      </section>
 
       {/* Introduction Section */}
       <section className="section-padding bg-apple-gray-50">

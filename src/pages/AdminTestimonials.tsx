@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { adminFetch } from '../utils/adminApi';
 
 type TestimonialItem = {
   id: number;
@@ -33,7 +34,7 @@ export const AdminTestimonials = () => {
   const loadTestimonials = async () => {
     try {
       setLoadingItems(true);
-      const res = await fetch('/api/testimonials?featured=all&limit=20');
+      const res = await adminFetch('/api/testimonials?featured=all&limit=20');
       const data = await res.json();
 
       if (!res.ok) {
@@ -62,7 +63,7 @@ export const AdminTestimonials = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/testimonials', {
+      const res = await adminFetch('/api/testimonials', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -139,7 +140,7 @@ export const AdminTestimonials = () => {
     setImportStatus(null);
 
     try {
-      const res = await fetch('/api/testimonials', {
+      const res = await adminFetch('/api/testimonials', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -188,7 +189,7 @@ export const AdminTestimonials = () => {
     setImportStatus(null);
 
     try {
-      const res = await fetch('/api/testimonials', {
+      const res = await adminFetch('/api/testimonials', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

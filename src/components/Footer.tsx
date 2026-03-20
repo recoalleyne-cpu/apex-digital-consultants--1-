@@ -10,12 +10,48 @@ export default function Footer() {
     service: '',
     message: ''
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    alert('Thank you for your message! We will get back to you soon.');
-    setFormData({ name: '', email: '', service: '', message: '' });
+    if (submitting) return;
+
+    setSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      const response = await fetch('/api/leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({
+          source: 'footer-form',
+          name: formData.name,
+          email: formData.email,
+          service: formData.service,
+          message: formData.message
+        })
+      });
+
+      if (!response.ok) {
+        const responseText = await response.text();
+        throw new Error(responseText || 'Unable to submit your message.');
+      }
+
+      setFormData({ name: '', email: '', service: '', message: '' });
+      setSubmitStatus('Thanks, your message was sent. We will follow up shortly.');
+    } catch (error) {
+      setSubmitStatus(
+        error instanceof Error
+          ? error.message
+          : 'Unable to submit right now. Please email info@apexdigitalconsultants.com.'
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -177,9 +213,14 @@ export default function Footer() {
               <button
                 type="submit"
                 className="apple-button apple-button-primary w-full py-3 text-sm font-bold"
+                disabled={submitting}
               >
-                Send Message
+                {submitting ? 'Sending...' : 'Send Message'}
               </button>
+
+              {submitStatus ? (
+                <p className="text-sm text-apple-gray-300">{submitStatus}</p>
+              ) : null}
             </form>
           </div>
         </div>

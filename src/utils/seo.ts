@@ -9,7 +9,9 @@ export type SeoConfig = {
 };
 
 const JSON_LD_PREFIX = 'apex-seo-jsonld-';
-const SITE_URL_FALLBACK = 'https://apex-digital-consultants.vercel.app';
+const SITE_URL_FALLBACK =
+  (import.meta.env.VITE_SITE_URL || '').trim().replace(/\/$/, '') ||
+  'https://apexdigitalconsultants.com';
 export const SITE_NAME = 'Apex Digital Consultants';
 export const DEFAULT_IMAGE =
   'https://qrklffj021lqoknd.public.blob.vercel-storage.com/Founder%20Image-bi5nUPhP7R5uZ3PSII3Nd3SCTVZFBa.jpeg';
