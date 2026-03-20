@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { verifyAdminSessionToken } from './adminSession';
 
-const ADMIN_TOKEN_HEADER = 'x-admin-token';
 const AUTHORIZATION_HEADER = 'authorization';
 const BEARER_PREFIX = 'bearer ';
 
@@ -17,9 +17,6 @@ const normalizeHeaderValue = (value: string | string[] | undefined) => {
 };
 
 const getProvidedToken = (req: VercelRequest) => {
-  const directToken = normalizeHeaderValue(req.headers[ADMIN_TOKEN_HEADER]);
-  if (directToken) return directToken;
-
   const authorization = normalizeHeaderValue(req.headers[AUTHORIZATION_HEADER]);
   if (!authorization) return '';
 
@@ -31,25 +28,39 @@ const getProvidedToken = (req: VercelRequest) => {
   return authorization.slice(BEARER_PREFIX.length).trim();
 };
 
-const getConfiguredToken = () => {
-  const token = process.env.ADMIN_ACCESS_TOKEN;
-  if (typeof token !== 'string') return '';
-  return token.trim();
+const getSessionSecret = () => {
+  const fromDedicatedSecret = (process.env.ADMIN_SESSION_SECRET || '').trim();
+  if (fromDedicatedSecret) return fromDedicatedSecret;
+
+  const fromLegacyToken = (process.env.ADMIN_ACCESS_TOKEN || '').trim();
+  if (fromLegacyToken) return fromLegacyToken;
+
+  return (process.env.ADMIN_LOGIN_PASSWORD || '').trim();
 };
 
 export const requireAdminAccess = (req: VercelRequest, res: VercelResponse) => {
-  const configuredToken = getConfiguredToken();
+  const sessionSecret = getSessionSecret();
 
-  if (!configuredToken) {
+  if (!sessionSecret) {
     res.status(500).json({
       success: false,
-      message: 'Missing ADMIN_ACCESS_TOKEN environment variable.'
+      message:
+        'Missing admin session secret. Set ADMIN_SESSION_SECRET (or ADMIN_ACCESS_TOKEN).'
     });
     return false;
   }
 
   const providedToken = getProvidedToken(req);
-  if (!providedToken || providedToken !== configuredToken) {
+  if (!providedToken) {
+    res.status(401).json({
+      success: false,
+      message: 'Unauthorized admin request.'
+    });
+    return false;
+  }
+
+  const sessionPayload = verifyAdminSessionToken(providedToken, sessionSecret);
+  if (!sessionPayload) {
     res.status(401).json({
       success: false,
       message: 'Unauthorized admin request.'
@@ -59,4 +70,3 @@ export const requireAdminAccess = (req: VercelRequest, res: VercelResponse) => {
 
   return true;
 };
-
