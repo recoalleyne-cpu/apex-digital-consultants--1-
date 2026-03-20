@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { adminFetch } from '../utils/adminApi';
 
 type LandingPageSummary = {
   id: number;
@@ -40,6 +41,8 @@ type LandingPageCreatePayload = {
   is_published: boolean;
 };
 
+type GeneratorSource = 'ai' | 'template';
+
 type BulkEntryInput = Record<string, unknown>;
 
 type BulkGenerationResult = {
@@ -47,7 +50,7 @@ type BulkGenerationResult = {
   status: 'created' | 'failed';
   title: string;
   slug?: string;
-  source?: 'ai' | 'template';
+  source?: GeneratorSource;
   message: string;
 };
 
@@ -214,7 +217,7 @@ export const AdminLandingPages = () => {
 
   const [saving, setSaving] = useState(false);
   const [generatingAi, setGeneratingAi] = useState(false);
-  const [generatorSource, setGeneratorSource] = useState<'ai' | 'template' | null>(null);
+  const [generatorSource, setGeneratorSource] = useState<GeneratorSource | null>(null);
   const [generatorMessage, setGeneratorMessage] = useState<string | null>(null);
   const [bulkInput, setBulkInput] = useState('');
   const [bulkPublishImmediately, setBulkPublishImmediately] = useState(false);
@@ -228,7 +231,7 @@ export const AdminLandingPages = () => {
   const loadLandingPages = async () => {
     try {
       setLoadingItems(true);
-      const res = await fetch('/api/landing-pages?include_drafts=true&limit=25');
+      const res = await adminFetch('/api/landing-pages?include_drafts=true&limit=25');
       const data = await res.json();
 
       if (!res.ok) {
@@ -293,8 +296,12 @@ export const AdminLandingPages = () => {
     target_audience: string;
     cta_text: string;
     cta_link: string;
-  }) => {
-    const response = await fetch('/api/landing-pages-generate', {
+  }): Promise<{
+    draft: GeneratedLandingPageDraft;
+    source: GeneratorSource;
+    message: string | null;
+  }> => {
+    const response = await adminFetch('/api/landing-pages-generate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -315,7 +322,7 @@ export const AdminLandingPages = () => {
   };
 
   const postLandingPage = async (payload: LandingPageCreatePayload) => {
-    const response = await fetch('/api/landing-pages', {
+    const response = await adminFetch('/api/landing-pages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -475,7 +482,7 @@ export const AdminLandingPages = () => {
     setSaving(true);
 
     try {
-      const res = await fetch('/api/landing-pages', {
+      const res = await adminFetch('/api/landing-pages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

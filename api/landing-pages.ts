@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
+import { requireAdminAccess } from './_utils/adminAuth';
 
 export const config = {
   runtime: 'nodejs'
@@ -99,6 +100,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await ensureLandingPagesTable(sql);
 
     if (req.method === 'POST') {
+      if (!requireAdminAccess(req, res)) {
+        return;
+      }
+
       let payload: Record<string, unknown>;
 
       try {
@@ -200,6 +205,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const serviceCategory = parseText(req.query.service_category);
     const includeDrafts = parseBoolean(req.query.include_drafts, false);
     const limit = parseLimit(req.query.limit, 12);
+
+    if (includeDrafts && !requireAdminAccess(req, res)) {
+      return;
+    }
 
     if (slug) {
       const rows = includeDrafts

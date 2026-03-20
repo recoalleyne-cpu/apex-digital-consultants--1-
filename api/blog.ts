@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
+import { requireAdminAccess } from './_utils/adminAuth';
 
 export const config = {
   runtime: 'nodejs'
@@ -114,6 +115,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await ensureBlogPostsTable(sql);
 
     if (req.method === 'POST') {
+      if (!requireAdminAccess(req, res)) {
+        return;
+      }
+
       let payload: Record<string, unknown>;
       try {
         const body =
@@ -206,6 +211,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const category = parseText(req.query.category);
       const includeDrafts = parseBoolean(req.query.include_drafts, false);
       const limit = parseLimit(req.query.limit, 9);
+
+      if (includeDrafts && !requireAdminAccess(req, res)) {
+        return;
+      }
 
       if (slug) {
         const rows = includeDrafts

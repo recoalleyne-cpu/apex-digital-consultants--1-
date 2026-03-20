@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
 import { INITIAL_CASE_STUDIES } from '../src/constants/caseStudiesSeed';
+import { requireAdminAccess } from './_utils/adminAuth';
 
 export const config = {
   runtime: 'nodejs'
@@ -284,6 +285,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sql = neon(postgresUrl);
 
     if (req.method === 'POST') {
+      if (!requireAdminAccess(req, res)) {
+        return;
+      }
+
       await ensureCaseStudiesTable(sql);
 
       let payload: Record<string, unknown>;
@@ -393,6 +398,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       await ensureCaseStudiesTable(sql);
       await ensureInitialCaseStudies(sql);
+
+      if (includeDrafts && !requireAdminAccess(req, res)) {
+        return;
+      }
 
       if (slug) {
         const rows = includeDrafts

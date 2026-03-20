@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { adminFetch } from '../utils/adminApi';
 
 type CaseStudySummaryItem = {
   id: number;
@@ -61,7 +62,7 @@ export const AdminCaseStudies = () => {
   const loadCaseStudies = async () => {
     try {
       setLoadingItems(true);
-      const res = await fetch('/api/case-studies?include_drafts=true&limit=30');
+      const res = await adminFetch('/api/case-studies?include_drafts=true&limit=30');
       const data = await res.json();
 
       if (!res.ok) {
@@ -120,7 +121,7 @@ export const AdminCaseStudies = () => {
     setSaving(true);
 
     try {
-      const res = await fetch('/api/case-studies', {
+      const res = await adminFetch('/api/case-studies', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { adminFetch } from '../utils/adminApi';
 
 type BlogSummaryItem = {
   id: number;
@@ -51,7 +52,7 @@ export const AdminBlog = () => {
   const loadPosts = async () => {
     try {
       setLoadingItems(true);
-      const res = await fetch('/api/blog?include_drafts=true&limit=20');
+      const res = await adminFetch('/api/blog?include_drafts=true&limit=20');
       const data = await res.json();
 
       if (!res.ok) {
@@ -101,7 +102,7 @@ export const AdminBlog = () => {
     setSaving(true);
 
     try {
-      const res = await fetch('/api/blog', {
+      const res = await adminFetch('/api/blog', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

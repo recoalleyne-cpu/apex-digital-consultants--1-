@@ -1,6 +1,0 @@
-User-agent: *
-Disallow: /admin
-Allow: /
-
-Host: apex-digital-consultants.vercel.app
-Sitemap: https://apex-digital-consultants.vercel.app/sitemap.xml

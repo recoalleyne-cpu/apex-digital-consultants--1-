@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
+import { requireAdminAccess } from './_utils/adminAuth';
 
 export const config = {
   runtime: 'nodejs'
@@ -49,6 +50,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sql = neon(postgresUrl);
 
     if (req.method === 'POST') {
+      if (!requireAdminAccess(req, res)) {
+        return;
+      }
+
       const body = getRequestBody(req);
       if (!body) {
         return res.status(400).send('Invalid request body');

@@ -1,6 +1,7 @@
 import React from 'react';
 import { CheckCircle2, Copy, Link2, Mail, Settings2, XCircle } from 'lucide-react';
 import { AdminSettingsAccordion } from '../components/admin/AdminSettingsAccordion';
+import { adminFetch } from '../utils/adminApi';
 import {
   GOOGLE_INTEGRATIONS,
   GOOGLE_INTEGRATIONS_DIAGNOSTICS
@@ -261,7 +262,7 @@ export const AdminGoogleIntegrations = () => {
 
     const loadEmailSettings = async () => {
       try {
-        const response = await fetch('/api/email-integrations', {
+        const response = await adminFetch('/api/email-integrations', {
           method: 'GET',
           headers: {
             Accept: 'application/json'
@@ -568,7 +569,7 @@ export const AdminGoogleIntegrations = () => {
     try {
       setEmailSavingProvider(providerId);
 
-      const response = await fetch('/api/email-integrations', {
+      const response = await adminFetch('/api/email-integrations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

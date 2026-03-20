@@ -15,6 +15,7 @@ export const Contact = () => {
     customService: ''
   });
   const [submitMessage, setSubmitMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const creativeOptions = [
     'Branding',
@@ -32,7 +33,7 @@ export const Contact = () => {
     return formData.service.trim();
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const requiredMissing = !formData.firstName.trim() ||
@@ -45,24 +46,54 @@ export const Contact = () => {
       return;
     }
 
-    const selectedService = resolveServiceValue() || 'Not specified';
-    const name = `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim();
-    const subject = encodeURIComponent(`New Quote Request: ${selectedService}`);
-    const body = encodeURIComponent(
-      [
-        `Name: ${name}`,
-        `Email: ${formData.email.trim()}`,
-        `Phone: ${formData.phone.trim()}`,
-        `Company: ${formData.companyName.trim()}`,
-        `Service Interest: ${selectedService}`,
-        '',
-        'Project Details:',
-        formData.projectDetails.trim() || 'Not provided'
-      ].join('\n')
-    );
+    setSubmitting(true);
+    setSubmitMessage('');
 
-    window.location.href = `mailto:info@apexdigitalconsultants.com?subject=${subject}&body=${body}`;
-    setSubmitMessage('Your email client should open now. If not, email us at info@apexdigitalconsultants.com.');
+    const selectedService = resolveServiceValue() || 'Not specified';
+    try {
+      const response = await fetch('/api/leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({
+          source: 'contact-form',
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          companyName: formData.companyName.trim(),
+          service: selectedService,
+          projectDetails: formData.projectDetails.trim()
+        })
+      });
+
+      if (!response.ok) {
+        const responseText = await response.text();
+        throw new Error(responseText || 'Unable to submit your request.');
+      }
+
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        companyName: '',
+        projectDetails: '',
+        service: '',
+        customService: ''
+      });
+      setSubmitMessage('Thanks, your request was received. Our team will contact you shortly.');
+    } catch (error) {
+      setSubmitMessage(
+        error instanceof Error
+          ? error.message
+          : 'Unable to submit right now. Please email info@apexdigitalconsultants.com.'
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -129,7 +160,9 @@ export const Contact = () => {
                     <h4 className="text-xl font-bold mb-2">Whatsapp Us</h4>
                     <p className="text-apple-gray-300 mb-2">Mon-Fri from 9am to 5pm.</p>
                     <a
-                      href="tel:2468416543"
+                      href="https://wa.me/12468416543"
+                      target="_blank"
+                      rel="noreferrer"
                       className="text-lg font-semibold hover:text-apex-yellow transition-colors"
                     >
                       246-841-6543
@@ -313,8 +346,12 @@ export const Contact = () => {
                   )}
                 </div>
 
-                <button type="submit" className="apple-button apple-button-primary w-full md:w-auto px-10 flex items-center justify-center gap-2">
-                  <Send size={18} /> Submit
+                <button
+                  type="submit"
+                  className="apple-button apple-button-primary w-full md:w-auto px-10 flex items-center justify-center gap-2"
+                  disabled={submitting}
+                >
+                  <Send size={18} /> {submitting ? 'Submitting...' : 'Submit'}
                 </button>
                 {submitMessage && (
                   <p className="text-sm text-apple-gray-300">{submitMessage}</p>

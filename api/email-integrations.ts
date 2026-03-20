@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
+import { requireAdminAccess } from './_utils/adminAuth';
 
 export const config = {
   runtime: 'nodejs'
@@ -88,6 +89,11 @@ const parseProviderId = (value: unknown): EmailProviderId | null => {
   return null;
 };
 
+const asRowArray = <T>(value: unknown): T[] => {
+  if (!Array.isArray(value)) return [];
+  return value as T[];
+};
+
 const ensureIntegrationSettingsTable = async (sql: ReturnType<typeof neon>) => {
   await sql`
     CREATE TABLE IF NOT EXISTS integration_settings (
@@ -106,14 +112,14 @@ const ensureIntegrationSettingsTable = async (sql: ReturnType<typeof neon>) => {
 };
 
 const loadSavedProviders = async (sql: ReturnType<typeof neon>) => {
-  const rows = await sql`
+  const rows = asRowArray<{ setting_value?: unknown; updated_at?: Date | null }>(await sql`
     SELECT
       setting_value,
       updated_at
     FROM integration_settings
     WHERE setting_key = ${EMAIL_SETTINGS_KEY}
     LIMIT 1
-  `;
+  `);
 
   if (!rows.length) {
     return {
@@ -122,7 +128,7 @@ const loadSavedProviders = async (sql: ReturnType<typeof neon>) => {
     };
   }
 
-  const row = rows[0] as { setting_value?: unknown; updated_at?: Date | null };
+  const row = rows[0];
 
   return {
     providers: normalizeProvidersPayload(row.setting_value ?? {}),
@@ -134,7 +140,7 @@ const saveProviders = async (
   sql: ReturnType<typeof neon>,
   providers: Record<EmailProviderId, EmailProviderConfig>
 ) => {
-  const rows = await sql`
+  const rows = asRowArray<{ setting_value?: unknown; updated_at?: Date | null }>(await sql`
     INSERT INTO integration_settings (
       setting_key,
       setting_value
@@ -150,9 +156,9 @@ const saveProviders = async (
     RETURNING
       setting_value,
       updated_at
-  `;
+  `);
 
-  const row = rows[0] as { setting_value?: unknown; updated_at?: Date | null } | undefined;
+  const row = rows[0];
 
   return {
     providers: normalizeProvidersPayload(row?.setting_value ?? {}),
@@ -164,6 +170,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (req.method !== 'GET' && req.method !== 'POST') {
       return res.status(405).send('Method not allowed');
+    }
+
+    if (!requireAdminAccess(req, res)) {
+      return;
     }
 
     const postgresUrl = process.env.POSTGRES_URL;

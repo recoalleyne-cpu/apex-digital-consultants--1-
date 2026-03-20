@@ -35,6 +35,7 @@ import { AdminPaymentGateways } from './pages/AdminPaymentGateways';
 import { AdminGoogleIntegrations } from './pages/AdminGoogleIntegrations';
 import { AdminShell } from './components/admin/AdminShell';
 import { LandingPage } from './pages/LandingPage';
+import { NotFound } from './pages/NotFound';
 import { GoogleIntegrationRuntime } from './components/GoogleIntegrationRuntime';
 import { NewsletterSignupModal } from './components/NewsletterSignupModal';
 import { FAQS } from './constants';
@@ -687,7 +688,7 @@ const AppFrame = () => {
           <Route path="/services/web-design" element={<WebDesign />} />
           <Route path="/services/logos" element={<Logos />} />
           <Route path="/services/websites" element={<Websites />} />
-          <Route path="/:slug" element={<LandingPage />} />
+          <Route path="*" element={<NotFound />} />
 
           <Route path="/admin" element={<AdminShell />}>
             <Route index element={<AdminDashboard />} />

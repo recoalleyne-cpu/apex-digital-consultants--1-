@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { upload } from '@vercel/blob/client';
 import { CheckCircle2, RefreshCw } from 'lucide-react';
+import { adminFetch, withAdminAuthHeaders } from '../utils/adminApi';
 import {
   MEDIA_CATEGORY_VALUES,
   MEDIA_CATEGORY_OPTIONS,
@@ -201,7 +202,7 @@ export const AdminMedia = ({
     try {
       setLoadingRecords(true);
       setRecordStatus('Loading media records...');
-      const res = await fetch(buildMediaQuery(categoryFilter, placementFilter), {
+      const res = await adminFetch(buildMediaQuery(categoryFilter, placementFilter), {
         method: 'GET',
         headers: {
           Accept: 'application/json'
@@ -295,10 +296,11 @@ export const AdminMedia = ({
           const blob = await upload(getUploadPathname(file), file, {
             access: 'public',
             handleUploadUrl: '/api/upload',
-            multipart: file.size > 8 * 1024 * 1024
+            multipart: file.size > 8 * 1024 * 1024,
+            headers: Object.fromEntries(withAdminAuthHeaders())
           });
 
-          const metadataRes = await fetch('/api/media', {
+          const metadataRes = await adminFetch('/api/media', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
