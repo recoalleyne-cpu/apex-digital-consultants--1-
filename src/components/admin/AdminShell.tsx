@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowUpRight,
   CreditCard,
@@ -16,10 +16,7 @@ import {
   X
 } from 'lucide-react';
 import {
-  adminFetch,
-  clearAdminAccessToken,
-  getAdminAccessToken,
-  setAdminAccessToken
+  clearAdminAccessToken
 } from '../../utils/adminApi';
 
 type AdminNavItem = {
@@ -143,165 +140,14 @@ const NavItems = ({ onNavigate }: { onNavigate?: () => void }) => {
 
 export const AdminShell = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isAuthChecked, setIsAuthChecked] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAuthLoading, setIsAuthLoading] = useState(false);
-  const [authTokenInput, setAuthTokenInput] = useState('');
-  const [authError, setAuthError] = useState<string | null>(null);
   const pageMeta = useMemo(() => getPageMeta(location.pathname), [location.pathname]);
-
-  useEffect(() => {
-    let isMounted = true;
-    const existingToken = getAdminAccessToken();
-
-    if (!existingToken) {
-      setIsAuthChecked(true);
-      return () => {
-        isMounted = false;
-      };
-    }
-
-    const validateExistingToken = async () => {
-      setIsAuthLoading(true);
-      try {
-        const response = await adminFetch('/api/admin-auth', {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json'
-          }
-        });
-
-        if (!response.ok) {
-          clearAdminAccessToken();
-          if (isMounted) {
-            setIsAuthenticated(false);
-            setAuthError('Admin access token expired or invalid. Enter a valid token.');
-          }
-          return;
-        }
-
-        if (isMounted) {
-          setIsAuthenticated(true);
-          setAuthError(null);
-        }
-      } catch {
-        clearAdminAccessToken();
-        if (isMounted) {
-          setIsAuthenticated(false);
-          setAuthError('Unable to verify admin access. Please enter your token again.');
-        }
-      } finally {
-        if (isMounted) {
-          setIsAuthLoading(false);
-          setIsAuthChecked(true);
-        }
-      }
-    };
-
-    void validateExistingToken();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const handleUnlock = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const nextToken = authTokenInput.trim();
-    if (!nextToken) {
-      setAuthError('Enter your admin access token.');
-      return;
-    }
-
-    setAuthError(null);
-    setIsAuthLoading(true);
-    setAdminAccessToken(nextToken);
-
-    try {
-      const response = await adminFetch('/api/admin-auth', {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        clearAdminAccessToken();
-        const responseText = await response.text();
-        throw new Error(responseText || 'Invalid admin access token.');
-      }
-
-      setIsAuthenticated(true);
-      setAuthTokenInput('');
-      setAuthError(null);
-    } catch (error) {
-      setIsAuthenticated(false);
-      setAuthError(error instanceof Error ? error.message : 'Invalid admin access token.');
-    } finally {
-      setIsAuthLoading(false);
-      setIsAuthChecked(true);
-    }
-  };
 
   const handleLock = () => {
     clearAdminAccessToken();
-    setIsAuthenticated(false);
-    setAuthError(null);
-    setAuthTokenInput('');
+    navigate('/admin/login', { replace: true });
   };
-
-  if (!isAuthChecked && isAuthLoading) {
-    return (
-      <div className="min-h-screen bg-apple-gray-50 px-5 py-16 sm:px-6 md:px-8">
-        <div className="mx-auto w-full max-w-xl rounded-3xl border border-apple-gray-100 bg-white p-7 text-center sm:p-10">
-          <h1 className="text-2xl font-semibold tracking-tight text-apple-gray-500 sm:text-3xl">
-            Verifying Admin Access
-          </h1>
-          <p className="mt-3 text-sm leading-7 text-apple-gray-300 sm:text-base">
-            Please wait while your session token is validated.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-apple-gray-50 px-5 py-16 sm:px-6 md:px-8">
-        <div className="mx-auto w-full max-w-xl rounded-3xl border border-apple-gray-100 bg-white p-7 sm:p-10">
-          <h1 className="text-2xl font-semibold tracking-tight text-apple-gray-500 sm:text-3xl">
-            Unlock Apex CMS
-          </h1>
-          <p className="mt-3 text-sm leading-7 text-apple-gray-300 sm:text-base">
-            Enter the admin access token to continue. API write access is protected and requires this token.
-          </p>
-
-          <form onSubmit={handleUnlock} className="mt-6 space-y-4">
-            <input
-              type="password"
-              value={authTokenInput}
-              onChange={(event) => setAuthTokenInput(event.target.value)}
-              placeholder="Admin access token"
-              className="w-full rounded-xl border border-apple-gray-100 px-4 py-3 text-sm text-apple-gray-500"
-              autoComplete="off"
-            />
-            {authError ? (
-              <p className="text-sm font-medium text-red-600">{authError}</p>
-            ) : null}
-            <button
-              type="submit"
-              className="apple-button apple-button-primary w-full"
-              disabled={isAuthLoading}
-            >
-              {isAuthLoading ? 'Verifying...' : 'Unlock Dashboard'}
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-apple-gray-50 text-apple-gray-500">

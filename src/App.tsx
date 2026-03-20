@@ -34,6 +34,8 @@ import { AdminLogos } from './pages/AdminLogos';
 import { AdminPaymentGateways } from './pages/AdminPaymentGateways';
 import { AdminGoogleIntegrations } from './pages/AdminGoogleIntegrations';
 import { AdminShell } from './components/admin/AdminShell';
+import { AdminRouteGuard } from './components/admin/AdminRouteGuard';
+import { AdminLogin } from './pages/AdminLogin';
 import { LandingPage } from './pages/LandingPage';
 import { NotFound } from './pages/NotFound';
 import { GoogleIntegrationRuntime } from './components/GoogleIntegrationRuntime';
@@ -690,7 +692,15 @@ const AppFrame = () => {
           <Route path="/services/websites" element={<Websites />} />
           <Route path="*" element={<NotFound />} />
 
-          <Route path="/admin" element={<AdminShell />}>
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route
+            path="/admin"
+            element={
+              <AdminRouteGuard>
+                <AdminShell />
+              </AdminRouteGuard>
+            }
+          >
             <Route index element={<AdminDashboard />} />
             <Route path="media" element={<AdminMedia />} />
             <Route path="blog" element={<AdminBlog />} />
