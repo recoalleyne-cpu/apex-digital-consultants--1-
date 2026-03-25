@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
-import { requireAdminAccess } from './_utils/adminAuth';
+import { requireAdminAccess } from '../server/api-shared/adminAuth';
 
 export const config = {
   runtime: 'nodejs'
@@ -30,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(405).send('Method not allowed');
     }
 
-    if (!requireAdminAccess(req, res)) {
+    if (!(await requireAdminAccess(req, res))) {
       return;
     }
 

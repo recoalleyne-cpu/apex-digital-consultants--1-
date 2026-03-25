@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { neon } from '@neondatabase/serverless';
+import { createLead, ensureHybridContentSchemaReady } from '../server/api-shared/contentRepository';
+import { getSqlClient, isNeonConfigured } from '../server/api-shared/neonDb';
 
 export const config = {
   runtime: 'nodejs'
@@ -35,30 +36,6 @@ const splitName = (value: string | null) => {
   };
 };
 
-const ensureLeadSubmissionsTable = async (sql: ReturnType<typeof neon>) => {
-  await sql`
-    CREATE TABLE IF NOT EXISTS lead_submissions (
-      id SERIAL PRIMARY KEY,
-      first_name TEXT,
-      last_name TEXT,
-      email TEXT NOT NULL,
-      phone TEXT,
-      company_name TEXT,
-      service_interest TEXT,
-      project_details TEXT,
-      budget_range TEXT,
-      status TEXT DEFAULT 'new',
-      source TEXT,
-      created_at TIMESTAMP DEFAULT NOW()
-    )
-  `;
-
-  await sql`
-    CREATE INDEX IF NOT EXISTS lead_submissions_created_idx
-    ON lead_submissions (created_at DESC)
-  `;
-};
-
 const getRequestPayload = (req: VercelRequest) => {
   if (typeof req.body === 'string') {
     try {
@@ -82,9 +59,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(405).send('Method not allowed');
     }
 
-    const postgresUrl = process.env.POSTGRES_URL;
-    if (!postgresUrl) {
-      return res.status(500).send('Missing POSTGRES_URL environment variable');
+    if (!isNeonConfigured()) {
+      return res.status(500).send('Missing DATABASE_URL (or POSTGRES_URL) environment variable');
     }
 
     const payload = getRequestPayload(req);
@@ -121,42 +97,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const budgetRange = clip(parseText(payload.budget) || parseText(payload.budget_range), 120);
     const source = clip(parseText(payload.source), 120) || 'website';
 
-    const sql = neon(postgresUrl);
-    await ensureLeadSubmissionsTable(sql);
+    const sql = getSqlClient();
+    await ensureHybridContentSchemaReady(sql);
 
-    const inserted = await sql`
-      INSERT INTO lead_submissions (
-        first_name,
-        last_name,
-        email,
-        phone,
-        company_name,
-        service_interest,
-        project_details,
-        budget_range,
-        source
-      )
-      VALUES (
-        ${firstName},
-        ${lastName},
-        ${email},
-        ${phone},
-        ${companyName},
-        ${serviceInterest},
-        ${projectDetails},
-        ${budgetRange},
-        ${source}
-      )
-      RETURNING id
-    `;
+    const name = [firstName, lastName].filter(Boolean).join(' ').trim() || null;
+    const id = await createLead(sql, {
+      name,
+      email,
+      phone,
+      company: companyName,
+      message:
+        [serviceInterest, projectDetails, budgetRange]
+          .filter(Boolean)
+          .join(' | ') || null,
+      source
+    });
 
     return res.status(201).json({
       success: true,
-      id: inserted[0]?.id || null
+      id: id || null
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown lead submission error';
     return res.status(500).send(`Lead submission failed: ${message}`);
   }
 }
-

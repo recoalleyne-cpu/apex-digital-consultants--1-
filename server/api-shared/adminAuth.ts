@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { verifyAdminSessionToken } from './adminSession';
+import { getFirebaseAdminConfigError, verifyFirebaseIdToken } from './firebaseAdmin';
 
 const AUTHORIZATION_HEADER = 'authorization';
 const BEARER_PREFIX = 'bearer ';
@@ -28,24 +28,26 @@ const getProvidedToken = (req: VercelRequest) => {
   return authorization.slice(BEARER_PREFIX.length).trim();
 };
 
-const getSessionSecret = () => {
-  const fromDedicatedSecret = (process.env.ADMIN_SESSION_SECRET || '').trim();
-  if (fromDedicatedSecret) return fromDedicatedSecret;
+const getAllowedAdminEmails = () => {
+  const fromList = (process.env.ADMIN_ALLOWED_EMAILS || '')
+    .split(',')
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
 
-  const fromLegacyToken = (process.env.ADMIN_ACCESS_TOKEN || '').trim();
-  if (fromLegacyToken) return fromLegacyToken;
+  if (fromList.length > 0) {
+    return new Set(fromList);
+  }
 
-  return (process.env.ADMIN_LOGIN_PASSWORD || '').trim();
+  const fallback = (process.env.ADMIN_LOGIN_EMAIL || '').trim().toLowerCase();
+  return fallback ? new Set([fallback]) : null;
 };
 
-export const requireAdminAccess = (req: VercelRequest, res: VercelResponse) => {
-  const sessionSecret = getSessionSecret();
-
-  if (!sessionSecret) {
+export const requireAdminAccess = async (req: VercelRequest, res: VercelResponse) => {
+  const firebaseConfigError = getFirebaseAdminConfigError();
+  if (firebaseConfigError) {
     res.status(500).json({
       success: false,
-      message:
-        'Missing admin session secret. Set ADMIN_SESSION_SECRET (or ADMIN_ACCESS_TOKEN).'
+      message: firebaseConfigError
     });
     return false;
   }
@@ -59,13 +61,25 @@ export const requireAdminAccess = (req: VercelRequest, res: VercelResponse) => {
     return false;
   }
 
-  const sessionPayload = verifyAdminSessionToken(providedToken, sessionSecret);
-  if (!sessionPayload) {
+  const decodedToken = await verifyFirebaseIdToken(providedToken);
+  if (!decodedToken) {
     res.status(401).json({
       success: false,
       message: 'Unauthorized admin request.'
     });
     return false;
+  }
+
+  const allowedEmails = getAllowedAdminEmails();
+  if (allowedEmails) {
+    const userEmail = (decodedToken.email || '').trim().toLowerCase();
+    if (!userEmail || !allowedEmails.has(userEmail)) {
+      res.status(403).json({
+        success: false,
+        message: 'Authenticated user is not allowed for admin access.'
+      });
+      return false;
+    }
   }
 
   return true;

@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
-import { requireAdminAccess } from './_utils/adminAuth';
+import { requireAdminAccess } from '../server/api-shared/adminAuth';
+import { getSqlClient, isNeonConfigured } from '../server/api-shared/neonDb';
 
 export const config = {
   runtime: 'nodejs'
@@ -138,6 +139,28 @@ const SYSTEM_GOOGLE_REVIEW_SEED_ITEMS = [
 ];
 
 let hasSeededSystemGoogleReview = false;
+
+const buildFallbackTestimonials = (featuredOnly: boolean, limit: number) => {
+  const rows = SYSTEM_GOOGLE_REVIEW_SEED_ITEMS.map((item, index) => ({
+    id: -(index + 1),
+    name: item.reviewer_name,
+    company: item.company,
+    role: null,
+    quote: item.review_text,
+    rating: item.rating,
+    image_url: null,
+    featured: item.featured,
+    source: 'google',
+    external_id: item.review_id,
+    external_url: null,
+    published_at: item.published_at,
+    last_synced_at: null,
+    created_at: item.published_at
+  }));
+
+  const filtered = featuredOnly ? rows.filter((row) => row.featured) : rows;
+  return filtered.slice(0, limit);
+};
 
 const normalizeGoogleImportItem = (
   value: unknown,
@@ -393,20 +416,31 @@ const ensureTestimonialsTable = async (sql: ReturnType<typeof neon>) => {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    const postgresUrl = process.env.POSTGRES_URL;
-
-    if (!postgresUrl) {
-      return res.status(500).send('Missing POSTGRES_URL environment variable');
+    if (req.method !== 'GET' && req.method !== 'POST') {
+      return res.status(405).send('Method not allowed');
     }
 
-    const sql = neon(postgresUrl);
+    const featuredOnly = parseFeaturedFlag(req.query.featured);
+    const limit = parseLimit(req.query.limit);
+
+    if (!isNeonConfigured()) {
+      if (req.method === 'POST') {
+        return res.status(500).send('Missing DATABASE_URL (or POSTGRES_URL) environment variable');
+      }
+
+      return res.status(200).json({
+        success: true,
+        items: buildFallbackTestimonials(featuredOnly, limit),
+        data_mode: 'seed-fallback',
+        warning: 'DATABASE_URL / POSTGRES_URL is missing. Serving fallback testimonials.'
+      });
+    }
+
+    const sql = getSqlClient();
     await ensureTestimonialsTable(sql);
     await ensureSystemGoogleReviewSeed(sql);
 
     if (req.method === 'GET') {
-      const featuredOnly = parseFeaturedFlag(req.query.featured);
-      const limit = parseLimit(req.query.limit);
-
       const rows = featuredOnly
         ? await sql`
             SELECT id, name, company, role, quote, rating, image_url, featured, source, external_id, external_url, published_at, last_synced_at, created_at
@@ -429,7 +463,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'POST') {
-      if (!requireAdminAccess(req, res)) {
+      if (!(await requireAdminAccess(req, res))) {
         return;
       }
 
@@ -546,6 +580,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Unknown testimonials error';
+
+    if (req.method === 'GET') {
+      const featuredOnly = parseFeaturedFlag(req.query.featured);
+      const limit = parseLimit(req.query.limit);
+      return res.status(200).json({
+        success: true,
+        items: buildFallbackTestimonials(featuredOnly, limit),
+        data_mode: 'runtime-fallback',
+        warning: `Testimonials query failed (${message}). Serving fallback testimonials.`
+      });
+    }
 
     return res.status(500).send(`Testimonials request failed: ${message}`);
   }

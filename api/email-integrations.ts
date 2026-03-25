@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
-import { requireAdminAccess } from './_utils/adminAuth';
+import { requireAdminAccess } from '../server/api-shared/adminAuth';
+import { getSqlClient, isNeonConfigured } from '../server/api-shared/neonDb';
 
 export const config = {
   runtime: 'nodejs'
@@ -172,16 +173,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(405).send('Method not allowed');
     }
 
-    if (!requireAdminAccess(req, res)) {
+    if (!(await requireAdminAccess(req, res))) {
       return;
     }
 
-    const postgresUrl = process.env.POSTGRES_URL;
-    if (!postgresUrl) {
-      return res.status(500).send('Missing POSTGRES_URL environment variable');
+    if (!isNeonConfigured()) {
+      return res.status(500).send('Missing DATABASE_URL (or POSTGRES_URL) environment variable');
     }
 
-    const sql = neon(postgresUrl);
+    const sql = getSqlClient();
     await ensureIntegrationSettingsTable(sql);
 
     if (req.method === 'GET') {
