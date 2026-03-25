@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
-import { requireAdminAccess } from './_utils/adminAuth';
+import { requireAdminAccess } from '../server/api-shared/adminAuth';
+import { getSqlClient, isNeonConfigured } from '../server/api-shared/neonDb';
 
 export const config = {
   runtime: 'nodejs'
@@ -41,16 +42,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(405).send('Method not allowed');
     }
 
-    const postgresUrl = process.env.POSTGRES_URL;
+    if (!isNeonConfigured()) {
+      if (req.method === 'POST') {
+        return res.status(500).send('Missing DATABASE_URL (or POSTGRES_URL) environment variable');
+      }
 
-    if (!postgresUrl) {
-      return res.status(500).send('Missing POSTGRES_URL environment variable');
+      return res.status(200).json({
+        success: true,
+        items: [],
+        data_mode: 'empty-fallback',
+        warning: 'DATABASE_URL / POSTGRES_URL is missing. Returning empty media list.'
+      });
     }
 
-    const sql = neon(postgresUrl);
+    const sql = getSqlClient();
 
     if (req.method === 'POST') {
-      if (!requireAdminAccess(req, res)) {
+      if (!(await requireAdminAccess(req, res))) {
         return;
       }
 
@@ -133,8 +141,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       items: rows
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Unknown fetch error';
+    const message = error instanceof Error ? error.message : 'Unknown fetch error';
+
+    if (req.method === 'GET') {
+      return res.status(200).json({
+        success: true,
+        items: [],
+        data_mode: 'runtime-fallback',
+        warning: `Media query failed (${message}). Returning empty media list.`
+      });
+    }
 
     return res.status(500).send(`Media fetch failed: ${message}`);
   }

@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
-import { requireAdminAccess } from './_utils/adminAuth';
+import { requireAdminAccess } from '../server/api-shared/adminAuth';
+import { getSqlClient, isNeonConfigured } from '../server/api-shared/neonDb';
 
 export const config = {
   runtime: 'nodejs'
@@ -105,17 +106,36 @@ const ensureBlogPostsTable = async (sql: ReturnType<typeof neon>) => {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    const postgresUrl = process.env.POSTGRES_URL;
-
-    if (!postgresUrl) {
-      return res.status(500).send('Missing POSTGRES_URL environment variable');
+    if (req.method !== 'GET' && req.method !== 'POST') {
+      return res.status(405).send('Method not allowed');
     }
 
-    const sql = neon(postgresUrl);
+    if (!isNeonConfigured()) {
+      if (req.method === 'POST') {
+        return res.status(500).send('Missing DATABASE_URL (or POSTGRES_URL) environment variable');
+      }
+
+      const slug = parseText(req.query.slug);
+      if (slug) {
+        return res.status(404).json({
+          success: false,
+          message: 'Blog post not found'
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        items: [],
+        data_mode: 'empty-fallback',
+        warning: 'DATABASE_URL / POSTGRES_URL is missing. Returning empty blog list.'
+      });
+    }
+
+    const sql = getSqlClient();
     await ensureBlogPostsTable(sql);
 
     if (req.method === 'POST') {
-      if (!requireAdminAccess(req, res)) {
+      if (!(await requireAdminAccess(req, res))) {
         return;
       }
 
@@ -212,7 +232,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const includeDrafts = parseBoolean(req.query.include_drafts, false);
       const limit = parseLimit(req.query.limit, 9);
 
-      if (includeDrafts && !requireAdminAccess(req, res)) {
+      if (includeDrafts && !(await requireAdminAccess(req, res))) {
         return;
       }
 
@@ -261,7 +281,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               LIMIT 1
             `;
 
-        if (!rows.length) {
+        const rowList = Array.isArray(rows) ? rows : [];
+
+        if (!rowList.length) {
           return res.status(404).json({
             success: false,
             message: 'Blog post not found'
@@ -270,7 +292,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         return res.status(200).json({
           success: true,
-          item: rows[0]
+          item: rowList[0]
         });
       }
 
@@ -361,6 +383,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).send('Method not allowed');
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown blog fetch error';
+
+    if (req.method === 'GET') {
+      const slug = parseText(req.query.slug);
+      if (slug) {
+        return res.status(404).json({
+          success: false,
+          message: 'Blog post not found'
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        items: [],
+        data_mode: 'runtime-fallback',
+        warning: `Blog query failed (${message}). Returning empty blog list.`
+      });
+    }
+
     return res.status(500).send(`Blog fetch failed: ${message}`);
   }
 }
