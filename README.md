@@ -19,6 +19,26 @@ View your app in AI Studio: https://ai.studio/apps/536a6e66-2dea-406f-b6e8-6983c
 3. Run the app:
    `npm run dev`
 
+## Firebase
+
+Firebase and Neon now run in a hybrid pattern:
+
+- Firebase Authentication = login + identity
+- Neon Postgres = primary content/business data
+- Firestore helpers remain optional scaffolding only
+
+- Central config: `src/lib/firebase.ts`
+- Auth helpers: `src/lib/auth.ts`
+- Firestore helpers: `src/lib/firestore.ts`
+- Neon repositories: `api/_utils/contentRepository.ts`
+- Setup guide: `FIREBASE_SETUP.md`
+
+Initialize Neon schema + seed data:
+
+```bash
+npm run db:init:neon
+```
+
 ## Google Integrations
 
 Google services are centralized through:

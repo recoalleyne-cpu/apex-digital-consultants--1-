@@ -46,6 +46,12 @@ export const Contact = () => {
       return;
     }
 
+    const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!EMAIL_PATTERN.test(formData.email.trim())) {
+      setSubmitMessage('Please enter a valid email address.');
+      return;
+    }
+
     setSubmitting(true);
     setSubmitMessage('');
 
@@ -74,6 +80,8 @@ export const Contact = () => {
         throw new Error(responseText || 'Unable to submit your request.');
       }
 
+      const result = await response.json().catch(() => ({}));
+
       setFormData({
         firstName: '',
         lastName: '',
@@ -84,7 +92,11 @@ export const Contact = () => {
         service: '',
         customService: ''
       });
-      setSubmitMessage('Thanks, your request was received. Our team will contact you shortly.');
+      if (result && result.mailSent) {
+        setSubmitMessage('Message sent successfully!');
+      } else {
+        setSubmitMessage("Message received! We'll get back to you shortly.");
+      }
     } catch (error) {
       setSubmitMessage(
         error instanceof Error

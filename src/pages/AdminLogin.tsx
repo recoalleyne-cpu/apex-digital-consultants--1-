@@ -153,11 +153,11 @@ export const AdminLogin = () => {
         <aside className="rounded-[2.5rem] border border-apple-gray-100 bg-[radial-gradient(circle_at_top,#dff1ff,transparent_60%),linear-gradient(160deg,#ffffff,#f1f7ff)] p-8 sm:p-10">
           <h2 className="text-xl font-semibold text-apple-gray-500">Security Notice</h2>
           <p className="mt-4 text-sm leading-8 text-apple-gray-300">
-            Admin endpoints remain server-validated. Successful login creates a signed admin session token for protected CMS requests.
+            Admin identity is handled by Firebase Authentication. Server routes validate your Firebase ID token before allowing admin data access.
           </p>
           <ul className="mt-6 space-y-3 text-sm text-apple-gray-300">
             <li>• Unauthenticated users are redirected to this page.</li>
-            <li>• Admin API writes require a valid signed session token.</li>
+            <li>• Admin API writes require a valid Firebase-authenticated token.</li>
             <li>• Session validation runs before loading dashboard tools.</li>
           </ul>
         </aside>

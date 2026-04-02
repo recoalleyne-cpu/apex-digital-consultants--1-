@@ -16,7 +16,7 @@ import {
   X
 } from 'lucide-react';
 import {
-  clearAdminAccessToken
+  logoutAdmin
 } from '../../utils/adminApi';
 
 type AdminNavItem = {
@@ -144,8 +144,8 @@ export const AdminShell = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pageMeta = useMemo(() => getPageMeta(location.pathname), [location.pathname]);
 
-  const handleLock = () => {
-    clearAdminAccessToken();
+  const handleLock = async () => {
+    await logoutAdmin();
     navigate('/admin/login', { replace: true });
   };
 
