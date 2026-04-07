@@ -32,16 +32,38 @@ export const About = () => {
       }
     };
 
+    // Some older deployments used the placement slug `about-founder` (without "-image").
+    // Try that as a fallback when the canonical placement returns no results.
+    const loadFounderImageWithFallback = async () => {
+      try {
+        const canonical = MEDIA_PLACEMENT_VALUES.ABOUT_FOUNDER_IMAGE;
+        const res = await fetch(`/api/media?placement=${encodeURIComponent(canonical)}`);
+        const data = await res.json();
+
+        if (data?.items?.length) {
+          setFounderImage(data.items[0].file_url);
+          return;
+        }
+
+        // fallback to legacy placement slug
+        const legacy = 'about-founder';
+        const res2 = await fetch(`/api/media?placement=${encodeURIComponent(legacy)}`);
+        const data2 = await res2.json();
+        if (data2?.items?.length) {
+          setFounderImage(data2.items[0].file_url);
+          return;
+        }
+      } catch (err) {
+        console.warn('Failed to load founder image', err);
+      }
+    };
+
     void loadPlacementImage(
       MEDIA_PLACEMENT_VALUES.ABOUT_TOP_IMAGE,
       setAboutTopImage,
       'Failed to load about top image'
     );
-    void loadPlacementImage(
-      MEDIA_PLACEMENT_VALUES.ABOUT_FOUNDER_IMAGE,
-      setFounderImage,
-      'Failed to load founder image'
-    );
+    void loadFounderImageWithFallback();
   }, []);
 
   return (
