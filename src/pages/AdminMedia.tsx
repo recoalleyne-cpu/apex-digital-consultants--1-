@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { upload } from '@vercel/blob/client';
 import { CheckCircle2, RefreshCw } from 'lucide-react';
-import { adminFetch, withAdminAuthHeaders } from '../utils/adminApi';
+import { adminFetch, getAdminAuthHeaders } from '../utils/adminApi';
 import {
   MEDIA_CATEGORY_VALUES,
   MEDIA_CATEGORY_OPTIONS,
@@ -297,7 +297,7 @@ export const AdminMedia = ({
             access: 'public',
             handleUploadUrl: '/api/upload',
             multipart: file.size > 8 * 1024 * 1024,
-            headers: Object.fromEntries(withAdminAuthHeaders())
+            headers: Object.fromEntries(await getAdminAuthHeaders())
           });
 
           const metadataRes = await adminFetch('/api/media', {
