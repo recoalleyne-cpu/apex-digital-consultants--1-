@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
+import { DEFAULT_IMAGE, toAbsoluteUrl } from '../utils/seo';
 import { MEDIA_PLACEMENT_VALUES } from '../constants/mediaPlacements';
 
 type MediaItem = {
@@ -39,9 +40,17 @@ export const About = () => {
         const canonical = MEDIA_PLACEMENT_VALUES.ABOUT_FOUNDER_IMAGE;
         const res = await fetch(`/api/media?placement=${encodeURIComponent(canonical)}`);
         const data = await res.json();
+        // debug log
+        // eslint-disable-next-line no-console
+        console.debug('About: founder media (canonical) response', canonical, data);
 
         if (data?.items?.length) {
-          setFounderImage(data.items[0].file_url);
+          const raw = data.items[0].file_url as string | undefined | null;
+          const url = raw ? (raw as string).trim() : null;
+          const resolved = toAbsoluteUrl(url) || null;
+          // eslint-disable-next-line no-console
+          console.debug('About: using founder media url (canonical)', { raw, url, resolved });
+          setFounderImage(resolved);
           return;
         }
 
@@ -49,11 +58,20 @@ export const About = () => {
         const legacy = 'about-founder';
         const res2 = await fetch(`/api/media?placement=${encodeURIComponent(legacy)}`);
         const data2 = await res2.json();
+        // eslint-disable-next-line no-console
+        console.debug('About: founder media (legacy) response', legacy, data2);
+
         if (data2?.items?.length) {
-          setFounderImage(data2.items[0].file_url);
+          const raw = data2.items[0].file_url as string | undefined | null;
+          const url = raw ? (raw as string).trim() : null;
+          const resolved = toAbsoluteUrl(url) || null;
+          // eslint-disable-next-line no-console
+          console.debug('About: using founder media url (legacy)', { raw, url, resolved });
+          setFounderImage(resolved);
           return;
         }
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.warn('Failed to load founder image', err);
       }
     };
@@ -133,19 +151,13 @@ export const About = () => {
 
             <div className="order-1 lg:order-2 relative overflow-hidden">
               <div className="aspect-[4/5] rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-2xl relative z-10 bg-apple-gray-50">
-                {founderImage ? (
-                  <img
-                    src={founderImage}
-                    alt="Reco Alleyne founder of Apex Digital Consultants in Barbados"
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-apple-gray-300">
-                    Founder Image
-                  </div>
-                )}
+                <img
+                  src={founderImage || DEFAULT_IMAGE}
+                  alt="Reco Alleyne founder of Apex Digital Consultants in Barbados"
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
 
               <div className="absolute -bottom-8 -right-8 w-48 h-48 sm:w-64 sm:h-64 bg-apex-yellow/10 rounded-full blur-3xl -z-0 pointer-events-none" />
