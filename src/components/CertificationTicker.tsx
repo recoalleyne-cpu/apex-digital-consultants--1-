@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { MEDIA_PLACEMENT_VALUES } from '../constants/mediaPlacements';
+import { toAbsoluteUrl } from '../utils/seo';
 
 type MediaItem = {
   id: number;
@@ -39,7 +40,15 @@ export const CertificationTicker = () => {
         const data = await res.json();
 
         if (data?.items && Array.isArray(data.items)) {
-          setItems(data.items);
+          // Normalize file_url to absolute URLs and filter invalid entries
+          const normalized = data.items
+            .map((it: any) => ({
+              ...it,
+              file_url: toAbsoluteUrl(it?.file_url) || (typeof it?.file_url === 'string' ? it.file_url : null)
+            }))
+            .filter((it: any) => it && typeof it.file_url === 'string' && it.file_url.trim() !== '');
+
+          setItems(normalized as MediaItem[]);
         } else {
           setItems([]);
         }
