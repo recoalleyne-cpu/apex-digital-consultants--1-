@@ -1,7 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createLead, ensureHybridContentSchemaReady } from '../server/api-shared/contentRepository';
 import { getSqlClient, isNeonConfigured } from '../server/api-shared/neonDb';
-import nodemailer from 'nodemailer';
+// nodemailer is imported dynamically inside sendEmailWithRetry to avoid runtime
+// module load errors in serverless environments when the package is missing or
+// incompatible. See sendEmailWithRetry for the dynamic import.
 
 export const config = {
   runtime: 'nodejs'
@@ -77,7 +79,18 @@ async function sendEmailWithRetry(payload: EmailPayload): Promise<boolean> {
     return false;
   }
 
-  const nodemailerAny = nodemailer as any;
+  // Dynamically import nodemailer at runtime to avoid module load failures
+  let nodemailerAny: any;
+  try {
+    // dynamic import keeps module resolution until runtime and avoids fatal
+    // errors at module load time in some serverless environments
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const mod = await import('nodemailer');
+    nodemailerAny = (mod && (mod.default || mod));
+  } catch (importErr) {
+    console.error('Failed to import nodemailer dynamically', importErr);
+    return false;
+  }
 
   const transporter = nodemailerAny.createTransport({
     host: process.env.SMTP_HOST,
