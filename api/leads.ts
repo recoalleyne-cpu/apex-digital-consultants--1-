@@ -194,17 +194,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (!isNeonConfigured()) {
-      return res.status(500).send('Missing DATABASE_URL (or POSTGRES_URL) environment variable');
+      return res.status(503).json({
+        success: false,
+        error: 'Missing DATABASE_URL (or POSTGRES_URL) environment variable',
+        fallback: 'Please email info@apexdigitalconsultants.com to report this issue.'
+      });
     }
 
     const payload = getRequestPayload(req);
     if (!payload) {
-      return res.status(400).send('Invalid JSON payload');
+      return res.status(400).json({ success: false, error: 'Invalid JSON payload' });
     }
 
     const email = clip(parseText(payload.email), 320);
     if (!email || !EMAIL_PATTERN.test(email)) {
-      return res.status(400).send('A valid email is required.');
+      return res.status(400).json({ success: false, error: 'A valid email is required.' });
     }
 
     const combinedName = clip(parseText(payload.name), 200);
@@ -273,6 +277,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown lead submission error';
-    return res.status(500).send(`Lead submission failed: ${message}`);
+    return res.status(500).json({ success: false, error: `Lead submission failed: ${message}` });
   }
 }
