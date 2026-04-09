@@ -76,8 +76,14 @@ export const Contact = () => {
       });
 
       if (!response.ok) {
-        const responseText = await response.text();
-        throw new Error(responseText || 'Unable to submit your request.');
+        let msg = 'Unable to submit your request.';
+        try {
+          const errJson = await response.json();
+          msg = errJson?.error || errJson?.message || JSON.stringify(errJson) || msg;
+        } catch {
+          msg = (await response.text().catch(() => msg)) || msg;
+        }
+        throw new Error(msg);
       }
 
       const result = await response.json().catch(() => ({}));
