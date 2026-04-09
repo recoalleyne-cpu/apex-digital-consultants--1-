@@ -259,24 +259,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         email,
         phone,
         companyName,
-        serviceInterest,
-        projectDetails,
-        toAddress: process.env.CONTACT_TO
-      });
-    } catch (err) {
-      // sendEmailWithRetry should not throw, but guard anyway.
-      // eslint-disable-next-line no-console
-      console.error('EMAIL FAILED AFTER RETRIES', err);
-      mailSent = false;
-    }
+          if (req.method !== 'POST') {
+            return res.status(405).json({ success: false, error: 'Method not allowed' });
+          }
 
-    return res.status(201).json({
-      success: true,
-      id: id || null,
-      mailSent
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown lead submission error';
-    return res.status(500).json({ success: false, error: `Lead submission failed: ${message}` });
-  }
-}
+          if (!isNeonConfigured()) {
+            return res.status(503).json({
+              success: false,
+              error: 'Missing DATABASE_URL (or POSTGRES_URL) environment variable',
+              fallback: 'Please email info@apexdigitalconsultants.com to report this issue.'
+            });
+          }
+
+          const payload = getRequestPayload(req);
+          if (!payload) {
+            return res.status(400).json({ success: false, error: 'Invalid JSON payload' });
+          }
+
+          const email = clip(parseText(payload.email), 320);
+          if (!email || !EMAIL_PATTERN.test(email)) {
+            return res.status(400).json({ success: false, error: 'A valid email is required.' });
+          }
