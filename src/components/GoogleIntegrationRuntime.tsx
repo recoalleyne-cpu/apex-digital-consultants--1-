@@ -7,13 +7,18 @@ import {
 
 export const GoogleIntegrationRuntime = () => {
   const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   useEffect(() => {
+    if (isAdminRoute) {
+      return;
+    }
+
     initializeGoogleIntegrations();
-  }, []);
+  }, [isAdminRoute]);
 
   useEffect(() => {
-    if (location.pathname.startsWith('/admin')) {
+    if (isAdminRoute) {
       return;
     }
 
@@ -32,7 +37,7 @@ export const GoogleIntegrationRuntime = () => {
     return () => {
       window.cancelAnimationFrame(frame);
     };
-  }, [location.pathname, location.search, location.hash]);
+  }, [isAdminRoute, location.pathname, location.search, location.hash]);
 
   return null;
 };

@@ -24,6 +24,16 @@ type MediaItem = {
 
 const PORTFOLIO_FALLBACK_IMAGE =
   'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1400';
+const WEBSITE_KEYWORDS = [
+  'website',
+  'web design',
+  'web development',
+  'wordpress',
+  'ecommerce',
+  'woocommerce',
+  'site',
+  'landing page'
+];
 
 const isPlaceholderImage = (value?: string | null) => {
   if (!value) return true;
@@ -42,6 +52,25 @@ const splitDelimited = (value?: string | null) => {
     .split(',')
     .map((entry) => entry.trim())
     .filter(Boolean);
+};
+
+const normalizeText = (value: unknown) =>
+  typeof value === 'string' ? value.trim().toLowerCase() : '';
+
+const isWebsiteFocusedProject = (item: MediaItem) => {
+  const combined = [
+    item.title,
+    item.client_name,
+    item.description,
+    item.project_type,
+    item.category,
+    item.tech_stack,
+    item.services_provided
+  ]
+    .map((value) => normalizeText(value))
+    .join(' ');
+
+  return WEBSITE_KEYWORDS.some((keyword) => combined.includes(keyword));
 };
 
 const isLikelyModuleResponse = (payload: string) => {
@@ -88,7 +117,7 @@ const buildPortfolioFallbackItems = (): MediaItem[] => {
 export const Portfolio = () => {
   const [projects, setProjects] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusMessage, setStatusMessage] = useState('Loading portfolio...');
+  const [statusMessage, setStatusMessage] = useState('Loading completed websites...');
   const [activeProject, setActiveProject] = useState<MediaItem | null>(null);
 
   const [zoom, setZoom] = useState(1);
@@ -107,7 +136,7 @@ export const Portfolio = () => {
 
       try {
         setLoading(true);
-        setStatusMessage('Loading portfolio...');
+        setStatusMessage('Loading completed websites...');
 
         const res = await fetch('/api/portfolio', {
           method: 'GET',
@@ -147,9 +176,7 @@ export const Portfolio = () => {
           if (err instanceof DOMException && err.name === 'AbortError') {
             setStatusMessage('Portfolio request timed out. Please try again.');
           } else {
-            setStatusMessage(
-              err instanceof Error ? err.message : 'Portfolio request failed.'
-            );
+              setStatusMessage(err instanceof Error ? err.message : 'Portfolio request failed.');
           }
         }
       } finally {
@@ -180,6 +207,10 @@ export const Portfolio = () => {
     () => splitDelimited(activeProject?.services_provided || activeProject?.features),
     [activeProject]
   );
+  const websiteProjects = useMemo(() => {
+    const filtered = projects.filter(isWebsiteFocusedProject);
+    return filtered.length ? filtered : projects;
+  }, [projects]);
 
   const clamp = (value: number, min: number, max: number) =>
     Math.min(Math.max(value, min), max);
@@ -253,21 +284,18 @@ export const Portfolio = () => {
   return (
     <div className="pt-16 md:pt-20">
       <PageHeader
-        title="Our Work"
+        title="Websites Completed"
         subtitle="Portfolio"
-        description="A growing collection of website development, web design, and digital project outcomes delivered for Barbados and Caribbean businesses."
+        description="A focused collection of completed website projects delivered for business growth across Barbados and the Caribbean."
       />
 
       <section className="section-padding">
         <div className="container-wide">
           <div className="mb-10 rounded-[2rem] border border-apple-gray-100 bg-white p-6 sm:p-7 md:p-8">
             <p className="text-sm md:text-base text-apple-gray-300 leading-7 mb-4">
-              Looking for similar outcomes? Explore our dedicated pages for website development Barbados and Caribbean service delivery.
+              Review completed website builds, redesigns, and conversion-focused implementations. Explore logo work or discuss a similar project with Apex.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link to="/portfolio/websites" className="apple-button apple-button-secondary text-sm">
-                Websites Completed
-              </Link>
               <Link to="/portfolio/logos" className="apple-button apple-button-secondary text-sm">
                 Logo Portfolio
               </Link>
@@ -287,14 +315,16 @@ export const Portfolio = () => {
             <div className="text-center py-20">
               <p className="text-apple-gray-300">{statusMessage}</p>
             </div>
-          ) : projects.length === 0 ? (
+          ) : websiteProjects.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-apple-gray-300">{statusMessage || 'No portfolio projects uploaded yet.'}</p>
+              <p className="text-apple-gray-300">
+                {statusMessage || 'No completed website projects are available yet.'}
+              </p>
             </div>
           ) : (
             <>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12">
-                {projects.map((project) => (
+                {websiteProjects.map((project) => (
                   <div
                     key={project.id}
                     className="group bg-white rounded-[2rem] overflow-hidden border border-apple-gray-100 shadow-sm hover:shadow-xl transition-all duration-300"
@@ -375,12 +405,9 @@ export const Portfolio = () => {
                   Need Website Development Like This for Your Business?
                 </h2>
                 <p className="text-apple-gray-300 leading-8 mb-5">
-                  Explore our service options and discuss your project goals with the Apex team.
+                  Explore service options, browse logo branding work, and discuss your project goals with the Apex team.
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  <Link to="/portfolio/websites" className="apple-button apple-button-secondary text-sm">
-                    Browse Completed Websites
-                  </Link>
                   <Link to="/portfolio/logos" className="apple-button apple-button-secondary text-sm">
                     Browse Logo Portfolio
                   </Link>

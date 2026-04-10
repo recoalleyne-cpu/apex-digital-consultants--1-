@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Lock } from 'lucide-react';
 import {
@@ -10,6 +11,8 @@ import {
 type LoginLocationState = {
   from?: string;
 };
+
+type AuthView = 'sign-in' | 'reset' | 'reset-sent';
 
 export const AdminLogin = () => {
   const navigate = useNavigate();
@@ -24,10 +27,12 @@ export const AdminLogin = () => {
   const [submitting, setSubmitting] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [authView, setAuthView] = useState<AuthView>('sign-in');
+  const [resetEmail, setResetEmail] = useState('');
   const [sendingResetLink, setSendingResetLink] = useState(false);
-  const [resetMessage, setResetMessage] = useState<string | null>(null);
-  const [resetMessageIsError, setResetMessageIsError] = useState(false);
+  const [resetErrorMessage, setResetErrorMessage] = useState<string | null>(null);
+  const signInEmailRef = useRef<HTMLInputElement | null>(null);
+  const resetEmailRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -49,7 +54,24 @@ export const AdminLogin = () => {
     };
   }, [navigate, redirectTo]);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    if (checkingSession) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      if (authView === 'sign-in') {
+        signInEmailRef.current?.focus();
+        return;
+      }
+
+      if (authView === 'reset') {
+        resetEmailRef.current?.focus();
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [authView, checkingSession]);
+
+  const handleSignInSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (submitting) return;
 
@@ -61,8 +83,7 @@ export const AdminLogin = () => {
 
     setSubmitting(true);
     setErrorMessage(null);
-    setResetMessage(null);
-    setResetMessageIsError(false);
+    setResetErrorMessage(null);
 
     try {
       await loginAdmin(nextEmail, password);
@@ -74,32 +95,50 @@ export const AdminLogin = () => {
     }
   };
 
-  const handleSendResetLink = async () => {
+  const handleForgotPasswordClick = () => {
+    setAuthView('reset');
+    setResetEmail((previous) => previous || email.trim());
+    setResetErrorMessage(null);
+    setErrorMessage(null);
+  };
+
+  const handleBackToSignIn = () => {
+    setAuthView('sign-in');
+    setErrorMessage(null);
+    setResetErrorMessage(null);
+    setSendingResetLink(false);
+  };
+
+  const handleResetSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (sendingResetLink) return;
 
-    const nextEmail = email.trim();
+    const nextEmail = resetEmail.trim();
     if (!nextEmail) {
-      setResetMessageIsError(true);
-      setResetMessage('Enter your admin email to send a reset link.');
+      setResetErrorMessage('Enter your admin email to send a reset link.');
       return;
     }
 
     setSendingResetLink(true);
-    setResetMessage(null);
-    setResetMessageIsError(false);
+    setResetErrorMessage(null);
 
     try {
       await requestAdminPasswordReset(nextEmail);
-      setResetMessageIsError(false);
-      setResetMessage('If this email is registered, a password reset link has been sent.');
+      setEmail(nextEmail);
+      setAuthView('reset-sent');
     } catch (error) {
       const message = error instanceof Error ? error.message : '';
-      if (message.toLowerCase().includes('firebase is not configured')) {
-        setResetMessageIsError(true);
-        setResetMessage(message);
+      const normalizedMessage = message.toLowerCase();
+
+      if (normalizedMessage.includes('firebase is not configured')) {
+        setResetErrorMessage(message);
+      } else if (normalizedMessage.includes('auth/invalid-email')) {
+        setResetErrorMessage('Enter a valid admin email address.');
+      } else if (normalizedMessage.includes('auth/user-not-found')) {
+        setEmail(nextEmail);
+        setAuthView('reset-sent');
       } else {
-        setResetMessageIsError(false);
-        setResetMessage('If this email is registered, a password reset link has been sent.');
+        setResetErrorMessage('Unable to send a reset link right now. Please try again shortly.');
       }
     } finally {
       setSendingResetLink(false);
@@ -130,122 +169,171 @@ export const AdminLogin = () => {
             Admin Access
           </div>
 
-          <h1 className="mt-7 text-3xl font-semibold tracking-tight text-apple-gray-500 sm:text-4xl">
-            Sign in to Apex CMS
-          </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-8 text-apple-gray-300 sm:text-base">
-            Use your admin email and password to access protected content tools and publishing workflows.
-          </p>
-
-          <form className="mt-10 space-y-5" onSubmit={handleSubmit}>
-            <div>
-              <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-300">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                className="w-full rounded-2xl border border-apple-gray-100 bg-white px-4 py-3 text-sm text-apple-gray-500 outline-none transition-colors focus:border-apex-yellow"
-                placeholder="admin@apexdigitalconsultants.com"
-                autoComplete="username"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-300">
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className="w-full rounded-2xl border border-apple-gray-100 bg-white px-4 py-3 text-sm text-apple-gray-500 outline-none transition-colors focus:border-apex-yellow"
-                placeholder="Enter your password"
-                autoComplete="current-password"
-                required
-              />
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-xs text-apple-gray-300">
-                  Forgot your password? Reset it securely.
+          <AnimatePresence mode="wait" initial={false}>
+            {authView === 'sign-in' ? (
+              <motion.div
+                key="sign-in"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+              >
+                <h1 className="mt-7 text-3xl font-semibold tracking-tight text-apple-gray-500 sm:text-4xl">
+                  Sign in to Apex CMS
+                </h1>
+                <p className="mt-4 max-w-2xl text-sm leading-8 text-apple-gray-300 sm:text-base">
+                  Use your admin email and password to access protected content tools and publishing workflows.
                 </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowForgotPassword((previous) => !previous);
-                    setResetMessage(null);
-                    setResetMessageIsError(false);
-                  }}
-                  className="text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-500 transition-colors hover:text-apex-yellow"
-                >
-                  {showForgotPassword ? 'Hide Reset' : 'Forgot Password?'}
-                </button>
-              </div>
-            </div>
 
-            {showForgotPassword ? (
-              <div className="rounded-2xl border border-apple-gray-100 bg-apple-gray-50/70 p-4 sm:p-5">
-                <p className="text-sm leading-7 text-apple-gray-300">
-                  Enter your admin email and we will send a secure password reset link.
-                </p>
-                <div className="mt-4 space-y-3">
-                  <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-300">
-                    Admin Email
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') {
-                        event.preventDefault();
-                        void handleSendResetLink();
-                      }
-                    }}
-                    className="w-full rounded-2xl border border-apple-gray-100 bg-white px-4 py-3 text-sm text-apple-gray-500 outline-none transition-colors focus:border-apex-yellow"
-                    placeholder="admin@apexdigitalconsultants.com"
-                    autoComplete="email"
-                  />
+                <form className="mt-10 space-y-5" onSubmit={handleSignInSubmit}>
+                  <div>
+                    <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-300">
+                      Email
+                    </label>
+                    <input
+                      ref={signInEmailRef}
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      className="w-full rounded-2xl border border-apple-gray-100 bg-white px-4 py-3 text-sm text-apple-gray-500 outline-none transition-colors focus:border-apex-yellow"
+                      placeholder="admin@apexdigitalconsultants.com"
+                      autoComplete="username"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-300">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      className="w-full rounded-2xl border border-apple-gray-100 bg-white px-4 py-3 text-sm text-apple-gray-500 outline-none transition-colors focus:border-apex-yellow"
+                      placeholder="Enter your password"
+                      autoComplete="current-password"
+                      required
+                    />
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                      <p className="text-xs text-apple-gray-300">
+                        Forgot your password? Reset it securely.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleForgotPasswordClick}
+                        className="text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-500 transition-colors hover:text-apex-yellow"
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+                  </div>
+
+                  {errorMessage ? (
+                    <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                      {errorMessage}
+                    </p>
+                  ) : null}
+
                   <button
-                    type="button"
-                    onClick={handleSendResetLink}
+                    type="submit"
+                    className="apple-button apple-button-primary inline-flex w-full items-center justify-center gap-2"
+                    disabled={submitting}
+                  >
+                    {submitting ? 'Signing In...' : 'Sign In'}
+                    <ArrowRight size={16} />
+                  </button>
+                </form>
+              </motion.div>
+            ) : null}
+
+            {authView === 'reset' ? (
+              <motion.div
+                key="reset"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+              >
+                <h1 className="mt-7 text-3xl font-semibold tracking-tight text-apple-gray-500 sm:text-4xl">
+                  Reset your password
+                </h1>
+                <p className="mt-4 max-w-2xl text-sm leading-8 text-apple-gray-300 sm:text-base">
+                  Enter your admin email and we&apos;ll send a secure reset link.
+                </p>
+
+                <form className="mt-10 space-y-5" onSubmit={handleResetSubmit}>
+                  <div>
+                    <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-300">
+                      Admin Email
+                    </label>
+                    <input
+                      ref={resetEmailRef}
+                      type="email"
+                      value={resetEmail}
+                      onChange={(event) => setResetEmail(event.target.value)}
+                      className="w-full rounded-2xl border border-apple-gray-100 bg-white px-4 py-3 text-sm text-apple-gray-500 outline-none transition-colors focus:border-apex-yellow"
+                      placeholder="admin@apexdigitalconsultants.com"
+                      autoComplete="email"
+                      inputMode="email"
+                      required
+                    />
+                  </div>
+
+                  {resetErrorMessage ? (
+                    <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                      {resetErrorMessage}
+                    </p>
+                  ) : null}
+
+                  <button
+                    type="submit"
                     className="apple-button apple-button-secondary inline-flex w-full items-center justify-center"
                     disabled={sendingResetLink}
                   >
                     {sendingResetLink ? 'Sending Reset Link...' : 'Send Reset Link'}
                   </button>
-                </div>
 
-                {resetMessage ? (
-                  <p
-                    className={`mt-4 rounded-xl px-4 py-3 text-sm ${
-                      resetMessageIsError
-                        ? 'border border-red-200 bg-red-50 text-red-700'
-                        : 'border border-emerald-200 bg-emerald-50 text-emerald-700'
-                    }`}
+                  <button
+                    type="button"
+                    onClick={handleBackToSignIn}
+                    className="w-full rounded-2xl border border-apple-gray-100 px-4 py-3 text-sm font-semibold text-apple-gray-500 transition-colors hover:border-apple-gray-200 hover:text-apple-gray-400"
                   >
-                    {resetMessage}
-                  </p>
-                ) : null}
-              </div>
+                    Back to Sign In
+                  </button>
+                </form>
+              </motion.div>
             ) : null}
 
-            {errorMessage ? (
-              <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {errorMessage}
-              </p>
-            ) : null}
+            {authView === 'reset-sent' ? (
+              <motion.div
+                key="reset-sent"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+              >
+                <h1 className="mt-7 text-3xl font-semibold tracking-tight text-apple-gray-500 sm:text-4xl">
+                  Reset link sent
+                </h1>
+                <p className="mt-4 max-w-2xl text-sm leading-8 text-apple-gray-300 sm:text-base">
+                  If this email is registered, a password reset link has been sent.
+                </p>
+                <p className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  Check your inbox, spam, or junk folder for the reset email.
+                </p>
 
-            <button
-              type="submit"
-              className="apple-button apple-button-primary inline-flex w-full items-center justify-center gap-2"
-              disabled={submitting}
-            >
-              {submitting ? 'Signing In...' : 'Sign In'}
-              <ArrowRight size={16} />
-            </button>
-          </form>
+                <button
+                  type="button"
+                  onClick={handleBackToSignIn}
+                  className="apple-button apple-button-primary mt-8 inline-flex w-full items-center justify-center gap-2"
+                >
+                  Back to Sign In
+                  <ArrowRight size={16} />
+                </button>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
 
           <div className="mt-8 text-sm text-apple-gray-300">
             Need the main site?{' '}

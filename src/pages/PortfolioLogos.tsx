@@ -137,14 +137,11 @@ export const PortfolioLogos = () => {
         <div className="container-wide">
           <div className="mb-10 rounded-[2rem] border border-apple-gray-100 bg-white p-6 sm:p-7 md:p-8">
             <p className="text-sm md:text-base text-apple-gray-300 leading-7 mb-4">
-              This gallery highlights completed logo projects. Explore completed website builds or return to the main portfolio for the full project mix.
+              This gallery highlights completed logo projects. Explore completed website builds or return to the main websites portfolio.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link to="/portfolio/websites" className="apple-button apple-button-secondary text-sm">
-                Websites Completed
-              </Link>
               <Link to="/portfolio" className="apple-button apple-button-secondary text-sm">
-                Full Portfolio
+                Websites Portfolio
               </Link>
               <Link to="/contact" className="apple-button apple-button-primary text-sm">
                 Start a Logo Project

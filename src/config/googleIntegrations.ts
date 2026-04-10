@@ -1,5 +1,7 @@
 const DEFAULT_GOOGLE_FONTS_STYLESHEET_URL =
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap';
+const DEFAULT_APEX_GA4_MEASUREMENT_ID = 'G-P90G0JVPHR';
+const DEFAULT_APEX_GTM_ID = 'GTM-NCS79KC';
 
 const BUILD_TIME_ENV_FALLBACKS: Record<string, unknown> = {
   VITE_GOOGLE_ANALYTICS_ID: __APEX_GOOGLE_ANALYTICS_ID__,
@@ -201,8 +203,8 @@ const debugModeResolution = readBooleanEnvValue(
   false
 );
 
-const analyticsMeasurementId = analyticsMeasurementIdResolution.value;
-const tagManagerId = tagManagerIdResolution.value;
+const analyticsMeasurementId = analyticsMeasurementIdResolution.value || DEFAULT_APEX_GA4_MEASUREMENT_ID;
+const tagManagerId = tagManagerIdResolution.value || DEFAULT_APEX_GTM_ID;
 const searchConsoleVerificationToken = searchConsoleVerificationTokenResolution.value;
 const adsConversionId = adsConversionIdResolution.value;
 const adsConversionLabel = adsConversionLabelResolution.value;
@@ -254,9 +256,7 @@ export const GOOGLE_INTEGRATIONS: GoogleIntegrationsConfig = {
   analytics: {
     measurementId: analyticsMeasurementId,
     enabled: Boolean(analyticsMeasurementId),
-    useTagManagerTransport: Boolean(
-      analyticsMeasurementId && tagManagerId && prefersGtmTransport
-    ),
+    useTagManagerTransport: Boolean(analyticsMeasurementId && tagManagerId && prefersGtmTransport),
     debugMode: debugModeResolution.value
   },
   tagManager: {

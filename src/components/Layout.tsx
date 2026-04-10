@@ -19,8 +19,7 @@ const NAV_LINKS = [
     name: 'Portfolio',
     path: '/portfolio',
     children: [
-      { name: 'Logos', path: '/portfolio/logos' },
-      { name: 'Websites Completed', path: '/portfolio/websites' }
+      { name: 'Logos', path: '/portfolio/logos' }
     ]
   },
   { name: 'Case Studies', path: '/case-studies' },

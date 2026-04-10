@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Routes, Route, useLocation } from 'react-router-dom';
 import { Header } from './components/Layout';
 import Footer from './components/Footer';
 import ChatWidget from './components/ChatWidget';
@@ -11,7 +11,6 @@ import { DigitalSolutionDetails } from './pages/DigitalSolutionDetails';
 import { DigitalSolutionCheckout } from './pages/DigitalSolutionCheckout';
 import { Portfolio } from './pages/Portfolio';
 import { PortfolioLogos } from './pages/PortfolioLogos';
-import { PortfolioWebsites } from './pages/PortfolioWebsites';
 import { Pricing } from './pages/Pricing';
 import { Contact } from './pages/Contact';
 import { FAQs } from './pages/FAQs';
@@ -220,12 +219,6 @@ const STATIC_ROUTE_SEO: Record<string, RouteSeoConfig> = {
     description:
       'Browse logo and brand identity portfolio work delivered for businesses in Barbados and across the Caribbean.',
     keywords: ['logo portfolio Barbados', 'brand identity portfolio Caribbean', 'logo design Barbados']
-  },
-  '/portfolio/websites': {
-    title: 'Completed Websites Portfolio | Apex Digital Consultants',
-    description:
-      'Explore completed website projects delivered by Apex, including business websites, redesigns, and ecommerce-focused builds.',
-    keywords: ['completed websites portfolio', 'website projects Barbados', 'web development portfolio Caribbean']
   },
   '/pricing': {
     title: 'Website Development Pricing Barbados | Apex Digital Consultants',
@@ -675,7 +668,7 @@ const AppFrame = () => {
           <Route path="/checkout/:productId" element={<DigitalSolutionCheckout />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/portfolio/logos" element={<PortfolioLogos />} />
-          <Route path="/portfolio/websites" element={<PortfolioWebsites />} />
+          <Route path="/portfolio/websites" element={<Navigate to="/portfolio" replace />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/faqs" element={<FAQs />} />
