@@ -4,6 +4,7 @@ import {
   ensureHybridContentSchemaReady
 } from '../server/api-shared/contentRepository.js';
 import { getSqlClient, isNeonConfigured } from '../server/api-shared/neonDb.js';
+import { subscribeToMailchimp } from '../server/api-shared/mailchimp.js';
 
 export const config = {
   runtime: 'nodejs'
@@ -27,6 +28,18 @@ const parseText = (value: unknown) => {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   return trimmed.length ? trimmed : null;
+};
+
+const parseBoolean = (value: unknown) => {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value === 1;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'true' || normalized === '1' || normalized === 'yes' || normalized === 'on') {
+      return true;
+    }
+  }
+  return false;
 };
 
 const clip = (value: string | null, maxLength: number) => {
@@ -152,6 +165,19 @@ const splitName = (value: string | null) => {
     firstName: parts[0],
     lastName: parts.slice(1).join(' ')
   };
+};
+
+const requestedMarketingOptIn = (payload: Record<string, unknown>) => {
+  const optInKeys = [
+    'subscribeToNewsletter',
+    'subscribe_to_newsletter',
+    'marketing_opt_in',
+    'marketingOptIn',
+    'email_marketing_opt_in',
+    'emailMarketingOptIn'
+  ];
+
+  return optInKeys.some((key) => parseBoolean(payload[key]));
 };
 
 const getRequestPayload = (req: VercelRequest) => {
@@ -409,6 +435,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       6000
     );
     const budgetRange = clip(parseText(payload.budget) || parseText(payload.budget_range), 120);
+    const wantsNewsletter = requestedMarketingOptIn(payload);
 
     const name = [firstName, lastName].filter(Boolean).join(' ').trim() || null;
     if (!name) {
@@ -447,10 +474,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       mailSent = false;
     }
 
+    let newsletter = {
+      requested: wantsNewsletter,
+      subscribed: false,
+      status: wantsNewsletter ? 'skipped' : 'not_requested'
+    };
+
+    if (wantsNewsletter) {
+      const marketingSubscription = await subscribeToMailchimp({
+        email,
+        firstName,
+        lastName,
+        source: source || 'lead-form',
+        tags: ['lead-opt-in', source]
+      });
+
+      newsletter = {
+        requested: true,
+        subscribed: marketingSubscription.ok,
+        status: marketingSubscription.status
+      };
+
+      if (!marketingSubscription.ok) {
+        console.warn('Lead submission Mailchimp opt-in sync failed:', marketingSubscription.message);
+      }
+    }
+
     return res.status(201).json({
       success: true,
       id: id || null,
-      mailSent
+      mailSent,
+      newsletter
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown lead submission error';

@@ -26,8 +26,9 @@ const SHOW_DELAY_MS = 10_000;
 const WINDOW_MS = 30 * 60 * 1000;
 const MAX_IMPRESSIONS_PER_WINDOW = 2;
 const DISMISS_COOLDOWN_MS = 8 * 60 * 1000;
-const OPTIONAL_SIGNUP_ENDPOINT =
-  (import.meta.env.VITE_NEWSLETTER_SIGNUP_ENDPOINT as string | undefined)?.trim() ?? '';
+const NEWSLETTER_SIGNUP_ENDPOINT =
+  (import.meta.env.VITE_NEWSLETTER_SIGNUP_ENDPOINT as string | undefined)?.trim() ||
+  '/api/newsletter-subscribe';
 
 const EXCLUDED_ROUTE_PREFIXES = ['/admin', '/checkout'];
 const EXCLUDED_ROUTE_PATHS = new Set(['/terms', '/privacy']);
@@ -228,27 +229,32 @@ export const NewsletterSignupModal = () => {
     setErrorMessage('');
 
     try {
-      if (OPTIONAL_SIGNUP_ENDPOINT) {
-        const response = await fetch(OPTIONAL_SIGNUP_ENDPOINT, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            email: normalizedEmail,
-            source: 'homepage-newsletter-modal',
-            pagePath: pathname,
-            ...buildFormSpamPayload({
-              honeypotValue,
-              startedAtMs: formStartedAt,
-              submittedAtMs: now
-            })
+      const response = await fetch(NEWSLETTER_SIGNUP_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          source: 'homepage-newsletter-modal',
+          pagePath: pathname,
+          ...buildFormSpamPayload({
+            honeypotValue,
+            startedAtMs: formStartedAt,
+            submittedAtMs: now
           })
-        });
+        })
+      });
 
-        if (!response.ok) {
-          throw new Error('Newsletter signup request failed');
-        }
+      const responseJson = (await response.json().catch(() => null)) as
+        | { success?: boolean; message?: string }
+        | null;
+      if (!response.ok || !responseJson?.success) {
+        const errorText =
+          typeof responseJson?.message === 'string'
+            ? responseJson.message
+            : 'Unable to subscribe right now. Please try again shortly.';
+        throw new Error(errorText);
       }
 
       updateStoredState((previous, now) => ({

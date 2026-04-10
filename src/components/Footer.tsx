@@ -13,7 +13,8 @@ export default function Footer() {
     name: '',
     email: '',
     service: '',
-    message: ''
+    message: '',
+    subscribeToNewsletter: false
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<string | null>(null);
@@ -53,6 +54,7 @@ export default function Footer() {
           email: formData.email.trim(),
           service: formData.service.trim(),
           message: formData.message.trim(),
+          subscribeToNewsletter: formData.subscribeToNewsletter,
           ...buildFormSpamPayload({
             honeypotValue,
             startedAtMs: formStartedAt,
@@ -66,7 +68,13 @@ export default function Footer() {
         throw new Error(responseText || 'Unable to submit your message.');
       }
 
-      setFormData({ name: '', email: '', service: '', message: '' });
+      setFormData({
+        name: '',
+        email: '',
+        service: '',
+        message: '',
+        subscribeToNewsletter: false
+      });
       setHoneypotValue('');
       setFormStartedAt(Date.now());
       setSubmitStatus('Thanks, your message was sent. We will follow up shortly.');
@@ -255,6 +263,21 @@ export default function Footer() {
                 className="w-full px-4 py-3 bg-white border border-apple-gray-100 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-apex-yellow/50 transition-all resize-none"
                 required
               />
+
+              <label className="inline-flex items-start gap-2 text-xs sm:text-sm text-apple-gray-300">
+                <input
+                  type="checkbox"
+                  checked={formData.subscribeToNewsletter}
+                  onChange={(event) =>
+                    setFormData({
+                      ...formData,
+                      subscribeToNewsletter: event.target.checked
+                    })
+                  }
+                  className="mt-0.5 h-4 w-4 rounded border-apple-gray-200 text-apex-yellow focus:ring-apex-yellow/60"
+                />
+                <span>Send me occasional Apex marketing insights by email.</span>
+              </label>
 
               <button
                 type="submit"

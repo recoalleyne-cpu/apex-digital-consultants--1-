@@ -17,7 +17,8 @@ export const Contact = () => {
     companyName: '',
     projectDetails: '',
     service: '',
-    customService: ''
+    customService: '',
+    subscribeToNewsletter: false
   });
   const [submitMessage, setSubmitMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -92,6 +93,7 @@ export const Contact = () => {
           companyName: formData.companyName.trim(),
           service: selectedService,
           projectDetails: formData.projectDetails.trim(),
+          subscribeToNewsletter: formData.subscribeToNewsletter,
           ...buildFormSpamPayload({
             honeypotValue,
             startedAtMs: formStartedAt,
@@ -121,7 +123,8 @@ export const Contact = () => {
         companyName: '',
         projectDetails: '',
         service: '',
-        customService: ''
+        customService: '',
+        subscribeToNewsletter: false
       });
       setHoneypotValue('');
       setFormStartedAt(Date.now());
@@ -404,6 +407,23 @@ export const Contact = () => {
                     />
                   )}
                 </div>
+
+                <label className="inline-flex items-start gap-3 text-sm text-apple-gray-300">
+                  <input
+                    type="checkbox"
+                    checked={formData.subscribeToNewsletter}
+                    onChange={(event) =>
+                      setFormData({
+                        ...formData,
+                        subscribeToNewsletter: event.target.checked
+                      })
+                    }
+                    className="mt-0.5 h-4 w-4 rounded border-apple-gray-200 text-apex-yellow focus:ring-apex-yellow/60"
+                  />
+                  <span>
+                    Email me occasional Apex growth insights and marketing updates.
+                  </span>
+                </label>
 
                 <button
                   type="submit"
