@@ -84,6 +84,17 @@ const clip = (value: string | null, maxLength: number) => {
   return value.slice(0, maxLength).trim();
 };
 
+const splitName = (value: string | null) => {
+  if (!value) return { firstName: null as string | null, lastName: null as string | null };
+  const parts = value.split(/\s+/).filter(Boolean);
+  if (!parts.length) return { firstName: null as string | null, lastName: null as string | null };
+  if (parts.length === 1) return { firstName: parts[0], lastName: null };
+  return {
+    firstName: parts[0],
+    lastName: parts.slice(1).join(' ')
+  };
+};
+
 const parseTimestampMs = (value: unknown) => {
   if (typeof value === 'number' && Number.isFinite(value)) return Math.trunc(value);
   if (typeof value === 'string') {
@@ -411,10 +422,20 @@ const handleNewsletterSubscribe = async (
     });
   }
 
+  const fullName =
+    clip(
+      parseOptionalText(payload.fullName) ||
+        parseOptionalText(payload.full_name) ||
+        parseOptionalText(payload.name),
+      180
+    ) || null;
+  const splitFullName = splitName(fullName);
   const firstName =
-    clip(parseOptionalText(payload.firstName) || parseOptionalText(payload.first_name), 120) || null;
+    clip(parseOptionalText(payload.firstName) || parseOptionalText(payload.first_name), 120) ||
+    splitFullName.firstName;
   const lastName =
-    clip(parseOptionalText(payload.lastName) || parseOptionalText(payload.last_name), 120) || null;
+    clip(parseOptionalText(payload.lastName) || parseOptionalText(payload.last_name), 120) ||
+    splitFullName.lastName;
   const pagePath = clip(
     parseOptionalText(payload.pagePath) || parseOptionalText(payload.page_path),
     200

@@ -115,10 +115,25 @@ const canShowModal = (state: NewsletterModalState, now: number) => {
   return true;
 };
 
+const splitName = (value: string) => {
+  const parts = value.split(/\s+/).filter(Boolean);
+  if (!parts.length) {
+    return { firstName: null as string | null, lastName: null as string | null };
+  }
+  if (parts.length === 1) {
+    return { firstName: parts[0], lastName: null };
+  }
+  return {
+    firstName: parts[0],
+    lastName: parts.slice(1).join(' ')
+  };
+};
+
 export const NewsletterSignupModal = () => {
   const { pathname } = useLocation();
   const [state, setState] = useState<NewsletterModalState>(readState);
   const [isOpen, setIsOpen] = useState(false);
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -209,6 +224,7 @@ export const NewsletterSignupModal = () => {
         subscribedEmail: previous.subscribedEmail
       }));
       setIsOpen(false);
+      setFullName('');
       setEmail('');
       setHoneypotValue('');
       setFormStartedAt(Date.now());
@@ -220,11 +236,19 @@ export const NewsletterSignupModal = () => {
       return;
     }
 
+    const normalizedFullName = fullName.replace(/\s+/g, ' ').trim();
+    if (!normalizedFullName) {
+      setErrorMessage('Enter your full name to join the newsletter.');
+      return;
+    }
+
     const normalizedEmail = email.trim().toLowerCase();
     if (!EMAIL_REGEX.test(normalizedEmail)) {
       setErrorMessage('Enter a valid email address to join the newsletter.');
       return;
     }
+
+    const { firstName, lastName } = splitName(normalizedFullName);
 
     setIsSubmitting(true);
     setErrorMessage('');
@@ -237,6 +261,9 @@ export const NewsletterSignupModal = () => {
         },
         body: JSON.stringify({
           intent: 'newsletter-subscribe',
+          fullName: normalizedFullName,
+          firstName,
+          lastName,
           email: normalizedEmail,
           source: 'homepage-newsletter-modal',
           pagePath: pathname,
@@ -271,6 +298,7 @@ export const NewsletterSignupModal = () => {
         page_path: pathname
       });
       setIsOpen(false);
+      setFullName('');
       setEmail('');
       setHoneypotValue('');
       setFormStartedAt(Date.now());
@@ -347,6 +375,19 @@ export const NewsletterSignupModal = () => {
                       tabIndex={-1}
                       aria-hidden="true"
                       className="pointer-events-none absolute -left-[9999px] top-auto h-px w-px opacity-0"
+                    />
+                    <label htmlFor="newsletter-full-name" className="sr-only">
+                      Full name
+                    </label>
+                    <input
+                      id="newsletter-full-name"
+                      type="text"
+                      autoComplete="name"
+                      value={fullName}
+                      onChange={(event) => setFullName(event.target.value)}
+                      placeholder="Your full name"
+                      className="w-full rounded-2xl border border-white/30 bg-white/95 px-4 py-3 text-sm font-medium text-apple-gray-500 outline-none transition focus:border-apex-yellow focus:ring-2 focus:ring-apex-yellow/35 sm:text-base"
+                      disabled={isSubmitting}
                     />
                     <label htmlFor="newsletter-email" className="sr-only">
                       Email address
