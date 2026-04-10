@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { requireAdminAccess } from '../server/api-shared/adminAuth';
+import { requireAdminAccess } from '../server/api-shared/adminAuth.js';
 
 export const config = {
   runtime: 'nodejs'
