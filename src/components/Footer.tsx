@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Facebook, ChevronDown } from 'lucide-react';
 import { BrandLockup } from './BrandLockup';
+import {
+  buildFormSpamPayload,
+  FORM_SPAM_HONEYPOT_FIELD_NAME,
+  FORM_SPAM_MIN_COMPLETION_MS
+} from '../utils/formSpamProtection';
 
 export default function Footer() {
   const [formData, setFormData] = useState({
@@ -12,10 +17,25 @@ export default function Footer() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<string | null>(null);
+  const [honeypotValue, setHoneypotValue] = useState('');
+  const [formStartedAt, setFormStartedAt] = useState(() => Date.now());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
+
+    const now = Date.now();
+    if (honeypotValue.trim()) {
+      setSubmitStatus('Thanks, your message was sent. We will follow up shortly.');
+      setHoneypotValue('');
+      setFormStartedAt(Date.now());
+      return;
+    }
+
+    if (now - formStartedAt < FORM_SPAM_MIN_COMPLETION_MS) {
+      setSubmitStatus('Please take a moment to review your details before sending.');
+      return;
+    }
 
     setSubmitting(true);
     setSubmitStatus(null);
@@ -29,10 +49,15 @@ export default function Footer() {
         },
         body: JSON.stringify({
           source: 'footer-form',
-          name: formData.name,
-          email: formData.email,
-          service: formData.service,
-          message: formData.message
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          service: formData.service.trim(),
+          message: formData.message.trim(),
+          ...buildFormSpamPayload({
+            honeypotValue,
+            startedAtMs: formStartedAt,
+            submittedAtMs: now
+          })
         })
       });
 
@@ -42,6 +67,8 @@ export default function Footer() {
       }
 
       setFormData({ name: '', email: '', service: '', message: '' });
+      setHoneypotValue('');
+      setFormStartedAt(Date.now());
       setSubmitStatus('Thanks, your message was sent. We will follow up shortly.');
     } catch (error) {
       setSubmitStatus(
@@ -156,7 +183,17 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <h4 className="font-bold text-sm uppercase tracking-widest mb-6">Get in Touch</h4>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="relative space-y-4">
+              <input
+                type="text"
+                name={FORM_SPAM_HONEYPOT_FIELD_NAME}
+                value={honeypotValue}
+                onChange={(event) => setHoneypotValue(event.target.value)}
+                autoComplete="off"
+                tabIndex={-1}
+                aria-hidden="true"
+                className="pointer-events-none absolute -left-[9999px] top-auto h-px w-px opacity-0"
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
                   type="text"

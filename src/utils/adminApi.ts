@@ -1,4 +1,9 @@
-import { getCurrentUserIdToken, signInWithEmailPassword, signOutCurrentUser } from '../lib/auth';
+import {
+  getCurrentUserIdToken,
+  sendPasswordResetLink,
+  signInWithEmailPassword,
+  signOutCurrentUser
+} from '../lib/auth';
 import { isFirebaseConfigured } from '../lib/firebase';
 
 const ADMIN_ACCESS_TOKEN_STORAGE_KEY = 'apex_admin_session_token_v1';
@@ -86,6 +91,31 @@ export const loginAdmin = async (email: string, password: string) => {
   }
 
   setAdminAccessToken(token);
+};
+
+export const requestAdminPasswordReset = async (email: string) => {
+  if (!isFirebaseConfigured) {
+    throw new Error(
+      'Firebase is not configured. Set all VITE_FIREBASE_* env variables to enable admin login.'
+    );
+  }
+
+  const normalizedEmail = email.trim();
+  if (!normalizedEmail) {
+    throw new Error('Enter your admin email to continue.');
+  }
+
+  const continueUrl = isBrowser() ? `${window.location.origin}/admin/login` : undefined;
+
+  await sendPasswordResetLink(
+    normalizedEmail,
+    continueUrl
+      ? {
+          url: continueUrl,
+          handleCodeInApp: false
+        }
+      : undefined
+  );
 };
 
 export const logoutAdmin = async () => {

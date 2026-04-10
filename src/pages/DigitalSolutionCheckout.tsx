@@ -3,6 +3,10 @@ import { Link, useParams } from 'react-router-dom';
 import { CheckCircle2, Lock, ShieldCheck } from 'lucide-react';
 import { DIGITAL_SOLUTIONS } from '../constants';
 import { PageHeader } from '../components/PageHeader';
+import {
+  FORM_SPAM_HONEYPOT_FIELD_NAME,
+  FORM_SPAM_MIN_COMPLETION_MS
+} from '../utils/formSpamProtection';
 
 type CheckoutForm = {
   fullName: string;
@@ -83,6 +87,9 @@ export const DigitalSolutionCheckout = () => {
   const [formData, setFormData] = React.useState<CheckoutForm>(DEFAULT_FORM);
   const [errors, setErrors] = React.useState<FieldErrorMap>({});
   const [submitted, setSubmitted] = React.useState(false);
+  const [submitStatus, setSubmitStatus] = React.useState<string | null>(null);
+  const [honeypotValue, setHoneypotValue] = React.useState('');
+  const [formStartedAt, setFormStartedAt] = React.useState(() => Date.now());
 
   if (!product) {
     return (
@@ -170,6 +177,22 @@ export const DigitalSolutionCheckout = () => {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setSubmitStatus(null);
+
+    const now = Date.now();
+    if (honeypotValue.trim()) {
+      setSubmitted(true);
+      setSubmitStatus('Checkout request prepared. Your email client has been opened with your order details.');
+      setHoneypotValue('');
+      setFormStartedAt(Date.now());
+      return;
+    }
+
+    if (now - formStartedAt < FORM_SPAM_MIN_COMPLETION_MS) {
+      setSubmitStatus('Please review your details for a moment before submitting.');
+      return;
+    }
+
     if (!validate()) return;
 
     const subject = `Checkout Request - ${product.name}`;
@@ -216,6 +239,9 @@ export const DigitalSolutionCheckout = () => {
 
     window.location.href = buildMailtoLink(subject, body);
     setSubmitted(true);
+    setSubmitStatus('Checkout request prepared. Your email client has been opened with your order details.');
+    setHoneypotValue('');
+    setFormStartedAt(Date.now());
   };
 
   return (
@@ -231,7 +257,7 @@ export const DigitalSolutionCheckout = () => {
           <div className="grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-8 lg:gap-10">
             <form
               onSubmit={handleSubmit}
-              className="rounded-[2.5rem] border border-apple-gray-100 bg-white p-7 sm:p-10 space-y-8"
+              className="relative rounded-[2.5rem] border border-apple-gray-100 bg-white p-7 sm:p-10 space-y-8"
             >
               <div>
                 <h2 className="text-3xl font-semibold mb-2">Customer & Billing Details</h2>
@@ -239,6 +265,17 @@ export const DigitalSolutionCheckout = () => {
                   Provide complete purchase information so your order can be processed without delays.
                 </p>
               </div>
+
+              <input
+                type="text"
+                name={FORM_SPAM_HONEYPOT_FIELD_NAME}
+                value={honeypotValue}
+                onChange={(event) => setHoneypotValue(event.target.value)}
+                autoComplete="off"
+                tabIndex={-1}
+                aria-hidden="true"
+                className="pointer-events-none absolute -left-[9999px] top-auto h-px w-px opacity-0"
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <input
@@ -421,7 +458,13 @@ export const DigitalSolutionCheckout = () => {
 
               {submitted ? (
                 <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">
-                  Checkout request prepared. Your email client has been opened with your order details.
+                  {submitStatus || 'Checkout request prepared. Your email client has been opened with your order details.'}
+                </div>
+              ) : null}
+
+              {!submitted && submitStatus ? (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+                  {submitStatus}
                 </div>
               ) : null}
 

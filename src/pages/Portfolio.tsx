@@ -265,6 +265,12 @@ export const Portfolio = () => {
               Looking for similar outcomes? Explore our dedicated pages for website development Barbados and Caribbean service delivery.
             </p>
             <div className="flex flex-wrap gap-3">
+              <Link to="/portfolio/websites" className="apple-button apple-button-secondary text-sm">
+                Websites Completed
+              </Link>
+              <Link to="/portfolio/logos" className="apple-button apple-button-secondary text-sm">
+                Logo Portfolio
+              </Link>
               <Link to="/website-development-barbados" className="apple-button apple-button-secondary text-sm">
                 Website Development Barbados
               </Link>
@@ -372,6 +378,12 @@ export const Portfolio = () => {
                   Explore our service options and discuss your project goals with the Apex team.
                 </p>
                 <div className="flex flex-wrap gap-3">
+                  <Link to="/portfolio/websites" className="apple-button apple-button-secondary text-sm">
+                    Browse Completed Websites
+                  </Link>
+                  <Link to="/portfolio/logos" className="apple-button apple-button-secondary text-sm">
+                    Browse Logo Portfolio
+                  </Link>
                   <Link to="/services" className="apple-button apple-button-secondary text-sm">
                     Explore Website Development Services
                   </Link>

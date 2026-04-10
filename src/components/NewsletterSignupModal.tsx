@@ -2,6 +2,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Sparkles, X } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import {
+  buildFormSpamPayload,
+  FORM_SPAM_HONEYPOT_FIELD_NAME,
+  FORM_SPAM_MIN_COMPLETION_MS
+} from '../utils/formSpamProtection';
 
 type NewsletterModalState = {
   subscribed: boolean;
@@ -115,6 +120,8 @@ export const NewsletterSignupModal = () => {
   const [email, setEmail] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [honeypotValue, setHoneypotValue] = useState('');
+  const [formStartedAt, setFormStartedAt] = useState(() => Date.now());
 
   const shouldIgnorePath = useMemo(() => isExcludedPath(pathname), [pathname]);
 
@@ -153,6 +160,7 @@ export const NewsletterSignupModal = () => {
 
     const timerId = window.setTimeout(() => {
       setIsOpen(true);
+      setFormStartedAt(Date.now());
       updateStoredState((previous, timestamp) => ({
         ...previous,
         impressions: [...cleanTimestamps(previous.impressions, timestamp), timestamp]
@@ -190,6 +198,26 @@ export const NewsletterSignupModal = () => {
     event.preventDefault();
     if (isSubmitting) return;
 
+    const now = Date.now();
+    if (honeypotValue.trim()) {
+      updateStoredState((previous, timestamp) => ({
+        ...previous,
+        subscribed: true,
+        subscribedAt: timestamp,
+        subscribedEmail: previous.subscribedEmail
+      }));
+      setIsOpen(false);
+      setEmail('');
+      setHoneypotValue('');
+      setFormStartedAt(Date.now());
+      return;
+    }
+
+    if (now - formStartedAt < FORM_SPAM_MIN_COMPLETION_MS) {
+      setErrorMessage('Please wait a moment before submitting.');
+      return;
+    }
+
     const normalizedEmail = email.trim().toLowerCase();
     if (!EMAIL_REGEX.test(normalizedEmail)) {
       setErrorMessage('Enter a valid email address to join the newsletter.');
@@ -209,7 +237,12 @@ export const NewsletterSignupModal = () => {
           body: JSON.stringify({
             email: normalizedEmail,
             source: 'homepage-newsletter-modal',
-            pagePath: pathname
+            pagePath: pathname,
+            ...buildFormSpamPayload({
+              honeypotValue,
+              startedAtMs: formStartedAt,
+              submittedAtMs: now
+            })
           })
         });
 
@@ -226,6 +259,8 @@ export const NewsletterSignupModal = () => {
       }));
       setIsOpen(false);
       setEmail('');
+      setHoneypotValue('');
+      setFormStartedAt(Date.now());
     } catch (error) {
       console.error('Newsletter modal subscription error:', error);
       setErrorMessage('Unable to subscribe right now. Please try again shortly.');
@@ -289,7 +324,17 @@ export const NewsletterSignupModal = () => {
                     insights, and actionable updates for Barbados and Caribbean businesses.
                   </p>
 
-                  <form onSubmit={handleSubscribe} className="mt-6 space-y-3 sm:mt-7">
+                  <form onSubmit={handleSubscribe} className="relative mt-6 space-y-3 sm:mt-7">
+                    <input
+                      type="text"
+                      name={FORM_SPAM_HONEYPOT_FIELD_NAME}
+                      value={honeypotValue}
+                      onChange={(event) => setHoneypotValue(event.target.value)}
+                      autoComplete="off"
+                      tabIndex={-1}
+                      aria-hidden="true"
+                      className="pointer-events-none absolute -left-[9999px] top-auto h-px w-px opacity-0"
+                    />
                     <label htmlFor="newsletter-email" className="sr-only">
                       Email address
                     </label>

@@ -1,6 +1,8 @@
 import {
+  type ActionCodeSettings,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
   type Unsubscribe,
@@ -29,6 +31,19 @@ export const signOutCurrentUser = async () => {
   await signOut(requireAuth());
 };
 
+export const sendPasswordResetLink = async (
+  email: string,
+  actionCodeSettings?: ActionCodeSettings
+) => {
+  const normalizedEmail = email.trim();
+  if (actionCodeSettings) {
+    await sendPasswordResetEmail(requireAuth(), normalizedEmail, actionCodeSettings);
+    return;
+  }
+
+  await sendPasswordResetEmail(requireAuth(), normalizedEmail);
+};
+
 export const onAdminAuthStateChange = (
   callback: (user: User | null) => void
 ): Unsubscribe => {
@@ -43,4 +58,3 @@ export const getCurrentUserIdToken = async (forceRefresh = false) => {
 
   return currentUser.getIdToken(forceRefresh);
 };
-

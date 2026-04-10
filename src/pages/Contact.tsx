@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
+import {
+  buildFormSpamPayload,
+  FORM_SPAM_HONEYPOT_FIELD_NAME,
+  FORM_SPAM_MIN_COMPLETION_MS
+} from '../utils/formSpamProtection';
 
 export const Contact = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +21,8 @@ export const Contact = () => {
   });
   const [submitMessage, setSubmitMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [honeypotValue, setHoneypotValue] = useState('');
+  const [formStartedAt, setFormStartedAt] = useState(() => Date.now());
 
   const creativeOptions = [
     'Branding',
@@ -35,6 +42,19 @@ export const Contact = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    const now = Date.now();
+    if (honeypotValue.trim()) {
+      setSubmitMessage("Message received! We'll get back to you shortly.");
+      setFormStartedAt(Date.now());
+      setHoneypotValue('');
+      return;
+    }
+
+    if (now - formStartedAt < FORM_SPAM_MIN_COMPLETION_MS) {
+      setSubmitMessage('Please take a moment to review your details before submitting.');
+      return;
+    }
 
     const requiredMissing = !formData.firstName.trim() ||
       !formData.email.trim() ||
@@ -71,7 +91,12 @@ export const Contact = () => {
           phone: formData.phone.trim(),
           companyName: formData.companyName.trim(),
           service: selectedService,
-          projectDetails: formData.projectDetails.trim()
+          projectDetails: formData.projectDetails.trim(),
+          ...buildFormSpamPayload({
+            honeypotValue,
+            startedAtMs: formStartedAt,
+            submittedAtMs: now
+          })
         })
       });
 
@@ -98,6 +123,8 @@ export const Contact = () => {
         service: '',
         customService: ''
       });
+      setHoneypotValue('');
+      setFormStartedAt(Date.now());
       if (result && result.mailSent) {
         setSubmitMessage('Message sent successfully!');
       } else {
@@ -239,7 +266,17 @@ export const Contact = () => {
                   Share your project goals and we will respond with the best-fit next step.
                 </p>
               </div>
-              <form className="space-y-8 md:space-y-10" onSubmit={handleSubmit}>
+              <form className="relative space-y-8 md:space-y-10" onSubmit={handleSubmit}>
+                <input
+                  type="text"
+                  name={FORM_SPAM_HONEYPOT_FIELD_NAME}
+                  value={honeypotValue}
+                  onChange={(event) => setHoneypotValue(event.target.value)}
+                  autoComplete="off"
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -left-[9999px] top-auto h-px w-px opacity-0"
+                />
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-10">
                   {/* Left Column */}
                   <div className="space-y-6">

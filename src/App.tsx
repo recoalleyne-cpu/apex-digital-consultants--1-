@@ -10,6 +10,8 @@ import { DigitalSolutions } from './pages/DigitalSolutions';
 import { DigitalSolutionDetails } from './pages/DigitalSolutionDetails';
 import { DigitalSolutionCheckout } from './pages/DigitalSolutionCheckout';
 import { Portfolio } from './pages/Portfolio';
+import { PortfolioLogos } from './pages/PortfolioLogos';
+import { PortfolioWebsites } from './pages/PortfolioWebsites';
 import { Pricing } from './pages/Pricing';
 import { Contact } from './pages/Contact';
 import { FAQs } from './pages/FAQs';
@@ -212,6 +214,18 @@ const STATIC_ROUTE_SEO: Record<string, RouteSeoConfig> = {
     description:
       'Review live website development and design projects delivered by Apex for businesses in Barbados and the Caribbean.',
     keywords: ['website development Barbados', 'Barbados web developer', 'Caribbean web design']
+  },
+  '/portfolio/logos': {
+    title: 'Logo Portfolio Barbados | Apex Digital Consultants',
+    description:
+      'Browse logo and brand identity portfolio work delivered for businesses in Barbados and across the Caribbean.',
+    keywords: ['logo portfolio Barbados', 'brand identity portfolio Caribbean', 'logo design Barbados']
+  },
+  '/portfolio/websites': {
+    title: 'Completed Websites Portfolio | Apex Digital Consultants',
+    description:
+      'Explore completed website projects delivered by Apex, including business websites, redesigns, and ecommerce-focused builds.',
+    keywords: ['completed websites portfolio', 'website projects Barbados', 'web development portfolio Caribbean']
   },
   '/pricing': {
     title: 'Website Development Pricing Barbados | Apex Digital Consultants',
@@ -660,6 +674,8 @@ const AppFrame = () => {
           <Route path="/digital-solutions/:productId" element={<DigitalSolutionDetails />} />
           <Route path="/checkout/:productId" element={<DigitalSolutionCheckout />} />
           <Route path="/portfolio" element={<Portfolio />} />
+          <Route path="/portfolio/logos" element={<PortfolioLogos />} />
+          <Route path="/portfolio/websites" element={<PortfolioWebsites />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/faqs" element={<FAQs />} />

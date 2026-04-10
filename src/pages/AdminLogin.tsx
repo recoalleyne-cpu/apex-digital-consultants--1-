@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Lock } from 'lucide-react';
-import { loginAdmin, verifyAdminSession } from '../utils/adminApi';
+import {
+  loginAdmin,
+  requestAdminPasswordReset,
+  verifyAdminSession
+} from '../utils/adminApi';
 
 type LoginLocationState = {
   from?: string;
@@ -20,6 +24,10 @@ export const AdminLogin = () => {
   const [submitting, setSubmitting] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [sendingResetLink, setSendingResetLink] = useState(false);
+  const [resetMessage, setResetMessage] = useState<string | null>(null);
+  const [resetMessageIsError, setResetMessageIsError] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -53,6 +61,8 @@ export const AdminLogin = () => {
 
     setSubmitting(true);
     setErrorMessage(null);
+    setResetMessage(null);
+    setResetMessageIsError(false);
 
     try {
       await loginAdmin(nextEmail, password);
@@ -61,6 +71,38 @@ export const AdminLogin = () => {
       setErrorMessage(error instanceof Error ? error.message : 'Unable to log in.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleSendResetLink = async () => {
+    if (sendingResetLink) return;
+
+    const nextEmail = email.trim();
+    if (!nextEmail) {
+      setResetMessageIsError(true);
+      setResetMessage('Enter your admin email to send a reset link.');
+      return;
+    }
+
+    setSendingResetLink(true);
+    setResetMessage(null);
+    setResetMessageIsError(false);
+
+    try {
+      await requestAdminPasswordReset(nextEmail);
+      setResetMessageIsError(false);
+      setResetMessage('If this email is registered, a password reset link has been sent.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      if (message.toLowerCase().includes('firebase is not configured')) {
+        setResetMessageIsError(true);
+        setResetMessage(message);
+      } else {
+        setResetMessageIsError(false);
+        setResetMessage('If this email is registered, a password reset link has been sent.');
+      }
+    } finally {
+      setSendingResetLink(false);
     }
   };
 
@@ -124,7 +166,70 @@ export const AdminLogin = () => {
                 autoComplete="current-password"
                 required
               />
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs text-apple-gray-300">
+                  Forgot your password? Reset it securely.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForgotPassword((previous) => !previous);
+                    setResetMessage(null);
+                    setResetMessageIsError(false);
+                  }}
+                  className="text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-500 transition-colors hover:text-apex-yellow"
+                >
+                  {showForgotPassword ? 'Hide Reset' : 'Forgot Password?'}
+                </button>
+              </div>
             </div>
+
+            {showForgotPassword ? (
+              <div className="rounded-2xl border border-apple-gray-100 bg-apple-gray-50/70 p-4 sm:p-5">
+                <p className="text-sm leading-7 text-apple-gray-300">
+                  Enter your admin email and we will send a secure password reset link.
+                </p>
+                <div className="mt-4 space-y-3">
+                  <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-apple-gray-300">
+                    Admin Email
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        void handleSendResetLink();
+                      }
+                    }}
+                    className="w-full rounded-2xl border border-apple-gray-100 bg-white px-4 py-3 text-sm text-apple-gray-500 outline-none transition-colors focus:border-apex-yellow"
+                    placeholder="admin@apexdigitalconsultants.com"
+                    autoComplete="email"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSendResetLink}
+                    className="apple-button apple-button-secondary inline-flex w-full items-center justify-center"
+                    disabled={sendingResetLink}
+                  >
+                    {sendingResetLink ? 'Sending Reset Link...' : 'Send Reset Link'}
+                  </button>
+                </div>
+
+                {resetMessage ? (
+                  <p
+                    className={`mt-4 rounded-xl px-4 py-3 text-sm ${
+                      resetMessageIsError
+                        ? 'border border-red-200 bg-red-50 text-red-700'
+                        : 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                    }`}
+                  >
+                    {resetMessage}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
 
             {errorMessage ? (
               <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

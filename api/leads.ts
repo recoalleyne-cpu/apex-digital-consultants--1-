@@ -10,6 +10,18 @@ export const config = {
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MIN_FORM_COMPLETION_MS = 1200;
+const MAX_FORM_COMPLETION_MS = 1000 * 60 * 60 * 24;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const RATE_LIMIT_MAX_REQUESTS = 8;
+const MAX_RATE_LIMIT_KEYS = 2000;
+
+type RateLimitEntry = {
+  count: number;
+  resetAt: number;
+};
+
+const rateLimitEntries = new Map<string, RateLimitEntry>();
 
 const parseText = (value: unknown) => {
   if (typeof value !== 'string') return null;
@@ -26,6 +38,109 @@ const clip = (value: string | null, maxLength: number) => {
 const toObject = (value: unknown): Record<string, unknown> | null => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   return value as Record<string, unknown>;
+};
+
+const parseTimestampMs = (value: unknown) => {
+  if (typeof value === 'number' && Number.isFinite(value)) return Math.trunc(value);
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const parsed = Number.parseInt(trimmed, 10);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+};
+
+const readFirstTimestamp = (payload: Record<string, unknown>, keys: string[]) => {
+  for (const key of keys) {
+    const parsed = parseTimestampMs(payload[key]);
+    if (parsed !== null) return parsed;
+  }
+  return null;
+};
+
+const normalizeHeaderValue = (value: string | string[] | undefined) => {
+  if (Array.isArray(value)) return value[0] || '';
+  if (typeof value === 'string') return value;
+  return '';
+};
+
+const getClientIp = (req: VercelRequest) => {
+  const forwarded = normalizeHeaderValue(req.headers['x-forwarded-for']);
+  const realIp = normalizeHeaderValue(req.headers['x-real-ip']);
+  const cfIp = normalizeHeaderValue(req.headers['cf-connecting-ip']);
+  const candidates = [forwarded.split(',')[0], realIp, cfIp];
+
+  for (const candidate of candidates) {
+    const normalized = candidate.trim().toLowerCase();
+    if (!normalized || normalized === 'unknown') continue;
+    return normalized;
+  }
+
+  return null;
+};
+
+const pruneRateLimitEntries = (now: number) => {
+  for (const [key, entry] of rateLimitEntries) {
+    if (entry.resetAt <= now) {
+      rateLimitEntries.delete(key);
+    }
+  }
+
+  if (rateLimitEntries.size <= MAX_RATE_LIMIT_KEYS) return;
+
+  const sortedKeys = [...rateLimitEntries.entries()]
+    .sort((a, b) => a[1].resetAt - b[1].resetAt)
+    .map(([key]) => key);
+
+  const overflow = rateLimitEntries.size - MAX_RATE_LIMIT_KEYS;
+  for (let index = 0; index < overflow; index++) {
+    const key = sortedKeys[index];
+    if (key) rateLimitEntries.delete(key);
+  }
+};
+
+const consumeRateLimitToken = (key: string, now: number) => {
+  pruneRateLimitEntries(now);
+
+  const current = rateLimitEntries.get(key);
+  if (!current || current.resetAt <= now) {
+    rateLimitEntries.set(key, {
+      count: 1,
+      resetAt: now + RATE_LIMIT_WINDOW_MS
+    });
+    return {
+      allowed: true as const,
+      retryAfterSeconds: 0
+    };
+  }
+
+  if (current.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return {
+      allowed: false as const,
+      retryAfterSeconds: Math.max(1, Math.ceil((current.resetAt - now) / 1000))
+    };
+  }
+
+  current.count += 1;
+  rateLimitEntries.set(key, current);
+  return {
+    allowed: true as const,
+    retryAfterSeconds: 0
+  };
+};
+
+const hasSpamHoneypotValue = (payload: Record<string, unknown>) => {
+  const honeypotKeys = [
+    'honeypot',
+    'honeypot_field',
+    'company_website',
+    'website',
+    'middle_name',
+    'middleName'
+  ];
+
+  return honeypotKeys.some((key) => Boolean(parseText(payload[key])));
 };
 
 const splitName = (value: string | null) => {
@@ -204,9 +319,70 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ success: false, error: 'Invalid JSON payload' });
     }
 
+    if (hasSpamHoneypotValue(payload)) {
+      return res.status(200).json({
+        success: true,
+        id: null,
+        mailSent: false,
+        ignored: true
+      });
+    }
+
+    const submittedDurationMs = readFirstTimestamp(payload, [
+      'form_fill_duration_ms',
+      'formFillDurationMs',
+      'elapsed_ms',
+      'elapsedMs'
+    ]);
+    const startedAt = readFirstTimestamp(payload, [
+      'form_started_at',
+      'formStartedAt',
+      'started_at',
+      'startedAt'
+    ]);
+    const submittedAt = readFirstTimestamp(payload, ['submitted_at', 'submittedAt']);
+    const fallbackDurationMs =
+      startedAt !== null && submittedAt !== null ? submittedAt - startedAt : null;
+    const completionMs =
+      submittedDurationMs !== null ? submittedDurationMs : fallbackDurationMs;
+
+    if (completionMs === null) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing form timing metadata. Please refresh the page and try again.'
+      });
+    }
+
+    if (completionMs < MIN_FORM_COMPLETION_MS) {
+      return res.status(400).json({
+        success: false,
+        error: 'Form submission was too fast. Please complete the form and try again.'
+      });
+    }
+
+    if (completionMs > MAX_FORM_COMPLETION_MS) {
+      return res.status(400).json({
+        success: false,
+        error: 'Form session expired. Please review your details and submit again.'
+      });
+    }
+
     const email = clip(parseText(payload.email), 320);
     if (!email || !EMAIL_PATTERN.test(email)) {
       return res.status(400).json({ success: false, error: 'A valid email is required.' });
+    }
+
+    const source = clip(parseText(payload.source), 120) || 'website';
+    const now = Date.now();
+    const clientIp = getClientIp(req);
+    const rateLimitKey = `${source}:${clientIp || email}`;
+    const rateLimitDecision = consumeRateLimitToken(rateLimitKey, now);
+    if (!rateLimitDecision.allowed) {
+      res.setHeader('Retry-After', String(rateLimitDecision.retryAfterSeconds));
+      return res.status(429).json({
+        success: false,
+        error: 'Too many requests. Please wait a few minutes and try again.'
+      });
     }
 
     const combinedName = clip(parseText(payload.name), 200);
@@ -233,12 +409,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       6000
     );
     const budgetRange = clip(parseText(payload.budget) || parseText(payload.budget_range), 120);
-    const source = clip(parseText(payload.source), 120) || 'website';
+
+    const name = [firstName, lastName].filter(Boolean).join(' ').trim() || null;
+    if (!name) {
+      return res.status(400).json({
+        success: false,
+        error: 'A name is required.'
+      });
+    }
 
     const sql = getSqlClient();
     await ensureHybridContentSchemaReady(sql);
-
-    const name = [firstName, lastName].filter(Boolean).join(' ').trim() || null;
 
     const id = await createLead(sql, {
       name,

@@ -15,7 +15,14 @@ const NAV_LINKS = [
   { name: 'About', path: '/about' },
   { name: 'Services', path: '/services' },
   { name: 'Digital Solutions', path: '/digital-solutions' },
-  { name: 'Portfolio', path: '/portfolio' },
+  {
+    name: 'Portfolio',
+    path: '/portfolio',
+    children: [
+      { name: 'Logos', path: '/portfolio/logos' },
+      { name: 'Websites Completed', path: '/portfolio/websites' }
+    ]
+  },
   { name: 'Case Studies', path: '/case-studies' },
   { name: 'Pricing', path: '/pricing' },
   { name: 'Contact', path: '/contact' },
@@ -58,18 +65,59 @@ export const Header = () => {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-6 lg:gap-8">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={cn(
-                  'text-sm font-medium transition-colors hover:text-apple-gray-500',
-                  location.pathname === link.path ? 'text-apple-gray-500' : 'text-apple-gray-500/85'
-                )}
-              >
-                {link.name}
-              </Link>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const isActive = location.pathname === link.path || location.pathname.startsWith(`${link.path}/`);
+
+              if (link.children && link.children.length > 0) {
+                return (
+                  <div key={link.path} className="relative group">
+                    <Link
+                      to={link.path}
+                      className={cn(
+                        'text-sm font-medium transition-colors hover:text-apple-gray-500',
+                        isActive ? 'text-apple-gray-500' : 'text-apple-gray-500/85'
+                      )}
+                    >
+                      {link.name}
+                    </Link>
+                    <div className="pointer-events-none absolute left-0 top-full z-50 pt-3 opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
+                      <div className="min-w-[220px] rounded-2xl border border-white/60 bg-white/95 p-2 shadow-[0_18px_40px_rgba(0,0,0,0.12)]">
+                        {link.children.map((child) => {
+                          const isChildActive = location.pathname === child.path;
+                          return (
+                            <Link
+                              key={child.path}
+                              to={child.path}
+                              className={cn(
+                                'block rounded-xl px-3 py-2.5 text-sm transition-colors',
+                                isChildActive
+                                  ? 'bg-apple-gray-50 text-apple-gray-500'
+                                  : 'text-apple-gray-400 hover:bg-apple-gray-50 hover:text-apple-gray-500'
+                              )}
+                            >
+                              {child.name}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={cn(
+                    'text-sm font-medium transition-colors hover:text-apple-gray-500',
+                    isActive ? 'text-apple-gray-500' : 'text-apple-gray-500/85'
+                  )}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
             <Link to="/contact" className="apple-button apple-button-primary text-sm py-2 px-5">
               Get A Quote
             </Link>
@@ -101,17 +149,40 @@ export const Header = () => {
             >
               <div className="flex max-h-[calc(100vh-5rem)] flex-col overflow-y-auto p-4 sm:p-5 gap-2.5">
                 {NAV_LINKS.map((link) => (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    className={cn(
-                      'text-base sm:text-lg font-medium py-2.5 flex items-center justify-between',
-                      location.pathname === link.path ? 'text-apple-gray-500' : 'text-apple-gray-500/85'
-                    )}
-                  >
-                    {link.name}
-                    <ChevronRight size={18} className="text-apple-gray-300" />
-                  </Link>
+                  <div key={link.path} className="rounded-xl border border-white/20 bg-white/20 px-3 py-2.5">
+                    <Link
+                      to={link.path}
+                      className={cn(
+                        'text-base sm:text-lg font-medium flex items-center justify-between',
+                        location.pathname === link.path || location.pathname.startsWith(`${link.path}/`)
+                          ? 'text-apple-gray-500'
+                          : 'text-apple-gray-500/85'
+                      )}
+                    >
+                      {link.name}
+                      <ChevronRight size={18} className="text-apple-gray-300" />
+                    </Link>
+
+                    {link.children && link.children.length > 0 ? (
+                      <div className="mt-2 space-y-1.5 pl-2">
+                        {link.children.map((child) => (
+                          <Link
+                            key={child.path}
+                            to={child.path}
+                            className={cn(
+                              'flex items-center justify-between rounded-lg px-2.5 py-2 text-sm',
+                              location.pathname === child.path
+                                ? 'bg-white/85 text-apple-gray-500'
+                                : 'text-apple-gray-400 hover:bg-white/60 hover:text-apple-gray-500'
+                            )}
+                          >
+                            {child.name}
+                            <ChevronRight size={16} className="text-apple-gray-300" />
+                          </Link>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
                 ))}
                 <Link to="/contact" className="apple-button apple-button-primary text-center mt-3">
                   Get A Quote
