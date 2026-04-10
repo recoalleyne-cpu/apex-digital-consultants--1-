@@ -1,5 +1,6 @@
 import {
   getCurrentUserIdToken,
+  onAdminAuthStateChange,
   sendPasswordResetLink,
   signInWithEmailPassword,
   signOutCurrentUser
@@ -8,6 +9,7 @@ import { isFirebaseConfigured } from '../lib/firebase';
 
 const ADMIN_ACCESS_TOKEN_STORAGE_KEY = 'apex_admin_session_token_v1';
 const AUTHORIZATION_HEADER_NAME = 'authorization';
+const AUTH_BOOTSTRAP_TIMEOUT_MS = 2500;
 
 const isBrowser = () => typeof window !== 'undefined';
 
@@ -15,6 +17,8 @@ const normalizeToken = (value: unknown) => {
   if (typeof value !== 'string') return '';
   return value.trim();
 };
+
+let authBootstrapPromise: Promise<void> | null = null;
 
 export const getAdminAccessToken = () => {
   if (!isBrowser()) return '';
@@ -36,9 +40,53 @@ export const clearAdminAccessToken = () => {
   window.localStorage.removeItem(ADMIN_ACCESS_TOKEN_STORAGE_KEY);
 };
 
-const resolveAdminToken = async () => {
+const waitForFirebaseAuthBootstrap = async () => {
+  if (!isBrowser() || !isFirebaseConfigured) return;
+
+  if (!authBootstrapPromise) {
+    authBootstrapPromise = new Promise((resolve) => {
+      let settled = false;
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+      let unsubscribe: (() => void) | null = null;
+
+      const settle = () => {
+        if (settled) return;
+        settled = true;
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        if (unsubscribe) {
+          unsubscribe();
+        }
+        authBootstrapPromise = null;
+        resolve();
+      };
+
+      timeoutId = setTimeout(settle, AUTH_BOOTSTRAP_TIMEOUT_MS);
+      unsubscribe = onAdminAuthStateChange(() => {
+        settle();
+      });
+    });
+  }
+
+  await authBootstrapPromise;
+};
+
+type ResolveAdminTokenOptions = {
+  forceRefresh?: boolean;
+  waitForAuthBootstrap?: boolean;
+};
+
+const resolveAdminToken = async ({
+  forceRefresh = false,
+  waitForAuthBootstrap = false
+}: ResolveAdminTokenOptions = {}) => {
+  if (waitForAuthBootstrap) {
+    await waitForFirebaseAuthBootstrap();
+  }
+
   try {
-    const firebaseToken = await getCurrentUserIdToken();
+    const firebaseToken = await getCurrentUserIdToken(forceRefresh);
     if (firebaseToken) {
       setAdminAccessToken(firebaseToken);
       return firebaseToken;
@@ -128,19 +176,39 @@ export const logoutAdmin = async () => {
 };
 
 export const verifyAdminSession = async () => {
-  const token = await resolveAdminToken();
+  let token = await resolveAdminToken({ waitForAuthBootstrap: true });
   if (!token) return false;
 
-  try {
-    const response = await adminFetch('/api/admin-auth', {
+  const requestSessionValidation = async (tokenOverride: string) => {
+    return fetch('/api/admin-auth', {
       method: 'GET',
-      headers: {
-        Accept: 'application/json'
-      }
+      headers: withAdminAuthHeaders(
+        {
+          Accept: 'application/json'
+        },
+        tokenOverride
+      )
     });
+  };
+
+  try {
+    let response = await requestSessionValidation(token);
+
+    if (response.status === 401) {
+      const refreshedToken = await resolveAdminToken({
+        forceRefresh: true,
+        waitForAuthBootstrap: true
+      });
+      if (refreshedToken && refreshedToken !== token) {
+        token = refreshedToken;
+        response = await requestSessionValidation(refreshedToken);
+      }
+    }
 
     if (!response.ok) {
-      clearAdminAccessToken();
+      if (response.status === 401 || response.status === 403) {
+        clearAdminAccessToken();
+      }
       return false;
     }
 
