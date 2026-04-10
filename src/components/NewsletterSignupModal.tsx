@@ -28,7 +28,7 @@ const MAX_IMPRESSIONS_PER_WINDOW = 2;
 const DISMISS_COOLDOWN_MS = 8 * 60 * 1000;
 const NEWSLETTER_SIGNUP_ENDPOINT =
   (import.meta.env.VITE_NEWSLETTER_SIGNUP_ENDPOINT as string | undefined)?.trim() ||
-  '/api/newsletter-subscribe';
+  '/api/email-integrations';
 
 const EXCLUDED_ROUTE_PREFIXES = ['/admin', '/checkout'];
 const EXCLUDED_ROUTE_PATHS = new Set(['/terms', '/privacy']);
@@ -235,6 +235,7 @@ export const NewsletterSignupModal = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          intent: 'newsletter-subscribe',
           email: normalizedEmail,
           source: 'homepage-newsletter-modal',
           pagePath: pathname,

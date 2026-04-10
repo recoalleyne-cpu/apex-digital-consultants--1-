@@ -88,22 +88,19 @@ const getMailchimpConfig = (): MailchimpConfig | null => {
   const apiKey = readFirstServerEnv([
     'MAILCHIMP_API_KEY',
     'EMAIL_MAILCHIMP_API_KEY',
-    'MAILCHIMP_KEY',
-    'VITE_EMAIL_MAILCHIMP_API_KEY'
+    'MAILCHIMP_KEY'
   ]);
   const audienceId = readFirstServerEnv([
     'MAILCHIMP_AUDIENCE_ID',
     'MAILCHIMP_LIST_ID',
     'EMAIL_MAILCHIMP_AUDIENCE_ID',
-    'EMAIL_MAILCHIMP_LIST_ID',
-    'VITE_EMAIL_MAILCHIMP_AUDIENCE_ID'
+    'EMAIL_MAILCHIMP_LIST_ID'
   ]);
   const configuredServerPrefix = readFirstServerEnv([
     'MAILCHIMP_SERVER_PREFIX',
     'MAILCHIMP_DATA_CENTER',
     'MAILCHIMP_DC',
-    'EMAIL_MAILCHIMP_SERVER_PREFIX',
-    'VITE_EMAIL_MAILCHIMP_SERVER_PREFIX'
+    'EMAIL_MAILCHIMP_SERVER_PREFIX'
   ]).toLowerCase();
   const inferredServerPrefix = inferServerPrefixFromApiKey(apiKey);
   const serverPrefix = configuredServerPrefix || inferredServerPrefix;
