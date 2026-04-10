@@ -2,6 +2,7 @@ import {
   GOOGLE_INTEGRATIONS,
   GOOGLE_INTEGRATIONS_DIAGNOSTICS
 } from '../config/googleIntegrations';
+import { hasAnalyticsConsent } from '../utils/cookieConsent';
 
 type ScriptLoadOptions = {
   id: string;
@@ -270,7 +271,8 @@ const initializeAdsTracking = () => {
   window.gtag?.('config', conversionId);
 };
 
-let integrationsInitialized = false;
+let baseIntegrationsInitialized = false;
+let trackingIntegrationsInitialized = false;
 let lastTrackedPath: string | null = null;
 let diagnosticsLogged = false;
 
@@ -297,24 +299,33 @@ const logInitializationDiagnosticsOnce = () => {
 };
 
 export const initializeGoogleIntegrations = () => {
-  if (!canUseDom() || integrationsInitialized) return;
+  if (!canUseDom()) return;
   logInitializationDiagnosticsOnce();
 
-  initializeSearchConsoleVerification();
-  initializeGoogleFonts();
+  if (!baseIntegrationsInitialized) {
+    initializeSearchConsoleVerification();
+    initializeGoogleFonts();
+    baseIntegrationsInitialized = true;
+  }
+
+  if (!hasAnalyticsConsent() || trackingIntegrationsInitialized) {
+    return;
+  }
+
   initializeTagManager();
   initializeAnalytics();
   initializeAdsTracking();
-
-  integrationsInitialized = true;
+  trackingIntegrationsInitialized = true;
 };
 
 const shouldUseGtagDirectly = () =>
+  hasAnalyticsConsent() &&
   GOOGLE_INTEGRATIONS.analytics.enabled &&
   !GOOGLE_INTEGRATIONS.analytics.useTagManagerTransport;
 
 const shouldPushToDataLayer = () =>
-  GOOGLE_INTEGRATIONS.tagManager.enabled || GOOGLE_INTEGRATIONS.analytics.useTagManagerTransport;
+  hasAnalyticsConsent() &&
+  (GOOGLE_INTEGRATIONS.tagManager.enabled || GOOGLE_INTEGRATIONS.analytics.useTagManagerTransport);
 
 export const trackEvent = (eventName: string, params: AnalyticsEventParams = {}) => {
   if (!canUseDom()) return false;
@@ -322,6 +333,7 @@ export const trackEvent = (eventName: string, params: AnalyticsEventParams = {})
   if (!normalizedName) return false;
 
   initializeGoogleIntegrations();
+  if (!hasAnalyticsConsent()) return false;
 
   const payload = normalizeEventPayload(params);
   let dispatched = false;
@@ -357,13 +369,17 @@ export const trackPageView = ({ path, title, location }: PageViewPayload = {}) =
     return false;
   }
 
-  lastTrackedPath = pagePath;
-
-  return trackEvent('page_view', {
+  const dispatched = trackEvent('page_view', {
     page_path: pagePath,
     page_title: title || document.title,
     page_location: location || window.location.href
   });
+
+  if (dispatched) {
+    lastTrackedPath = pagePath;
+  }
+
+  return dispatched;
 };
 
 export const trackConversion = ({
@@ -377,6 +393,7 @@ export const trackConversion = ({
   if (!canUseDom()) return false;
 
   initializeGoogleIntegrations();
+  if (!hasAnalyticsConsent()) return false;
 
   const conversionId = GOOGLE_INTEGRATIONS.ads.conversionId;
   if (!conversionId) return false;

@@ -1,14 +1,36 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   initializeGoogleIntegrations,
   trackEvent,
   trackPageView
 } from '../integrations/google';
+import { CookieConsentBar } from './CookieConsentBar';
+import {
+  onAnalyticsConsentChange,
+  readAnalyticsConsent,
+  writeAnalyticsConsent
+} from '../utils/cookieConsent';
 
 export const GoogleIntegrationRuntime = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const [analyticsConsent, setAnalyticsConsent] = useState(() => readAnalyticsConsent());
+  const isAnalyticsAllowed = analyticsConsent === 'granted';
+
+  const handleAcceptConsent = useCallback(() => {
+    writeAnalyticsConsent('granted');
+    setAnalyticsConsent('granted');
+  }, []);
+
+  const handleNecessaryOnlyConsent = useCallback(() => {
+    writeAnalyticsConsent('denied');
+    setAnalyticsConsent('denied');
+  }, []);
+
+  useEffect(() => {
+    return onAnalyticsConsentChange(setAnalyticsConsent);
+  }, []);
 
   useEffect(() => {
     if (isAdminRoute) {
@@ -16,10 +38,10 @@ export const GoogleIntegrationRuntime = () => {
     }
 
     initializeGoogleIntegrations();
-  }, [isAdminRoute]);
+  }, [isAdminRoute, analyticsConsent]);
 
   useEffect(() => {
-    if (isAdminRoute) {
+    if (isAdminRoute || !isAnalyticsAllowed) {
       return;
     }
 
@@ -38,10 +60,15 @@ export const GoogleIntegrationRuntime = () => {
     return () => {
       window.cancelAnimationFrame(frame);
     };
-  }, [isAdminRoute, location.pathname, location.search, location.hash]);
+  }, [isAdminRoute, isAnalyticsAllowed, location.pathname, location.search, location.hash]);
 
   useEffect(() => {
-    if (isAdminRoute || typeof window === 'undefined' || typeof document === 'undefined') {
+    if (
+      isAdminRoute ||
+      !isAnalyticsAllowed ||
+      typeof window === 'undefined' ||
+      typeof document === 'undefined'
+    ) {
       return;
     }
 
@@ -148,7 +175,13 @@ export const GoogleIntegrationRuntime = () => {
     return () => {
       document.removeEventListener('click', handleClick, true);
     };
-  }, [isAdminRoute]);
+  }, [isAdminRoute, isAnalyticsAllowed]);
 
-  return null;
+  return isAdminRoute ? null : (
+    <CookieConsentBar
+      consentState={analyticsConsent}
+      onAccept={handleAcceptConsent}
+      onNecessaryOnly={handleNecessaryOnlyConsent}
+    />
+  );
 };
