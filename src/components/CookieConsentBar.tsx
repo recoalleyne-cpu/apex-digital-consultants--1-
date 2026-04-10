@@ -23,34 +23,33 @@ export const CookieConsentBar = ({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 16 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="fixed inset-x-3 bottom-3 z-[130] rounded-2xl border border-black/10 bg-white/96 p-4 shadow-[0_16px_45px_rgba(4,20,33,0.18)] backdrop-blur-sm sm:inset-x-6 sm:bottom-6 sm:p-5"
+          className="fixed inset-x-3 bottom-3 z-[130] rounded-xl border border-black/10 bg-white/95 px-3 py-2.5 shadow-[0_10px_30px_rgba(8,25,40,0.14)] backdrop-blur-sm sm:inset-x-6 sm:bottom-5 sm:px-4 sm:py-3"
           role="region"
           aria-label="Cookie consent"
         >
-          <div className="flex flex-col gap-3 sm:gap-4">
-            <p className="text-sm leading-6 text-apple-gray-500">
-              We use cookies and analytics to improve your experience and understand site
-              performance. Learn more in our{' '}
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <p className="text-[13px] leading-5 text-apple-gray-500 sm:max-w-3xl sm:pr-2">
+              We use cookies and analytics to improve your experience and understand site performance. Learn more in our{' '}
               <a
                 href="/privacy"
-                className="font-semibold text-[#0b6b8d] underline decoration-[#0b6b8d]/40 underline-offset-4 hover:decoration-[#0b6b8d]"
+                className="font-semibold text-[#0b6b8d] underline decoration-[#0b6b8d]/35 underline-offset-3 hover:decoration-[#0b6b8d]"
               >
                 Privacy Policy
               </a>
               .
             </p>
-            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:shrink-0 sm:items-center">
               <button
                 type="button"
                 onClick={onNecessaryOnly}
-                className="inline-flex items-center justify-center rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm font-semibold text-apple-gray-500 transition-colors hover:bg-apple-gray-50"
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-black/15 bg-white px-3.5 text-xs font-semibold text-apple-gray-500 transition-colors hover:bg-apple-gray-50 sm:h-9 sm:text-sm"
               >
                 Necessary Only
               </button>
               <button
                 type="button"
                 onClick={onAccept}
-                className="inline-flex items-center justify-center rounded-xl bg-apex-yellow px-4 py-2.5 text-sm font-semibold text-apple-gray-500 transition-colors hover:bg-apex-yellow-hover"
+                className="inline-flex h-10 items-center justify-center rounded-lg bg-apex-yellow px-3.5 text-xs font-semibold text-apple-gray-500 transition-colors hover:bg-apex-yellow-hover sm:h-9 sm:text-sm"
               >
                 Accept
               </button>
