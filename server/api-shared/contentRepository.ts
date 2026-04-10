@@ -1,5 +1,5 @@
 import { neon } from '@neondatabase/serverless';
-import { INITIAL_CASE_STUDIES } from './caseStudiesSeed';
+import { INITIAL_CASE_STUDIES } from './caseStudiesSeed.js';
 
 type SqlClient = ReturnType<typeof neon>;
 

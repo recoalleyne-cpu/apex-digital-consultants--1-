@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getFirebaseAdminConfigError, verifyFirebaseIdToken } from './firebaseAdmin';
+import { getFirebaseAdminConfigError, verifyFirebaseIdToken } from './firebaseAdmin.js';
 
 const AUTHORIZATION_HEADER = 'authorization';
 const BEARER_PREFIX = 'bearer ';

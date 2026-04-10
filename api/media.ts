@@ -1,7 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { neon } from '@neondatabase/serverless';
-import { requireAdminAccess } from '../server/api-shared/adminAuth';
-import { getSqlClient, isNeonConfigured } from '../server/api-shared/neonDb';
+import { requireAdminAccess } from '../server/api-shared/adminAuth.js';
+import { getSqlClient, isNeonConfigured } from '../server/api-shared/neonDb.js';
 
 export const config = {
   runtime: 'nodejs'

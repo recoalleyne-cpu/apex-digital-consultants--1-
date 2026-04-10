@@ -1,6 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createLead, ensureHybridContentSchemaReady } from '../server/api-shared/contentRepository';
-import { getSqlClient, isNeonConfigured } from '../server/api-shared/neonDb';
+import {
+  createLead,
+  ensureHybridContentSchemaReady
+} from '../server/api-shared/contentRepository.js';
+import { getSqlClient, isNeonConfigured } from '../server/api-shared/neonDb.js';
 
 export const config = {
   runtime: 'nodejs'
