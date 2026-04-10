@@ -9,11 +9,43 @@ type FirebaseAdminConfig = {
 
 const readServerEnv = (key: string) => (process.env[key] || '').trim();
 
+const readFirstServerEnv = (keys: string[]) => {
+  for (const key of keys) {
+    const value = readServerEnv(key);
+    if (value) {
+      return value;
+    }
+  }
+  return '';
+};
+
+const normalizePrivateKey = (value: string) => {
+  return value.replace(/^['"]|['"]$/g, '').replace(/\\n/g, '\n');
+};
+
+const inferProjectIdFromClientEmail = (clientEmail: string) => {
+  const match = clientEmail.match(/@([a-z0-9-]+)\.iam\.gserviceaccount\.com$/i);
+  return match?.[1]?.trim() || '';
+};
+
 const getFirebaseAdminConfig = (): FirebaseAdminConfig | null => {
-  const projectId =
-    readServerEnv('FIREBASE_ADMIN_PROJECT_ID') || readServerEnv('VITE_FIREBASE_PROJECT_ID');
-  const clientEmail = readServerEnv('FIREBASE_ADMIN_CLIENT_EMAIL');
-  const privateKeyRaw = readServerEnv('FIREBASE_ADMIN_PRIVATE_KEY');
+  const clientEmail = readFirstServerEnv([
+    'FIREBASE_ADMIN_CLIENT_EMAIL',
+    'FIREBASE_CLIENT_EMAIL'
+  ]);
+  const privateKeyRaw = readFirstServerEnv([
+    'FIREBASE_ADMIN_PRIVATE_KEY',
+    'FIREBASE_PRIVATE_KEY'
+  ]);
+  const configuredProjectId = readFirstServerEnv([
+    'FIREBASE_ADMIN_PROJECT_ID',
+    'FIREBASE_PROJECT_ID',
+    'GOOGLE_CLOUD_PROJECT',
+    'GCLOUD_PROJECT',
+    'VITE_FIREBASE_PROJECT_ID'
+  ]);
+  const inferredProjectId = inferProjectIdFromClientEmail(clientEmail);
+  const projectId = configuredProjectId || inferredProjectId;
 
   if (!projectId || !clientEmail || !privateKeyRaw) {
     return null;
@@ -22,14 +54,14 @@ const getFirebaseAdminConfig = (): FirebaseAdminConfig | null => {
   return {
     projectId,
     clientEmail,
-    privateKey: privateKeyRaw.replace(/\\n/g, '\n')
+    privateKey: normalizePrivateKey(privateKeyRaw)
   };
 };
 
 export const getFirebaseAdminConfigError = () => {
   const config = getFirebaseAdminConfig();
   if (config) return null;
-  return 'Missing Firebase Admin credentials. Set FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, and FIREBASE_ADMIN_PRIVATE_KEY.';
+  return 'Missing Firebase Admin credentials. Set FIREBASE_ADMIN_PROJECT_ID/FIREBASE_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL/FIREBASE_CLIENT_EMAIL, and FIREBASE_ADMIN_PRIVATE_KEY/FIREBASE_PRIVATE_KEY.';
 };
 
 const getFirebaseAdminApp = (): App | null => {
@@ -56,9 +88,8 @@ export const verifyFirebaseIdToken = async (idToken: string) => {
   }
 
   try {
-    return await getAuth(app).verifyIdToken(idToken, true);
+    return await getAuth(app).verifyIdToken(idToken);
   } catch {
     return null;
   }
 };
-
