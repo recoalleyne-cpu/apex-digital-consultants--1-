@@ -22,11 +22,6 @@ type CheckoutForm = {
   postalCode: string;
   licenseType: string;
   quantity: number;
-  paymentMethod: string;
-  cardholderName: string;
-  cardNumber: string;
-  cardExpiry: string;
-  cardCvv: string;
   businessGoals: string;
   technicalNotes: string;
   termsAccepted: boolean;
@@ -49,11 +44,6 @@ const DEFAULT_FORM: CheckoutForm = {
   postalCode: '',
   licenseType: 'single-site',
   quantity: 1,
-  paymentMethod: 'credit-card',
-  cardholderName: '',
-  cardNumber: '',
-  cardExpiry: '',
-  cardCvv: '',
   businessGoals: '',
   technicalNotes: '',
   termsAccepted: false,
@@ -151,22 +141,6 @@ export const DigitalSolutionCheckout = () => {
       nextErrors.quantity = 'Quantity must be at least 1.';
     }
 
-    if (formData.paymentMethod === 'credit-card') {
-      const digitsOnly = formData.cardNumber.replace(/\D/g, '');
-      if (!formData.cardholderName.trim()) {
-        nextErrors.cardholderName = 'Cardholder name is required.';
-      }
-      if (digitsOnly.length < 13 || digitsOnly.length > 19) {
-        nextErrors.cardNumber = 'Enter a valid card number.';
-      }
-      if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(formData.cardExpiry.trim())) {
-        nextErrors.cardExpiry = 'Use MM/YY format.';
-      }
-      if (!/^\d{3,4}$/.test(formData.cardCvv.trim())) {
-        nextErrors.cardCvv = 'Enter a valid CVV.';
-      }
-    }
-
     if (!formData.termsAccepted) {
       nextErrors.termsAccepted = 'You must accept the terms to continue.';
     }
@@ -182,7 +156,7 @@ export const DigitalSolutionCheckout = () => {
     const now = Date.now();
     if (honeypotValue.trim()) {
       setSubmitted(true);
-      setSubmitStatus('Checkout request prepared. Your email client has been opened with your order details.');
+      setSubmitStatus('Purchase request prepared. Your email client has been opened with your request details.');
       setHoneypotValue('');
       setFormStartedAt(Date.now());
       return;
@@ -195,9 +169,7 @@ export const DigitalSolutionCheckout = () => {
 
     if (!validate()) return;
 
-    const subject = `Checkout Request - ${product.name}`;
-    const cardDigits = formData.cardNumber.replace(/\D/g, '');
-    const cardLast4 = cardDigits.length >= 4 ? cardDigits.slice(-4) : '';
+    const subject = `Purchase Request - ${product.name}`;
     const body = [
       `Product: ${product.name}`,
       `Category: ${product.category}`,
@@ -222,11 +194,8 @@ export const DigitalSolutionCheckout = () => {
       `Address Line 2: ${formData.addressLine2 || 'N/A'}`,
       `Postal Code: ${formData.postalCode}`,
       '',
-      'Order Preferences',
+      'Request Preferences',
       `License Type: ${selectedLicense.label}`,
-      `Preferred Payment Method: ${formData.paymentMethod}`,
-      `Cardholder Name: ${formData.cardholderName || 'N/A'}`,
-      `Credit Card Last 4: ${cardLast4 || 'N/A'}`,
       '',
       'Business Goals',
       formData.businessGoals,
@@ -239,7 +208,7 @@ export const DigitalSolutionCheckout = () => {
 
     window.location.href = buildMailtoLink(subject, body);
     setSubmitted(true);
-    setSubmitStatus('Checkout request prepared. Your email client has been opened with your order details.');
+    setSubmitStatus('Purchase request prepared. Your email client has been opened with your request details.');
     setHoneypotValue('');
     setFormStartedAt(Date.now());
   };
@@ -248,8 +217,8 @@ export const DigitalSolutionCheckout = () => {
     <div className="pt-12">
       <PageHeader
         title={`Checkout - ${product.name}`}
-        subtitle="Secure Purchase Intake"
-        description="Complete the purchase form to finalize your order scope, billing details, and implementation requirements."
+        subtitle="Purchase Request Intake"
+        description="Complete this form to submit your request scope, billing details, and implementation requirements."
       />
 
       <section className="section-padding bg-apple-gray-50">
@@ -262,7 +231,7 @@ export const DigitalSolutionCheckout = () => {
               <div>
                 <h2 className="text-3xl font-semibold mb-2">Customer & Billing Details</h2>
                 <p className="text-apple-gray-300">
-                  Provide complete purchase information so your order can be processed without delays.
+                  Provide complete request details so our team can prepare your implementation plan.
                 </p>
               </div>
 
@@ -368,53 +337,7 @@ export const DigitalSolutionCheckout = () => {
                   onChange={(e) => setField('quantity', Number.parseInt(e.target.value || '1', 10))}
                   className="w-full border border-apple-gray-100 rounded-xl p-4"
                 />
-                <select
-                  value={formData.paymentMethod}
-                  onChange={(e) => setField('paymentMethod', e.target.value)}
-                  className="w-full border border-apple-gray-100 rounded-xl p-4 bg-white md:col-span-2"
-                >
-                  <option value="credit-card">Preferred Payment: Credit Card</option>
-                  <option value="paypal">Preferred Payment: PayPal</option>
-                  <option value="bank-transfer">Preferred Payment: Bank Transfer</option>
-                </select>
               </div>
-
-              {formData.paymentMethod === 'credit-card' ? (
-                <div className="rounded-2xl border border-apple-gray-100 bg-apple-gray-50/70 p-5 sm:p-6 space-y-4">
-                  <p className="text-sm font-semibold text-apple-gray-500">Credit Card Details</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input
-                      value={formData.cardholderName}
-                      onChange={(e) => setField('cardholderName', e.target.value)}
-                      placeholder="Cardholder Name *"
-                      className="w-full border border-apple-gray-100 rounded-xl p-4 md:col-span-2"
-                    />
-                    <input
-                      value={formData.cardNumber}
-                      onChange={(e) => setField('cardNumber', e.target.value)}
-                      placeholder="Card Number *"
-                      className="w-full border border-apple-gray-100 rounded-xl p-4 md:col-span-2"
-                      inputMode="numeric"
-                    />
-                    <input
-                      value={formData.cardExpiry}
-                      onChange={(e) => setField('cardExpiry', e.target.value)}
-                      placeholder="Expiry (MM/YY) *"
-                      className="w-full border border-apple-gray-100 rounded-xl p-4"
-                    />
-                    <input
-                      value={formData.cardCvv}
-                      onChange={(e) => setField('cardCvv', e.target.value)}
-                      placeholder="CVV *"
-                      className="w-full border border-apple-gray-100 rounded-xl p-4"
-                      inputMode="numeric"
-                    />
-                  </div>
-                  <p className="text-xs text-apple-gray-300">
-                    For security, full card details are not transmitted in email. Only the last 4 digits are included in the request summary.
-                  </p>
-                </div>
-              ) : null}
 
               <textarea
                 value={formData.businessGoals}
@@ -458,7 +381,7 @@ export const DigitalSolutionCheckout = () => {
 
               {submitted ? (
                 <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">
-                  {submitStatus || 'Checkout request prepared. Your email client has been opened with your order details.'}
+                  {submitStatus || 'Purchase request prepared. Your email client has been opened with your request details.'}
                 </div>
               ) : null}
 
@@ -513,15 +436,15 @@ export const DigitalSolutionCheckout = () => {
               <div className="mt-7 space-y-3 text-sm text-apple-gray-300">
                 <p className="flex items-start gap-2">
                   <Lock size={16} className="text-apex-yellow mt-0.5 shrink-0" />
-                  Checkout data is prepared for secure order processing.
+                  Your request details are handled securely for intake and planning.
                 </p>
                 <p className="flex items-start gap-2">
                   <ShieldCheck size={16} className="text-apex-yellow mt-0.5 shrink-0" />
-                  Payment processing is completed through secure channels after intake review.
+                  Final delivery scope, timelines, and payment steps are confirmed after review.
                 </p>
                 <p className="flex items-start gap-2">
                   <CheckCircle2 size={16} className="text-apex-yellow mt-0.5 shrink-0" />
-                  Implementation starts after payment and requirements confirmation.
+                  Implementation starts after requirements and project approval are confirmed.
                 </p>
               </div>
 
