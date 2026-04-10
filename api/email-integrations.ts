@@ -190,6 +190,9 @@ const hasSpamHoneypotValue = (payload: Record<string, unknown>) => {
 const buildSafeNewsletterSuccessMessage = () =>
   'If this email can receive updates, your subscription request has been accepted.';
 
+const buildNewsletterUnavailableMessage = () =>
+  'Newsletter service is temporarily unavailable. Please try again shortly.';
+
 const isNewsletterSubscribeIntent = (payload: Record<string, unknown>) => {
   const intent = parseText(payload.intent).toLowerCase();
   if (NEWSLETTER_SUBSCRIBE_INTENTS.has(intent)) return true;
@@ -430,15 +433,34 @@ const handleNewsletterSubscribe = async (
     console.error('Newsletter subscribe config error:', configError);
     return res.status(503).json({
       success: false,
-      message: 'Newsletter service is temporarily unavailable. Please try again shortly.'
+      message: buildNewsletterUnavailableMessage()
     });
   }
 
   if (!subscription.ok) {
-    console.error('Newsletter subscribe error:', subscription.message);
-    return res.status(502).json({
+    console.error('Newsletter subscribe failure:', {
+      code: subscription.code || 'unknown',
+      upstreamStatus: subscription.httpStatus ?? null,
+      detail: subscription.message
+    });
+
+    if (subscription.code === 'invalid_email') {
+      return res.status(400).json({
+        success: false,
+        message: 'Enter a valid email address to subscribe.'
+      });
+    }
+
+    if (subscription.code === 'request_invalid') {
+      return res.status(422).json({
+        success: false,
+        message: 'Unable to process that subscription request. Please review your details and try again.'
+      });
+    }
+
+    return res.status(503).json({
       success: false,
-      message: 'Unable to process your subscription right now. Please try again shortly.'
+      message: buildNewsletterUnavailableMessage()
     });
   }
 
