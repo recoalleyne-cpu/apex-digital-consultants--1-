@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Facebook, ChevronDown } from 'lucide-react';
+import { Instagram, Facebook, Linkedin, ChevronDown } from 'lucide-react';
 import { BrandLockup } from './BrandLockup';
 import {
   buildFormSpamPayload,
@@ -110,6 +110,15 @@ export default function Footer() {
                 className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors"
               >
                 <Instagram size={18} />
+              </a>
+
+              <a
+                href="https://www.linkedin.com/company/apex-digital-consultants/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-apple-gray-300 hover:text-apple-gray-500 transition-colors"
+              >
+                <Linkedin size={18} />
               </a>
             </div>
           </div>

@@ -242,6 +242,10 @@ export const Contact = () => {
                     {
                       label: 'Facebook',
                       href: 'https://www.facebook.com/ApexDigitalConsultants/'
+                    },
+                    {
+                      label: 'LinkedIn',
+                      href: 'https://www.linkedin.com/company/apex-digital-consultants/'
                     }
                   ].map((social) => (
                     <a

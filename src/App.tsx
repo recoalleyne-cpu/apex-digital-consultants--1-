@@ -353,7 +353,8 @@ const buildOrganizationSchema = (origin: string) => ({
   email: 'info@apexdigitalconsultants.com',
   sameAs: [
     'https://www.facebook.com/ApexDigitalConsultants',
-    'https://www.instagram.com/apexdigitalconsultants/'
+    'https://www.instagram.com/apexdigitalconsultants/',
+    'https://www.linkedin.com/company/apex-digital-consultants/'
   ],
   contactPoint: [
     {
