@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
+import { trackEvent } from '../integrations/google';
 import {
   buildFormSpamPayload,
   FORM_SPAM_HONEYPOT_FIELD_NAME,
@@ -114,6 +115,11 @@ export const Contact = () => {
       }
 
       const result = await response.json().catch(() => ({}));
+
+      trackEvent('contact_form_submit_success', {
+        source: 'contact-form',
+        service: selectedService || 'unspecified'
+      });
 
       setFormData({
         firstName: '',

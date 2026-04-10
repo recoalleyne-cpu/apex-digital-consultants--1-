@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Facebook, Linkedin, ChevronDown } from 'lucide-react';
 import { BrandLockup } from './BrandLockup';
+import { trackEvent } from '../integrations/google';
 import {
   buildFormSpamPayload,
   FORM_SPAM_HONEYPOT_FIELD_NAME,
@@ -67,6 +68,11 @@ export default function Footer() {
         const responseText = await response.text();
         throw new Error(responseText || 'Unable to submit your message.');
       }
+
+      trackEvent('contact_form_submit_success', {
+        source: 'footer-form',
+        service: formData.service.trim() || 'unspecified'
+      });
 
       setFormData({
         name: '',

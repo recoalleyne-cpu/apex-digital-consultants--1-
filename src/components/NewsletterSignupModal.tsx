@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Sparkles, X } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import { trackEvent } from '../integrations/google';
 import {
   buildFormSpamPayload,
   FORM_SPAM_HONEYPOT_FIELD_NAME,
@@ -248,7 +249,7 @@ export const NewsletterSignupModal = () => {
       });
 
       const responseJson = (await response.json().catch(() => null)) as
-        | { success?: boolean; message?: string }
+        | { success?: boolean; message?: string; status?: string }
         | null;
       if (!response.ok || !responseJson?.success) {
         const errorText =
@@ -264,6 +265,11 @@ export const NewsletterSignupModal = () => {
         subscribedAt: now,
         subscribedEmail: normalizedEmail
       }));
+      trackEvent('newsletter_signup_success', {
+        source: 'homepage-newsletter-modal',
+        status: responseJson?.status || 'subscribed',
+        page_path: pathname
+      });
       setIsOpen(false);
       setEmail('');
       setHoneypotValue('');

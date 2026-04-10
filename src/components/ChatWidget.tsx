@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Send, Loader2, Sparkles, PhoneCall } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
+import { trackEvent } from '../integrations/google';
 
 const SYSTEM_INSTRUCTION = `You are the AI assistant for Apex Digital Consultants, a premier digital marketing agency serving Barbados and the wider Caribbean.
 Your goal is to help potential clients understand our services, which include:
@@ -95,6 +96,11 @@ export default function ChatWidget() {
   };
 
   const openWhatsApp = () => {
+    trackEvent('whatsapp_click', {
+      source: 'chat-widget',
+      link_url: 'https://wa.me/12468416543',
+      page_path: window.location.pathname
+    });
     window.open('https://wa.me/12468416543', '_blank');
   };
 
