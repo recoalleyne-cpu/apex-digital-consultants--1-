@@ -20,7 +20,7 @@ export const Services = () => {
 
       <section className="pt-10 md:pt-14 pb-24 md:pb-32">
         <div className="container-wide px-6 md:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-7">
             {SERVICES.map((service, index) => {
               const Icon = IconMap[service.icon];
               return (
@@ -31,21 +31,24 @@ export const Services = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: (index % 2) * 0.1 }}
-                  className="p-7 sm:p-8 md:p-12 lg:p-14 rounded-[2rem] sm:rounded-[3rem] bg-apple-gray-50 border border-transparent hover:border-apex-yellow hover:bg-white transition-all duration-500 group"
+                  whileHover={{ y: -6 }}
+                  className="relative h-full overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] border border-apple-gray-100/80 bg-apple-gray-50/85 p-6 sm:p-7 md:p-8 lg:p-9 text-center flex flex-col items-center transition-all duration-500 group hover:border-apex-yellow/45 hover:bg-white hover:shadow-[0_16px_38px_rgba(8,28,44,0.12)]"
                 >
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white flex items-center justify-center mb-7 sm:mb-8 shadow-sm group-hover:bg-apex-yellow group-hover:text-apple-gray-500 transition-all">
-                    <Icon size={28} className="sm:w-8 sm:h-8" />
+                  <div className="pointer-events-none absolute inset-0 rounded-[2rem] sm:rounded-[2.5rem] opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-[radial-gradient(140%_95%_at_50%_0%,rgba(247,203,67,0.15)_0%,rgba(52,137,174,0.09)_35%,rgba(255,255,255,0)_68%)]" />
+
+                  <div className="relative z-[1] w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/95 flex items-center justify-center mb-5 sm:mb-6 shadow-[0_8px_18px_rgba(7,23,37,0.08)] group-hover:bg-apex-yellow group-hover:text-apple-gray-500 transition-all">
+                    <Icon size={24} className="sm:w-7 sm:h-7" />
                   </div>
 
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-5 md:mb-6 leading-tight group-hover:text-apex-yellow transition-colors">
+                  <h3 className="relative z-[1] text-xl sm:text-[1.6rem] md:text-[1.75rem] font-bold mb-3 sm:mb-4 leading-tight group-hover:text-apex-yellow transition-colors">
                     {service.title}
                   </h3>
 
-                  <p className="text-base sm:text-lg text-apple-gray-300 leading-8 mb-7 sm:mb-8 md:mb-10">
+                  <p className="relative z-[1] text-sm sm:text-[15px] text-apple-gray-300 leading-7 mb-5 sm:mb-6 md:mb-7 max-w-[34ch]">
                     {service.description}
                   </p>
 
-                  <div className="flex flex-wrap gap-4">
+                  <div className="relative z-[1] mt-auto flex flex-wrap justify-center gap-3">
                     <Link to={`/services/${service.id}`} className="apple-button apple-button-secondary text-sm">
                       Explore {service.title}
                     </Link>
