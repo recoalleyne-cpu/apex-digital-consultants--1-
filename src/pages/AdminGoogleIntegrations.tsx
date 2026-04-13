@@ -53,7 +53,10 @@ type EmailProviderMeta = {
 
 const GOOGLE_ENV_TEMPLATE = [
   '# Preferred in Vercel (client-visible):',
+  'VITE_GOOGLE_TAG_ID=',
+  '# Backward-compatible aliases (set only one of these):',
   'VITE_GOOGLE_ANALYTICS_ID=',
+  'VITE_GA4_MEASUREMENT_ID=',
   'VITE_GOOGLE_TAG_MANAGER_ID=',
   'VITE_GOOGLE_ANALYTICS_USE_GTM_TRANSPORT=true',
   'VITE_GOOGLE_SEARCH_CONSOLE_VERIFICATION=',
@@ -318,6 +321,9 @@ export const AdminGoogleIntegrations = () => {
       enabled: GOOGLE_INTEGRATIONS.analytics.enabled,
       value: GOOGLE_INTEGRATIONS.analytics.measurementId,
       envKeys: [
+        'VITE_GOOGLE_TAG_ID',
+        'NEXT_PUBLIC_GOOGLE_TAG_ID',
+        'GOOGLE_TAG_ID',
         'VITE_GOOGLE_ANALYTICS_ID',
         'NEXT_PUBLIC_GOOGLE_ANALYTICS_ID',
         'GOOGLE_ANALYTICS_ID',
