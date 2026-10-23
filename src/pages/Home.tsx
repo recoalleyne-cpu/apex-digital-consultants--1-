@@ -281,10 +281,10 @@ export const Home = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-10 rounded-[2rem] bg-white border border-apple-gray-100">
-              <h3 className="text-xl font-bold mb-4">WooCommerce Tools</h3>
+              <h3 className="text-xl font-bold mb-4">E-commerce Tools</h3>
               <p className="text-apple-gray-300 text-sm leading-relaxed mb-6">
-                Custom plugins designed to enhance WooCommerce stores, improve conversions,
-                and streamline ecommerce workflows.
+                Custom digital tools designed to improve conversions, streamline online sales,
+                and support smoother customer journeys.
               </p>
             </div>
 

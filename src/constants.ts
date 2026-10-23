@@ -105,7 +105,7 @@ export const PORTFOLIO = [
     title: 'The Science Plug',
     category: 'Web Development',
     industry: 'Education',
-    technologies: ['WordPress', 'WooCommerce', 'Custom PHP', 'JavaScript'],
+    technologies: ['WordPress', 'Custom PHP', 'JavaScript'],
     description: 'Features booking capabilities for tutorial sessions, social media integration, and online chat.',
     link: 'https://thescienceplug.com',
     image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=800'
@@ -150,8 +150,8 @@ export const PORTFOLIO = [
     title: 'Be Blessed Skin Care & Beauty',
     category: 'E-Commerce',
     industry: 'Beauty & Cosmetics',
-    technologies: ['WordPress', 'WooCommerce', 'Stripe Integration'],
-    description: 'Online store layout using WooCommerce integration for beauty products.',
+    technologies: ['WordPress', 'Stripe Integration', 'Custom Commerce Features'],
+    description: 'Online store layout for beauty products with streamlined browsing and customer checkout flows.',
     link: 'http://beblessedskincareandbeauty.com/',
     image: 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?auto=format&fit=crop&q=80&w=800'
   }
@@ -160,12 +160,12 @@ export const PORTFOLIO = [
 export const DIGITAL_SOLUTIONS: Product[] = [
   {
     id: 'currency-switcher',
-    name: 'WooCommerce Multi Currency Switcher',
+    name: 'Multi Currency Switcher',
     description: 'Automatically display product prices in your customer’s local currency.',
     price: '$49',
     category: 'Ecommerce Tools',
     image: 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?auto=format&fit=crop&q=80&w=800',
-    features: ['Automatic currency detection', 'Multi currency display', 'Easy integration with WooCommerce']
+    features: ['Automatic currency detection', 'Multi currency display', 'Easy checkout integration']
   },
   {
     id: 'product-comparison',
@@ -248,11 +248,11 @@ export const DIGITAL_SOLUTIONS_FAQS = [
   },
   {
     question: "Do you build custom plugins?",
-    answer: "Yes, we specialize in developing custom WordPress and WooCommerce plugins tailored to your specific business requirements."
+    answer: "Yes, we specialize in developing custom WordPress extensions and business tools tailored to your specific requirements."
   },
   {
-    question: "Are your plugins compatible with WooCommerce?",
-    answer: "Absolutely. Most of our digital solutions are designed specifically to enhance WooCommerce stores and improve the e-commerce experience."
+    question: "Are your plugins compatible with e-commerce platforms?",
+    answer: "Absolutely. Most of our digital solutions are designed to enhance online stores and improve the customer experience across connected sales platforms."
   },
   {
     question: "Can plugins be customized for my business?",
