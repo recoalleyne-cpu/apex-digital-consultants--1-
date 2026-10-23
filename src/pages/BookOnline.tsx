@@ -7,12 +7,12 @@ import { Clock, DollarSign, ArrowRight, Globe, MessageSquare, User, Laptop, PenT
 
 const BOOKING_SERVICES = [
   {
-    id: 'social-media-marketing',
-    title: 'Social Media Marketing',
+    id: 'google-advertising',
+    title: 'Google Advertising Strategy',
     duration: '1 hr 30 min',
     price: '$100',
     icon: MessageSquare,
-    link: 'https://www.apexitconsults.com/booking-calendar/social-media-marketing'
+    link: 'https://www.apexitconsults.com/booking-calendar'
   },
   {
     id: 'website-building',

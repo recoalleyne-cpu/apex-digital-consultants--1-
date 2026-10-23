@@ -1,0 +1,425 @@
+SYSTEM_CONTEXT.md
+# Apex Digital Consultants — System Context
+
+This document explains the **complete architecture and operational logic** of the Apex Digital Consultants platform.
+
+It is intended for AI agents (Codex) and developers to understand how the system works before making changes.
+
+The platform is a **modern marketing website combined with a lightweight CMS system** designed for Vercel serverless hosting.
+
+---
+
+# Platform Overview
+
+The site serves two primary purposes:
+
+1. A **premium marketing website** for Apex Digital Consultants
+2. A **dynamic content management system** powering various sections of the site
+
+Dynamic content includes:
+
+- media assets
+- portfolio items
+- logos
+- testimonials
+- blog posts
+- SEO landing pages
+
+The platform is optimized for **low-cost serverless infrastructure**.
+
+---
+
+# Technology Stack
+
+Frontend
+
+- React
+- Vite
+- Tailwind CSS
+- Framer Motion
+
+Backend
+
+- Vercel serverless API routes
+
+Database
+
+- Neon Postgres
+
+Storage
+
+- Vercel Blob Storage
+
+Deployment
+
+- Vercel Hobby Plan
+
+---
+
+# Core Architectural Philosophy
+
+The system prioritizes:
+
+1. **Minimal server logic**
+2. **lightweight API endpoints**
+3. **fast cold start recovery**
+4. **low database load**
+5. **client-side uploads when possible**
+
+This ensures the system remains stable under Vercel Hobby constraints.
+
+---
+
+# Hosting Constraints
+
+The platform must remain compatible with:
+
+### Vercel Hobby Plan
+
+Limitations include:
+
+- limited serverless runtime
+- body size limitations
+- cold start latency
+- limited memory
+
+API routes must therefore:
+
+- avoid heavy dependencies
+- avoid large request bodies
+- return responses quickly
+
+---
+
+# Media System (Core CMS Engine)
+
+The **media table** is the central content registry for the site.
+
+It stores:
+
+- uploaded images
+- portfolio media
+- logos
+- certification logos
+- founder image
+- other visual assets
+
+Database fields:
+
+
+id
+title
+file_url
+alt_text
+category
+placement
+description
+tech_stack
+features
+created_at
+
+
+The `placement` field determines where media appears on the site.
+
+Examples:
+
+
+home-certification-ticker
+about-founder-image
+portfolio-grid
+logos-page
+
+
+---
+
+# Media Upload Architecture
+
+Uploads occur in two stages.
+
+### Stage 1 — Blob Upload
+
+Files upload directly to **Vercel Blob Storage**.
+
+Client uses:
+
+
+@vercel/blob/client
+
+
+Upload flow:
+
+
+Client → /api/upload → Vercel Blob → public URL returned
+
+
+---
+
+### Stage 2 — Metadata Save
+
+After upload, metadata is saved to Neon:
+
+
+POST /api/media
+
+
+Fields saved include:
+
+- title
+- category
+- placement
+- description
+- tech_stack
+- features
+- file_url
+
+---
+
+# Dynamic Website Sections
+
+The following sections load dynamically from the database.
+
+| Section | Source |
+|------|------|
+Homepage certification ticker | media table
+Founder image | media table
+Portfolio grid | media table
+Logos page | media table
+Testimonials | testimonials table
+Blog | blog_posts table
+Landing pages | landing_pages table
+
+---
+
+# Portfolio System
+
+Portfolio items are stored in the **media table** using:
+
+
+category = "portfolio"
+
+
+Additional metadata:
+
+- description
+- tech_stack
+- features
+
+Future expansion may include:
+
+- case study pages
+- portfolio filtering
+- project detail views
+
+---
+
+# Blog System
+
+Blog posts are stored in the `blog_posts` table.
+
+Fields include:
+
+
+title
+slug
+excerpt
+body_content
+featured_image_url
+category
+author_name
+publish_date
+seo_title
+seo_description
+is_published
+
+
+The blog system powers:
+
+
+/blog
+/blog/:slug
+
+
+---
+
+# Landing Page Generator
+
+Landing pages enable SEO expansion.
+
+Examples:
+
+
+/google-ads-barbados
+/web-design-barbados
+/seo-services-caribbean
+
+
+Landing pages are stored in:
+
+
+landing_pages
+
+
+Fields include:
+
+
+title
+slug
+hero_heading
+hero_subheading
+body_content
+featured_image_url
+cta_text
+cta_link
+seo_title
+seo_description
+region
+service_category
+is_published
+
+
+---
+
+# Testimonials System
+
+Testimonials are stored in:
+
+
+testimonials
+
+
+Fields include:
+
+
+name
+role
+company
+location
+content
+rating
+source
+created_at
+
+
+Future enhancements include:
+
+- Google Reviews import
+- testimonial filtering
+- carousel display
+
+---
+
+# Admin Interface
+
+Admin routes are used to manage CMS content.
+
+Current or planned routes:
+
+
+/admin/media
+/admin/blog
+/admin/testimonials
+/admin/landing-pages
+/admin/portfolio
+
+
+Admin pages allow:
+
+- create
+- edit
+- delete
+
+---
+
+# Design System
+
+The design language is **premium, minimal, and modern**.
+
+Core visual elements include:
+
+- frosted glass hero sections
+- soft shadows
+- rounded containers
+- subtle motion animations
+- high whitespace layouts
+
+All future UI must maintain this design language.
+
+---
+
+# API Design Principles
+
+API routes must:
+
+- return fast responses
+- avoid heavy dependencies
+- minimize database queries
+- be resilient to cold starts
+
+Prefer:
+
+
+simple SELECT queries
+indexed filters
+
+
+Avoid:
+
+
+large joins
+heavy ORM layers
+
+
+---
+
+# Performance Goals
+
+Target metrics:
+
+- fast initial load
+- smooth scrolling animations
+- minimal API latency
+- responsive mobile layout
+
+---
+
+# Agent Responsibilities
+
+AI agents must:
+
+1. audit existing code before editing
+2. preserve system architecture
+3. avoid breaking dynamic CMS systems
+4. avoid introducing heavy libraries
+5. implement minimal safe changes
+
+---
+
+# Stop Conditions for Agents
+
+Agents must request human approval before:
+
+- database schema changes
+- domain configuration
+- infrastructure changes
+- deployment configuration changes
+
+---
+
+# Launch Criteria
+
+The system is ready for launch when:
+
+- all CMS uploads function correctly
+- dynamic content loads successfully
+- mobile layout is verified
+- blog system functions
+- landing page generator functions
+- SEO metadata is configured
+
+After this point:
+
+1. connect domain
+2. configure DNS
+3. verify SSL
+4. submit sitemap
+5. go live

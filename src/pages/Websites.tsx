@@ -17,8 +17,22 @@ export const Websites = () => {
             <span className="text-sm font-semibold tracking-widest text-apple-gray-300 uppercase mb-6 block">Service Details</span>
             <h1 className="heading-xl mb-12">Website Development.</h1>
             <p className="text-2xl text-apple-gray-300 leading-relaxed">
-              From simple landing pages to complex e-commerce platforms, we build websites that are fast, secure, and ready to scale.
+              From simple landing pages to advanced ecommerce builds, we deliver custom website development for Barbados businesses and teams across the Caribbean.
             </p>
+            <p className="mt-6 text-base md:text-lg text-apple-gray-300 leading-8">
+              Our approach combines responsive web design, conversion-focused page strategy, and SEO-friendly technical structure so your website performs as a true growth asset.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/website-development-barbados" className="apple-button apple-button-secondary text-sm">
+                Website Development Barbados
+              </Link>
+              <Link to="/website-development-caribbean" className="apple-button apple-button-secondary text-sm">
+                Website Development Caribbean
+              </Link>
+              <Link to="/seo-friendly-websites-barbados" className="apple-button apple-button-secondary text-sm">
+                SEO-Friendly Websites
+              </Link>
+            </div>
           </motion.div>
         </div>
       </section>
