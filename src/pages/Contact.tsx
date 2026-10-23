@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
 import { PageHeader } from '../components/PageHeader';
 import { trackEvent } from '../integrations/google';
 import {
@@ -10,14 +11,20 @@ import {
 } from '../utils/formSpamProtection';
 
 export const Contact = () => {
+  const location = useLocation();
+  const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
+
+  const defaultService = params.get('service') ?? 'Website Design';
+  const defaultMessage = params.get('message') ?? '';
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
     companyName: '',
-    projectDetails: '',
-    service: '',
+    projectDetails: defaultMessage,
+    service: defaultService,
     customService: '',
     subscribeToNewsletter: false
   });
@@ -34,6 +41,14 @@ export const Contact = () => {
     'Hosting',
     'Add something else'
   ];
+
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      service: defaultService,
+      projectDetails: prev.projectDetails || defaultMessage
+    }));
+  }, [defaultMessage, defaultService]);
 
   const resolveServiceValue = () => {
     if (formData.service === 'Add something else') {
@@ -58,10 +73,7 @@ export const Contact = () => {
       return;
     }
 
-    const requiredMissing = !formData.firstName.trim() ||
-      !formData.email.trim() ||
-      !formData.phone.trim() ||
-      !formData.companyName.trim();
+    const requiredMissing = !formData.firstName.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.companyName.trim();
 
     if (requiredMissing) {
       setSubmitMessage('Please complete all required fields before submitting.');
@@ -78,6 +90,7 @@ export const Contact = () => {
     setSubmitMessage('');
 
     const selectedService = resolveServiceValue() || 'Not specified';
+
     try {
       const response = await fetch('/api/leads', {
         method: 'POST',
@@ -128,17 +141,13 @@ export const Contact = () => {
         phone: '',
         companyName: '',
         projectDetails: '',
-        service: '',
+        service: defaultService,
         customService: '',
         subscribeToNewsletter: false
       });
       setHoneypotValue('');
       setFormStartedAt(Date.now());
-      if (result && result.mailSent) {
-        setSubmitMessage('Message sent successfully!');
-      } else {
-        setSubmitMessage("Message received! We'll get back to you shortly.");
-      }
+      setSubmitMessage(result && result.mailSent ? 'Message sent successfully!' : "Message received! We'll get back to you shortly.");
     } catch (error) {
       setSubmitMessage(
         error instanceof Error
@@ -185,14 +194,12 @@ export const Contact = () => {
       <section id="quote" className="pt-10 md:pt-14 pb-24 md:pb-32 scroll-mt-32">
         <div className="container-wide px-6 md:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
-            {/* Contact Info */}
             <div className="space-y-14">
               <div className="space-y-12">
                 <div className="flex gap-6 group">
                   <div className="w-14 h-14 rounded-2xl bg-apple-gray-50 flex items-center justify-center flex-shrink-0 group-hover:bg-apex-yellow transition-colors duration-300">
                     <Mail className="text-apple-gray-500" />
                   </div>
-
                   <div>
                     <h4 className="text-xl font-bold mb-2">Email Us</h4>
                     <p className="text-apple-gray-300 mb-2">Our team is here to help.</p>
@@ -209,7 +216,6 @@ export const Contact = () => {
                   <div className="w-14 h-14 rounded-2xl bg-apple-gray-50 flex items-center justify-center flex-shrink-0 group-hover:bg-apex-yellow transition-colors duration-300">
                     <Phone className="text-apple-gray-500" />
                   </div>
-
                   <div>
                     <h4 className="text-xl font-bold mb-2">Whatsapp Us</h4>
                     <p className="text-apple-gray-300 mb-2">Mon-Fri from 9am to 5pm.</p>
@@ -228,34 +234,21 @@ export const Contact = () => {
                   <div className="w-14 h-14 rounded-2xl bg-apple-gray-50 flex items-center justify-center flex-shrink-0 group-hover:bg-apex-yellow transition-colors duration-300">
                     <MapPin className="text-apple-gray-500" />
                   </div>
-
                   <div>
                     <h4 className="text-xl font-bold mb-2">Location</h4>
                     <p className="text-apple-gray-300 mb-2">Serving clients across Barbados and the wider Caribbean region.</p>
-                    <p className="text-lg font-semibold leading-relaxed">
-                      Bridgetown, Barbados
-                    </p>
+                    <p className="text-lg font-semibold leading-relaxed">Bridgetown, Barbados</p>
                   </div>
                 </div>
               </div>
 
               <div className="p-7 sm:p-8 md:p-10 rounded-[2rem] sm:rounded-[2.5rem] bg-apple-gray-50 border border-apple-gray-100">
                 <h4 className="font-bold mb-5">Follow Our Journey</h4>
-
                 <div className="flex flex-wrap gap-5">
                   {[
-                    {
-                      label: 'Instagram',
-                      href: 'https://www.instagram.com/apexdigitalconsultants/'
-                    },
-                    {
-                      label: 'Facebook',
-                      href: 'https://www.facebook.com/ApexDigitalConsultants/'
-                    },
-                    {
-                      label: 'LinkedIn',
-                      href: 'https://www.linkedin.com/company/apex-digital-consultants/'
-                    }
+                    { label: 'Instagram', href: 'https://www.instagram.com/apexdigitalconsultants/' },
+                    { label: 'Facebook', href: 'https://www.facebook.com/ApexDigitalConsultants/' },
+                    { label: 'LinkedIn', href: 'https://www.linkedin.com/company/apex-digital-consultants/' }
                   ].map((social) => (
                     <a
                       key={social.label}
@@ -271,7 +264,6 @@ export const Contact = () => {
               </div>
             </div>
 
-            {/* Main Contact Form */}
             <div className="bg-white p-6 sm:p-8 md:p-10 lg:p-12 rounded-[2rem] sm:rounded-[3rem] border border-apple-gray-100 shadow-sm">
               <div className="mb-8">
                 <h2 className="text-2xl md:text-3xl font-bold text-apple-gray-500 mb-3">Request a Quote</h2>
@@ -279,6 +271,7 @@ export const Contact = () => {
                   Share your project goals and we will respond with the best-fit next step.
                 </p>
               </div>
+
               <form className="relative space-y-8 md:space-y-10" onSubmit={handleSubmit}>
                 <input
                   type="text"
@@ -290,11 +283,11 @@ export const Contact = () => {
                   aria-hidden="true"
                   className="pointer-events-none absolute -left-[9999px] top-auto h-px w-px opacity-0"
                 />
+
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-10">
-                  {/* Left Column */}
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-lg sm:text-xl md:text-2xl font-medium text-apex-blue">
+                      <h3 className="text-lg sm:text-xl md:text-2xl font-medium text-apple-gray-500">
                         Helps us get in touch with you.
                       </h3>
                     </div>
@@ -304,7 +297,7 @@ export const Contact = () => {
                         type="text"
                         placeholder="First Name*"
                         value={formData.firstName}
-                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                        onChange={(event) => setFormData({ ...formData, firstName: event.target.value })}
                         className="w-full px-0 py-4 border-0 border-b border-apple-gray-100 bg-transparent text-base text-apple-gray-500 placeholder:text-apple-gray-300 focus:outline-none focus:border-apex-yellow"
                         required
                       />
@@ -313,7 +306,7 @@ export const Contact = () => {
                         type="text"
                         placeholder="Last Name"
                         value={formData.lastName}
-                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                        onChange={(event) => setFormData({ ...formData, lastName: event.target.value })}
                         className="w-full px-0 py-4 border-0 border-b border-apple-gray-100 bg-transparent text-base text-apple-gray-500 placeholder:text-apple-gray-300 focus:outline-none focus:border-apex-yellow"
                       />
                     </div>
@@ -323,7 +316,7 @@ export const Contact = () => {
                         type="email"
                         placeholder="Email*"
                         value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        onChange={(event) => setFormData({ ...formData, email: event.target.value })}
                         className="w-full px-0 py-4 border-0 border-b border-apple-gray-100 bg-transparent text-base text-apple-gray-500 placeholder:text-apple-gray-300 focus:outline-none focus:border-apex-yellow"
                         required
                       />
@@ -332,7 +325,7 @@ export const Contact = () => {
                         type="text"
                         placeholder="Phone*"
                         value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        onChange={(event) => setFormData({ ...formData, phone: event.target.value })}
                         className="w-full px-0 py-4 border-0 border-b border-apple-gray-100 bg-transparent text-base text-apple-gray-500 placeholder:text-apple-gray-300 focus:outline-none focus:border-apex-yellow"
                         required
                       />
@@ -342,16 +335,15 @@ export const Contact = () => {
                       type="text"
                       placeholder="Company Name*"
                       value={formData.companyName}
-                      onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                      onChange={(event) => setFormData({ ...formData, companyName: event.target.value })}
                       className="w-full px-0 py-4 border-0 border-b border-apple-gray-100 bg-transparent text-base text-apple-gray-500 placeholder:text-apple-gray-300 focus:outline-none focus:border-apex-yellow"
                       required
                     />
                   </div>
 
-                  {/* Right Column */}
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-lg sm:text-xl md:text-2xl font-medium text-apex-blue">
+                      <h3 className="text-lg sm:text-xl md:text-2xl font-medium text-apple-gray-500">
                         What is the project all about?
                       </h3>
                     </div>
@@ -360,15 +352,15 @@ export const Contact = () => {
                       rows={8}
                       placeholder="I'd love to talk to you about..."
                       value={formData.projectDetails}
-                      onChange={(e) => setFormData({ ...formData, projectDetails: e.target.value })}
-                      className="w-full px-0 py-4 border-0 border-b border-apple-gray-100 bg-transparent text-base text-apple-gray-500 placeholder:text-apple-gray-300 focus:outline-none focus:border-apex-yellow resize-none"
+                      onChange={(event) => setFormData({ ...formData, projectDetails: event.target.value })}
+                      className="w-full resize-none bg-transparent px-0 py-4 border-0 border-b border-apple-gray-100 text-base text-apple-gray-500 placeholder:text-apple-gray-300 focus:outline-none focus:border-apex-yellow"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-5">
-                  <h4 className="text-lg sm:text-xl md:text-2xl font-medium text-apex-blue">
-                    What sort of creative work you need help with?
+                  <h4 className="text-lg sm:text-xl md:text-2xl font-medium text-apple-gray-500">
+                    What sort of creative work do you need help with?
                   </h4>
 
                   <div className="flex flex-wrap gap-3">
@@ -379,22 +371,14 @@ export const Contact = () => {
                           key={option}
                           type="button"
                           onClick={() => setFormData({ ...formData, service: option })}
-                          className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm md:text-[15px] font-medium transition-all border ${
+                          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm md:text-[15px] font-medium transition-all ${
                             isSelected
                               ? 'border-apex-yellow bg-apex-yellow/10 text-apple-gray-500 shadow-sm'
                               : 'border-apple-gray-100 bg-white text-apple-gray-300 hover:border-apex-yellow/50 hover:bg-apple-gray-50'
                           }`}
                         >
-                          <span
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                              isSelected ? 'border-apex-yellow' : 'border-apple-gray-200'
-                            }`}
-                          >
-                            <span
-                              className={`w-2 h-2 rounded-full ${
-                                isSelected ? 'bg-apex-yellow' : 'bg-transparent'
-                              }`}
-                            />
+                          <span className={`flex h-4 w-4 items-center justify-center rounded-full border ${isSelected ? 'border-apex-yellow' : 'border-apple-gray-200'}`}>
+                            <span className={`h-2 w-2 rounded-full ${isSelected ? 'bg-apex-yellow' : 'bg-transparent'}`} />
                           </span>
                           <span>{option}</span>
                         </button>
@@ -407,7 +391,7 @@ export const Contact = () => {
                       type="text"
                       placeholder="Add something else"
                       value={formData.customService}
-                      onChange={(e) => setFormData({ ...formData, customService: e.target.value })}
+                      onChange={(event) => setFormData({ ...formData, customService: event.target.value })}
                       className="w-full px-0 py-4 border-0 border-b border-apple-gray-100 bg-transparent text-base text-apple-gray-500 placeholder:text-apple-gray-300 focus:outline-none focus:border-apex-yellow"
                       required
                     />
@@ -418,29 +402,25 @@ export const Contact = () => {
                   <input
                     type="checkbox"
                     checked={formData.subscribeToNewsletter}
-                    onChange={(event) =>
-                      setFormData({
-                        ...formData,
-                        subscribeToNewsletter: event.target.checked
-                      })
-                    }
+                    onChange={(event) => setFormData({ ...formData, subscribeToNewsletter: event.target.checked })}
                     className="mt-0.5 h-4 w-4 rounded border-apple-gray-200 text-apex-yellow focus:ring-apex-yellow/60"
                   />
-                  <span>
-                    Email me occasional Apex growth insights and marketing updates.
-                  </span>
+                  <span>Email me occasional Apex growth insights and marketing updates.</span>
                 </label>
+
+                {submitMessage && (
+                  <p className="rounded-2xl border border-apple-gray-100 bg-apple-gray-50 px-4 py-3 text-sm text-apple-gray-400">
+                    {submitMessage}
+                  </p>
+                )}
 
                 <button
                   type="submit"
-                  className="apple-button apple-button-primary w-full md:w-auto px-10 flex items-center justify-center gap-2"
                   disabled={submitting}
+                  className="apple-button apple-button-primary w-full flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  <Send size={18} /> {submitting ? 'Submitting...' : 'Submit'}
+                  <Send size={18} /> {submitting ? 'Sending...' : 'Send Message'}
                 </button>
-                {submitMessage && (
-                  <p className="text-sm text-apple-gray-300">{submitMessage}</p>
-                )}
               </form>
             </div>
           </div>

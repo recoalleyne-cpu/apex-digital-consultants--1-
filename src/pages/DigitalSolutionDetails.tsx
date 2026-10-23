@@ -93,7 +93,7 @@ const DEFAULT_STAGES: FunnelStage[] = [
 
 const IDEAL_USE_CASES_BY_CATEGORY: Record<string, string[]> = {
   'Ecommerce Tools': [
-    'Growing WooCommerce stores focused on conversion rate and AOV',
+    'Growing online stores focused on conversion rate and AOV',
     'Product catalogs that need clearer buyer decision support',
     'Teams optimizing checkout efficiency and repeat revenue'
   ],

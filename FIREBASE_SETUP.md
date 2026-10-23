@@ -81,4 +81,3 @@ Vercel env changes are applied to new deployments only.
 - Protected admin API routes validate bearer tokens with Firebase Admin SDK.
 - Main business/content data is read/written in Neon (server-side).
 - Public site behavior remains unchanged unless endpoints are consuming the new Neon-backed tables.
-

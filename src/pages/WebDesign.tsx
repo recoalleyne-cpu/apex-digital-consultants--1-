@@ -47,9 +47,9 @@ export const WebDesign = () => {
               </div>
             </div>
             <div className="order-1 lg:order-2 aspect-square rounded-[3rem] overflow-hidden bg-apple-gray-50 shadow-2xl">
-              <img 
-                src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200" 
-                alt="Web design planning workspace for responsive website design and development" 
+              <img
+                src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200"
+                alt="Web design planning workspace for responsive website design and development"
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
                 loading="lazy"

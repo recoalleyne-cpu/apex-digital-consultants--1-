@@ -26,7 +26,7 @@ const WEBSITE_KEYWORDS = [
   'web development',
   'wordpress',
   'ecommerce',
-  'woocommerce',
+  'online store',
   'site',
   'landing page'
 ];
