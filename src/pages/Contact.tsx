@@ -1,11 +1,25 @@
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
 
 import { PageHeader } from '../components/PageHeader';
 
 export const Contact = () => {
+  const location = useLocation();
+  const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
+
+  const defaultService = params.get('service') ?? 'Digital Solutions';
+  const defaultMessage = params.get('message') ?? '';
+
+  const [service, setService] = useState(defaultService);
+  const [message, setMessage] = useState(defaultMessage);
+
+  useEffect(() => {
+    setService(defaultService);
+    setMessage(defaultMessage);
+  }, [defaultService, defaultMessage]);
+
   return (
     <div className="pt-12">
       <PageHeader 
@@ -17,7 +31,6 @@ export const Contact = () => {
       <section className="pb-24">
         <div className="container-wide px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-24">
-            {/* Contact Info */}
             <div>
               <div className="space-y-12">
                 <div className="flex gap-6 group">
@@ -60,7 +73,7 @@ export const Contact = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="mt-16 p-8 rounded-[2.5rem] bg-apple-gray-50 border border-apple-gray-100">
                 <h4 className="font-bold mb-4">Follow Our Journey</h4>
                 <div className="flex gap-4">
@@ -73,9 +86,8 @@ export const Contact = () => {
               </div>
             </div>
 
-            {/* Contact Form */}
             <div className="bg-white p-8 md:p-12 rounded-[3rem] border border-apple-gray-100 shadow-sm">
-              <form className="space-y-8">
+              <form className="space-y-8" onSubmit={event => event.preventDefault()}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-apple-gray-300 uppercase tracking-wider">First Name</label>
@@ -94,7 +106,7 @@ export const Contact = () => {
                     />
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-apple-gray-300 uppercase tracking-wider">Email Address</label>
                   <input 
@@ -105,8 +117,13 @@ export const Contact = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-apple-gray-300 uppercase tracking-wider">Service Interested In</label>
-                  <select className="w-full px-6 py-4 rounded-2xl bg-apple-gray-50 border-none focus:ring-2 focus:ring-apex-yellow transition-all appearance-none">
+                  <label htmlFor="service-interest" className="text-sm font-semibold text-apple-gray-300 uppercase tracking-wider">Service Interested In</label>
+                  <select
+                    id="service-interest"
+                    value={service}
+                    onChange={event => setService(event.target.value)}
+                    className="w-full px-6 py-4 rounded-2xl bg-apple-gray-50 border-none focus:ring-2 focus:ring-apex-yellow transition-all appearance-none"
+                  >
                     <option>Website Design</option>
                     <option>Digital Strategy</option>
                     <option>Logo Design</option>
@@ -116,15 +133,18 @@ export const Contact = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-apple-gray-300 uppercase tracking-wider">Message</label>
+                  <label htmlFor="contact-message" className="text-sm font-semibold text-apple-gray-300 uppercase tracking-wider">Message</label>
                   <textarea 
+                    id="contact-message"
                     rows={4}
+                    value={message}
+                    onChange={event => setMessage(event.target.value)}
                     className="w-full px-6 py-4 rounded-2xl bg-apple-gray-50 border-none focus:ring-2 focus:ring-apex-yellow transition-all"
                     placeholder="Tell us about your project..."
                   />
                 </div>
 
-                <button className="apple-button apple-button-primary w-full flex items-center justify-center gap-2">
+                <button type="submit" className="apple-button apple-button-primary w-full flex items-center justify-center gap-2">
                   <Send size={18} /> Send Message
                 </button>
               </form>
