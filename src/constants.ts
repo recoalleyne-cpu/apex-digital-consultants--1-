@@ -108,7 +108,7 @@ export const PORTFOLIO = [
     technologies: ['WordPress', 'Custom PHP', 'JavaScript'],
     description: 'Features booking capabilities for tutorial sessions, social media integration, and online chat.',
     link: 'https://thescienceplug.com',
-    image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=800'
+    image: '/portfolio-screenshots/the-science-plug-desktop.png'
   },
   {
     title: 'Okoye By Kim',
@@ -117,7 +117,7 @@ export const PORTFOLIO = [
     technologies: ['Shopify', 'Liquid', 'CSS3', 'Instagram API'],
     description: 'Reflective of the brand’s vibrant personality. Includes digital marketing integration and online chat.',
     link: 'https://okoyebykim.com/',
-    image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800'
+    image: '/portfolio-screenshots/okoye-by-kim-desktop.png'
   },
   {
     title: 'Highlighted Beauty By Shan',
@@ -126,7 +126,7 @@ export const PORTFOLIO = [
     technologies: ['React', 'Tailwind CSS', 'Framer Motion'],
     description: 'Elegant and easy to navigate with concise information on services offered.',
     link: 'https://highlightedbeautyspa.com/',
-    image: 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&q=80&w=800'
+    image: '/portfolio-screenshots/highlighted-beauty-by-shan-desktop.png'
   },
   {
     title: 'Finish Line Cleaning Services',
@@ -135,7 +135,7 @@ export const PORTFOLIO = [
     technologies: ['WordPress', 'Elementor', 'WPForms'],
     description: 'Simplistic design with concise information on services and quotation request feature.',
     link: 'https://finishlinecleaningservices.com',
-    image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6958?auto=format&fit=crop&q=80&w=800'
+    image: '/portfolio-screenshots/finish-line-cleaning-services-desktop.png'
   },
   {
     title: 'Hitz 106.7 FM',
@@ -144,7 +144,34 @@ export const PORTFOLIO = [
     technologies: ['Custom CMS', 'Streaming API', 'Node.js', 'React'],
     description: 'Developed with streaming capabilities for video and audio, including ad spaces.',
     link: 'https://www.myhitz106.com',
-    image: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&q=80&w=800'
+    image: '/portfolio-screenshots/hitz-1067-fm-desktop.png'
+  },
+  {
+    title: 'Rhea Renee',
+    category: 'Lifestyle Brand',
+    industry: 'Lifestyle & Wellness',
+    technologies: ['WordPress', 'Content Strategy', 'Brand Presentation'],
+    description: 'Personal-brand website designed to establish trust, reflect voice, and support content-led audience engagement.',
+    link: 'https://www.rhearenee.com/',
+    image: '/portfolio-screenshots/rhea-renee-desktop.png'
+  },
+  {
+    title: 'Rachel Thomas – Executive Coach',
+    category: 'Personal Brand',
+    industry: 'Business Coaching',
+    technologies: ['WordPress', 'Brand Positioning', 'Responsive Layout'],
+    description: 'Professional website for an executive coaching brand focused on clarity, authority, and conversion.',
+    link: 'https://rachelthomascoach.com/',
+    image: '/portfolio-screenshots/rachel-thomas-executive-coach-desktop.png'
+  },
+  {
+    title: 'Sani Services Limited',
+    category: 'Service Business',
+    industry: 'Cleaning & Restoration',
+    technologies: ['WordPress', 'Responsive Design', 'Service Presentation'],
+    description: 'Service-focused website built to communicate cleaning and restoration offerings and support customer trust.',
+    link: 'https://saniservices.net/',
+    image: '/portfolio-screenshots/sani-services-limited-desktop.png'
   },
   {
     title: 'Be Blessed Skin Care & Beauty',
@@ -153,7 +180,7 @@ export const PORTFOLIO = [
     technologies: ['WordPress', 'Stripe Integration', 'Custom Commerce Features'],
     description: 'Online store layout for beauty products with streamlined browsing and customer checkout flows.',
     link: 'http://beblessedskincareandbeauty.com/',
-    image: 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?auto=format&fit=crop&q=80&w=800'
+    image: '/portfolio-screenshots/be-blessed-skin-care-beauty-desktop.png'
   }
 ];
 
